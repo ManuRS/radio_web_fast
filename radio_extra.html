@@ -71,14 +71,17 @@
       
       .controles {
         display: flex;
-        flex-wrap: wrap;
-        justify-content: center; /* botones centrados */
-        gap: 5px;
-        margin-top: 30px;    
+        gap: 5px;            /* espacio entre botones */
+        margin-top: 20px;
+        width: 100%;
+        justify-content: space-between;
       }
 
       .controles button {
-        margin: 0;
+        flex: 1;             /* cada botón ocupa el mismo ancho */
+        margin: 5;
+        padding: 10px 0;      /* altura del botón */
+        box-sizing: border-box;
       }
 
     }
