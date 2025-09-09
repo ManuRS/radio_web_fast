@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pódcast en línea</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; }
+    .podcast { 
+      margin-bottom: 50px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .podcast-contenido {
+      display: flex;
+      align-items: center; /* centra verticalmente la imagen con el contenido */
+      gap: 40px; /* espacio entre imagen y contenido */
+    }
+    .podcast-texto { flex: 1; }
+    .podcast img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    audio { width: 100%; margin-top: 10px; display: block; }
+    .titulo-principal { font-weight: bold; margin: 0; }
+    .titulo-secundario { color: gray; font-style: italic; margin: 2px 0 0 0; }
+    .controles {
+      margin-top: 5px;
+    }
+    .controles button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+    .controles button:hover { background: #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Pódcast en línea<br><br></h1>
+  <div id="lista"></div>
+
+  <script>
+    const podcasts = [
+      
+      { nombre: "Federico a las 6", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 6"] },
+      { nombre: "Federico a las 7", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 7"] },
+      { nombre: "Federico a las 8", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 8"] }, 
+
+      { nombre: "Herrera a las 6", url: "https://www.cope.es/api/es/programas/herrera-en-cope/audios/rss.xml", capitulo: ["06:00H"] },
+      { nombre: "Herrera a las 7", url: "https://www.cope.es/api/es/programas/herrera-en-cope/audios/rss.xml", capitulo: ["07:00H"] }, 
+      { nombre: "Herrera a las 8", url: "https://www.cope.es/api/es/programas/herrera-en-cope/audios/rss.xml", capitulo: ["08:00H"] }, 
+      { nombre: "Herrera a las 9", url: "https://www.cope.es/api/es/programas/herrera-en-cope/audios/rss.xml", capitulo: ["09:00H"] }, 
+
+
+      { nombre: "Monólogo de Alsina", url: "https://www.ondacero.es/rss/podcast/mount/ATRESMEDIA_MAS_DE_UNO_P/fastly", capitulo: ["Monólogo de Alsina"] },
+      { nombre: "Más de uno ", url: "https://www.ondacero.es/rss/podcast/mount/ATRESMEDIA_MAS_DE_UNO_P/fastly", capitulo: ["Más de uno "] },
+
+
+      { nombre: "Las mañanas de RNE - 6h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Primera hora"] },
+
+      { nombre: "Las mañanas de RNE - 7h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Segunda hora"] },
+
+      { nombre: "Las mañanas de RNE - 8h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Tercera hora"] },
+
+      { nombre: "Las mañanas de RNE - 9h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Cuarta hora"] },      
+    ];
+
+    function tiempoDesde(publicacion) {
+      const ahora = new Date();
+      const pubDate = new Date(publicacion);
+      const diffMs = ahora - pubDate;
+      const diffSeg = Math.floor(diffMs / 1000);
+
+      if (diffSeg < 60) return `Antiguedad ${diffSeg} segundos`;
+      const diffMin = Math.floor(diffSeg / 60);
+      if (diffMin < 60) return `Antiguedad ${diffMin} minutos`;
+      const diffHoras = Math.floor(diffMin / 60);
+      if (diffHoras < 24) return `Antiguedad ${diffHoras} horas`;
+      const diffDias = Math.floor(diffHoras / 24);
+      return `Antiguedad ${diffDias} días`;
+    }
+
+    function formatearFecha(fechaStr) {
+      const date = new Date(fechaStr);
+      const dia = String(date.getDate()).padStart(2, '0');
+      const mes = String(date.getMonth() + 1).padStart(2, '0');
+      const anio = date.getFullYear();
+      return `${dia}/${mes}/${anio}`;
+    }
+
+    const listaDiv = document.getElementById("lista");
+    const contenedores = podcasts.map(() => {
+      const div = document.createElement("div");
+      div.className = "podcast";
+      listaDiv.appendChild(div);
+      return div;
+    });
+
+    podcasts.forEach((p, index) => cargarRSS(p, contenedores[index]));
+
+    async function cargarRSS(p, contenedor) {
+      try {
+        const res = await fetch(p.url);
+        const texto = await res.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(texto, "application/xml");
+
+        const items = xml.querySelectorAll("item");
+        let audioUrl = null;
+        let tituloEncontrado = null;
+        let pubDateEncontrado = null;
+
+        imageUrlElement = null;
+        imageUrl = null;
+        htmlImagen = null;
+
+        for (const item of items) {
+          const titulo = item.querySelector("title")?.textContent || "";
+          if (p.capitulo.some(c => titulo.includes(c))) {
+            tituloEncontrado = titulo;
+            pubDateEncontrado = item.querySelector("pubDate")?.textContent || null;
+            const enclosure = item.querySelector("enclosure");
+            if (enclosure) audioUrl = enclosure.getAttribute("url");
+
+            //imageUrlElement = item.getElementsByTagName('itunes:image')[0];
+            //imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
+            //htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
+
+            break;
+          }
+        }
+
+        //imageUrl = xml.querySelector("image > url")?.textContent || null;
+        //htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
+
+        imageUrlElement = xml.getElementsByTagName('itunes:image')[0];
+        imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
+        htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
+
+        if (p.nombre.includes("RNE")) {
+          htmlImagen = "resources/lucas.webp" ? `<img src="resources/lucas.webp" alt="${p.nombre}">` : "";
+        }
+
+        if (audioUrl) {
+          const tiempo = pubDateEncontrado ? tiempoDesde(pubDateEncontrado) : "";
+          const fechaFormateada = pubDateEncontrado ? formatearFecha(pubDateEncontrado) : "";
+
+          contenedor.innerHTML = `
+            <div class="podcast-contenido">
+              ${htmlImagen}
+              <div class="podcast-texto">
+                <p class="titulo-principal">${p.nombre} / ${tiempo}</p>
+                <!--<p class="titulo-secundario">${tituloEncontrado}</p>-->
+                <br>
+                <audio controls style="background-color: #f1f3f4;" src="${audioUrl}"></audio>
+                <div class="controles">
+                  <br>
+                  <button onclick="
+                      let a=this.parentElement.previousElementSibling;
+                      if(a.paused){ a.play(); this.textContent='⏸ Pausa'; }
+                      else { a.pause(); this.textContent='▶ Play'; }
+                  ">▶ Play</button>
+                  <button onclick="this.parentElement.previousElementSibling.currentTime = Math.max(0,this.parentElement.previousElementSibling.currentTime-10)">⏪ -10s</button>
+                  <button onclick="this.parentElement.previousElementSibling.currentTime = Math.min(this.parentElement.previousElementSibling.duration,this.parentElement.previousElementSibling.currentTime+10)">⏩ +10s</button>
+                  <button onclick="let a=this.parentElement.previousElementSibling;a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏸ x1':'⏩ x2'">⏩ x2</button>
+                </div>
+              </div>
+            </div>
+          `;
+
+          contenedor.innerHTML = contenedor.innerHTML + '<br>'
+
+        } else {
+          contenedor.innerHTML = `<p class="titulo-principal">${p.nombre} (No se encontró el capítulo "${p.capitulo}")</p>`;
+        }
+
+      } catch (e) {
+        console.error("Error cargando RSS:", e);
+      }
+    }
+  </script>
+</body>
+</html>

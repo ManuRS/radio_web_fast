@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Radio en directo y pódcast</title>
+  <style>
+    /* Estilos base */
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 2rem;
+      color: #1a237e;
+      text-align: center;
+    }
+
+    /* Contenedor de enlaces */
+    .links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      width: 90%;
+      margin: 40px auto;
+    }
+
+    /* Estilo para cada tarjeta */
+    .card {
+      position: relative;
+      border-radius: 15px;
+      overflow: hidden;
+      height: 175px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Imagen de fondo */
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.8) blur(1.5px);
+      transition: transform 0.3s ease;
+    }
+
+    /* Overlay oscuro */
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1;
+      transition: background 0.3s ease;
+    }
+
+    /* Hover: zoom + aclarar overlay */
+    .card:hover::before {
+      transform: scale(1.1);
+      filter: brightness(0.9) blur(0.2px);
+    }
+    .card:hover::after {
+      background: rgba(0,0,0,0.2);
+    }
+
+    /* Texto centrado */
+    .card a {
+      position: absolute;   /* antes era relative */
+      inset: 0;             /* top:0; right:0; bottom:0; left:0 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center; /* centra verticalmente */
+      gap: 10px;
+      text-decoration: none;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      z-index: 2;
+    }
+
+    /* Icono */
+    .card a span {
+      font-size: 2rem;
+      transition: transform 0.3s ease;
+    }
+
+    /* Hover en icono */
+    .card:hover a span {
+      transform: scale(1.3);
+    }
+
+    /* Fondos personalizados */
+    .live::before { background-image: url('resources/radio_classic.jpeg'); }
+    .bol::before { background-image: url('resources/micro.jpg'); }
+    .programas::before { background-image: url('resources/gran_via.jpg'); }
+    .boletos::before { background-image: url('resources/mesa_audio.webp'); }
+    .mananas::before { background-image: url('resources/radio_mini.jpeg'); }
+    .extra::before { background-image: url('resources/sol.jpg'); }
+    .fun::before { background-image: url('resources/silksong.webp'); }
+    .elpais::before { background-image: url('resources/elpais.jpg'); }
+    .daily::before { background-image: url('resources/waves.jpg'); }
+    .map::before { background-image: url('resources/spain.jpg'); }
+    .about::before { background-image: url('resources/mn.jpeg'); }
+    
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      .card {
+        height: 150px;
+      }
+      .card a {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Radio en directo y pódcast</h1>
+  <div class="links">
+    <div class="card live"><a href="radio_live.html"><span>📻</span> Escuchar la radio en directo</a></div>
+    <div class="card bol"><a href="radio_bol.html"><span>📡</span> Los boletines de la SER en directo</a></div>
+    <div class="card programas"><a href="radio_programas.html"><span>🎙️</span> Podcast informativos de la SER</a></div>
+    <div class="card boletos"><a href="radio_boletos.html"><span>🔥</span> Podcast boletines de la SER</a></div>
+    <div class="card mananas"><a href="radio_mañanas.html"><span>🦅</span> Podcast mañanas en la radio</a></div>
+    <div class="card extra"><a href="radio_extra.html"><span>🕑</span> Podcast boletines y mediodía</a></div>
+    <div class="card fun"><a href="radio_fun.html"><span>🎮</span> Podcast entretenimiento</a></div>
+    <div class="card elpais"><a href="radio_elpais.html"><span>📰</span> Portada de El País</a></div>
+    <div class="card daily"><a href="radio_daily.html"><span>🎧</span> Podcast de la prensa escrita</a></div>
+    <div class="card map"><a href="radio_map.html"><span>🗺️</span> Mapa de emisoras de la SER</a></div>
+    <div class="card about"><a href="https://manurs.github.io">Página desarrollada<br>utilizando vive coding<br><br>Manuel Reyes, 2025 </a></div>
+  </div>
+
+</body>
+</html>

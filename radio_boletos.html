@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pódcast de boletos</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; }
+    .podcast { 
+      margin-bottom: 50px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    .podcast-contenido {
+      display: flex;
+      align-items: center; /* centra verticalmente la imagen con el contenido */
+      gap: 40px; /* espacio entre imagen y contenido */
+    }
+    .podcast-texto { flex: 1; }
+    .podcast img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    audio { width: 100%; margin-top: 10px; display: block; }
+    .titulo-principal { font-weight: bold; margin: 0; }
+    .titulo-secundario { color: gray; font-style: italic; margin: 2px 0 0 0; }
+    .controles {
+      margin-top: 5px;
+    }
+    .controles button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+    .controles button:hover { background: #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Pódcast de boletos<br><br></h1>
+  <div id="lista"></div>
+
+  <script>
+    const feedUrl = "https://fapi-top.prisasd.com/podcast/playser/boletines/itunestfp/podcast.xml"; // Sustituye con tu RSS
+
+    async function cargarRSS() {
+      try {
+        const res = await fetch(feedUrl);
+        const texto = await res.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(texto, "application/xml");
+
+        const items = Array.from(xml.querySelectorAll("item")).slice(0, 30); // últimos 30
+
+        const imageUrl = xml.querySelector("image > url")?.textContent || null;
+        const htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="Podcast">` : "";
+
+        const listaDiv = document.getElementById("lista");
+
+        items.forEach(item => {
+          const titulo = item.querySelector("title")?.textContent || "Sin título";
+          const pubDate = item.querySelector("pubDate")?.textContent || null;
+          const audioUrl = item.querySelector("enclosure")?.getAttribute("url") || null;
+
+          const contenedor = document.createElement("div");
+          contenedor.className = "podcast";
+
+          if (audioUrl) {
+            contenedor.innerHTML = `
+              <div class="podcast-contenido">
+                ${htmlImagen}
+                <div class="podcast-texto">
+                  <p class="titulo-principal">${titulo}</p>
+                  <br>
+                  <audio controls style="background-color: #f1f3f4;" src="${audioUrl}"></audio>
+                  <div class="controles">
+                    <br>
+                    <button onclick="
+                      let a=this.parentElement.previousElementSibling;
+                      if(a.paused){ a.play(); this.textContent='⏸ Pausa'; }
+                      else { a.pause(); this.textContent='▶ Play'; }
+                  ">▶ Play</button>
+                    <button onclick="this.parentElement.previousElementSibling.currentTime = Math.max(0,this.parentElement.previousElementSibling.currentTime-10)">⏪ -10s</button>
+                    <button onclick="this.parentElement.previousElementSibling.currentTime = Math.min(this.parentElement.previousElementSibling.duration,this.parentElement.previousElementSibling.currentTime+10)">⏩ +10s</button>
+                    <button onclick="let a=this.parentElement.previousElementSibling;a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏸ x1':'⏩ x2'">⏩ x2</button>
+                  </div>
+                </div>
+              </div>
+              <br>
+            `;
+          } else {
+            contenedor.innerHTML = `<p class="titulo-principal">${titulo} (No se encontró audio)</p>`;
+          }
+
+          listaDiv.appendChild(contenedor);
+        });
+
+      } catch(e) {
+        console.error("Error cargando RSS:", e);
+      }
+    }
+
+    cargarRSS();
+  </script>
+</body>
+</html>

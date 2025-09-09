@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Boletines Cadena SER</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 2rem;
+      color: #1a237e;
+      text-align: center;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: green;
+    }
+
+    /* Botón de reproducción */
+    #playButton {
+      font-size: 16px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      background: #1a73e8;
+      color: white;
+      margin-top: 30px;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      #playButton {
+        font-size: 14px;
+        padding: 10px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Solo boletines en directo</h1>
+  <div id="status"></div>
+
+  <!-- Reproductor oculto -->
+  <audio id="radio" style="display:none;"></audio>
+
+  <!-- Botón de reproducción único -->
+  <button id="playButton">▶ Play</button>
+
+  <script>
+    const audio = document.getElementById('radio');
+    const status = document.getElementById('status');
+    const btn = document.getElementById('playButton');
+
+    const streamURL = "https://emisoras.cadenaser.com/CADENASER";
+    audio.src = streamURL;
+
+    const horariosPermitidos = [
+      { inicio: "09:59", fin: "10:06" },
+      { inicio: "10:59", fin: "11:06" },
+      { inicio: "11:59", fin: "12:20" },
+      { inicio: "12:59", fin: "13:06" },
+      { inicio: "13:59", fin: "14:06" },
+      { inicio: "15:59", fin: "16:06" },
+      { inicio: "16:59", fin: "17:06" },
+      { inicio: "17:59", fin: "18:06" },
+      { inicio: "18:59", fin: "19:06" },
+      { inicio: "19:59", fin: "20:25" },
+    ];
+
+    function convertirAHoraDecimal(horaStr) {
+      const [h, m] = horaStr.split(":").map(Number);
+      return h + m / 60;
+    }
+
+    function horaActualDecimal() {
+      const ahora = new Date();
+      return ahora.getHours() + ahora.getMinutes() / 60;
+    }
+
+    function estaEnHorario() {
+      const actual = horaActualDecimal();
+      return horariosPermitidos.some(rango => {
+        const inicio = convertirAHoraDecimal(rango.inicio);
+        const fin = convertirAHoraDecimal(rango.fin);
+        return actual >= inicio && actual < fin;
+      });
+    }
+
+    function actualizarReproduccion() {
+      if (estaEnHorario()) {
+        status.textContent = "Transmisión en vivo activa";
+        audio.play();
+      } else {
+        audio.pause();
+        audio.load();
+        btn.textContent = "▶ Haz click aquí para otorgar permisos";
+        status.textContent = "Fuera del horario de transmisión";
+      }
+    }
+
+    // Comprobar cada 5 segundos
+    actualizarReproduccion();
+    setInterval(actualizarReproduccion, 5000);
+
+    // Control del botón de reproducción
+    btn.addEventListener('click', () => {
+      if (!estaEnHorario()) {
+        //alert("Todo listo, la conexión será automática");
+        btn.style.display = "none";
+        return;
+      }
+
+      if (audio.paused) {
+        audio.play().catch(() => {
+          alert("Debes interactuar con la página para permitir la reproducción");
+        });
+        btn.textContent = '⏸ Pausa';
+      } else {
+        audio.pause();
+        btn.textContent = '▶ Play';
+      }
+    });
+
+    // Cuando termina el audio, reinicia el botón
+    audio.addEventListener('ended', () => {
+      btn.textContent = '▶ Play';
+    });
+  </script>
+</body>
+</html>
