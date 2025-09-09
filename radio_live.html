@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Radio en directo</title>
   <style>
     /* Estilos base */
@@ -33,19 +34,27 @@
       margin: 40px auto;
     }
 
+    /* Borde rojo animado */
     .card {
       position: relative;
       border-radius: 15px;
       overflow: hidden;
       height: 175px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.0);
       text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
       cursor: pointer;
+      box-sizing: border-box;
+      transition: border 0.3s ease, box-shadow 0.2s ease;
+    }
+
+    /* Tarjeta activa con borde rojo */
+    .card.playing {
+      border: 4px solid transparent;
+      border-color: #ff1744; /* transición suave al rojo */
     }
 
     /* Imagen de fondo con blur */
@@ -83,13 +92,40 @@
       position: relative;
       z-index: 2;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #fff;
+      align-items: center; /* centro horizontal */
+      justify-content: center; /* centro horizontal del contenido principal */
+      height: 100%; /* para que ocupe toda la tarjeta */
+    }
+
+    /* Separar el nombre de la emisora del indicador */
+    .station-name {
+      text-align: center;
       font-size: 1.2rem;
-      gap: 10px;
+      font-weight: bold;
+    }
+
+    /* Animación de parpadeo */
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+
+    /* Texto "Escuchando" animado */
+    .live-indicator {
+      position: absolute;
+      bottom: 10%; /* o donde quieras */
+      font-size: 0.9rem;
+      color: #ff1744;
+      font-weight: bold;
+      background: rgba(255,255,255,0.9);
+      padding: 4px 8px;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .card.playing .live-indicator {
+        opacity: 1; /* fade in cuando está activo */
+        animation: blink 5s infinite; /* parpadeo */
     }
 
     /* Ocultar controles del audio */
@@ -103,16 +139,21 @@
     .onda-cero::before { background-image: url('resources/ondacero.webp'); }
     .rne::before { background-image: url('resources/rne.webp'); }
     .esradio::before { background-image: url('resources/esradio.jpg'); }
-    .los40::before { background-image: url('resources/los40.webp'); }
-    .los40-classic::before { background-image: url('resources/los40c.jpg'); }
-    .megastar::before { background-image: url('resources/mega.png'); }
-    .rockfm::before { background-image: url('resources/rockfm.jpg'); }
+    .los40::before { background-image: url('resources/los40e.jpg'); }
+    .los40-classic::before { background-image: url('resources/los40c_micro.jpg'); }
+    .megastar::before { background-image: url('resources/mega2.jpg'); }
+    .rockfm::before { background-image: url('resources/rockfm2.jpg'); }
     .hitfm::before { background-image: url('resources/hitfm.jpg'); }
 
-    @media (max-width: 600px) {
+    @media (max-width: 42em) {
       h1 { font-size: 1.5rem; }
       .card { height: 200px; }
       .card-content { font-size: 1rem; }
+
+      .links {
+        grid-template-columns: 1fr; /* solo una card por línea */
+        gap: 15px;
+      }
     }
   </style>
 </head>
@@ -124,61 +165,91 @@
 
   <!-- Cadena SER -->
   <div class="card cadena-ser" onclick="playPause(this)">
-    <div class="card-content">Cadena SER</div>
+    <div class="card-content">
+      <span class="station-name">Cadena SER</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://emisoras.cadenaser.com/CADENASER"></audio>
   </div>
 
   <!-- COPE -->
   <div class="card cope" onclick="playPause(this)">
-    <div class="card-content">COPE</div>
+    <div class="card-content">
+      <span class="station-name">COPE</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://flucast-bl02.flumotion.com/cope/net1.mp3"></audio>
   </div>
 
   <!-- Onda Cero -->
   <div class="card onda-cero" onclick="playPause(this)">
-    <div class="card-content">Onda Cero</div>
+    <div class="card-content">
+      <span class="station-name">Onda Cero</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://cast.direcnode.com/proxy/ondacero/stream"></audio>
   </div>
 
   <!-- RNE -->
   <div class="card rne" onclick="playPause(this)">
-    <div class="card-content">Radio Nacional</div>
+    <div class="card-content">
+      <span class="station-name">Radio Nacional</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://dispatcher.rndfnk.com/crtve/rne1/mur/mp3/high"></audio>
   </div>
 
   <!-- esRadio -->
   <div class="card esradio" onclick="playPause(this)">
-    <div class="card-content">esRadio</div>
+    <div class="card-content">
+      <span class="station-name">esRadio</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-med.aac"></audio>
   </div>
 
   <!-- LOS40 -->
   <div class="card los40" onclick="playPause(this)">
-    <div class="card-content">LOS40</div>
+    <div class="card-content">
+      <span class="station-name">LOS40</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://emisoras.cadenaser.com/LOS40"></audio>
   </div>
 
   <!-- LOS40 CLASSIC -->
   <div class="card los40-classic" onclick="playPause(this)">
-    <div class="card-content">LOS40 CLASSIC</div>
+    <div class="card-content">
+      <span class="station-name">LOS40 CLASSIC</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://emisoras.cadenaser.com/LOS40_CLASSIC"></audio>
   </div>
 
   <!-- MegaStar -->
   <div class="card megastar" onclick="playPause(this)">
-    <div class="card-content">MegaStar</div>
+    <div class="card-content">
+      <span class="station-name">MegaStar</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3"></audio>
   </div>
 
   <!-- RockFM -->
   <div class="card rockfm" onclick="playPause(this)">
-    <div class="card-content">RockFM</div>
+    <div class="card-content">
+      <span class="station-name">RockFM</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3"></audio>
   </div>
 
   <!-- HitFM -->
   <div class="card hitfm" onclick="playPause(this)">
-    <div class="card-content">HitFM</div>
+    <div class="card-content">
+      <span class="station-name">HitFM</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
     <audio data-src="http://hitfm.kissfmradio.cires21.com/hitfm.mp3"></audio>
   </div>
 
@@ -186,6 +257,7 @@
 
 <script>
   let currentAudio = null;
+  let currentCard = null;
 
   function playPause(card) {
     const audio = card.querySelector('audio');
@@ -196,6 +268,7 @@
       currentAudio.pause();
       currentAudio.removeAttribute("src"); // liberar stream anterior
       currentAudio.load();
+      if (currentCard) currentCard.classList.remove("playing");
     }
 
     if (audio.paused) {
@@ -208,14 +281,31 @@
         console.error("Error al reproducir:", err);
       });
 
+      card.classList.add("playing");
       currentAudio = audio;
+      currentCard = card;
     } else {
       audio.pause();
       audio.removeAttribute("src"); // liberar conexión
       audio.load();
+
+      card.classList.remove("playing");
       currentAudio = null;
+      currentCard = null;
     }
   }
+
+  // Android media
+
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Radio en directo',
+      artwork: [
+        { src: 'radio_mini.jpeg', type: 'image/jpeg' },
+      ]
+    });
+  }
+
 </script>
 
 </body>

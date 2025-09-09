@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Radio en directo y pódcast</title>
   <style>
     /* Estilos base */
@@ -106,8 +107,8 @@
     }
 
     /* Fondos personalizados */
-    .live::before { background-image: url('resources/radio_classic.jpeg'); }
-    .bol::before { background-image: url('resources/micro.jpg'); }
+    .live::before { background-image: url('resources/ser_a1.jpg'); }
+    .bol::before { background-image: url('resources/redaser.jpg'); }
     .programas::before { background-image: url('resources/gran_via.jpg'); }
     .boletos::before { background-image: url('resources/mesa_audio.webp'); }
     .mananas::before { background-image: url('resources/radio_mini.jpeg'); }
@@ -116,29 +117,27 @@
     .elpais::before { background-image: url('resources/elpais.jpg'); }
     .daily::before { background-image: url('resources/waves.jpg'); }
     .map::before { background-image: url('resources/spain.jpg'); }
-    .about::before { background-image: url('resources/mn.jpeg'); }
-    
+    .about::before { background-image: url('resources/mn.jpeg'); } 
     
     /* Responsive */
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.5rem;
+    @media (max-width: 42em) {
+      h1 { font-size: 1.5rem; }
+      .card { height: 200px; }
+      .card-content { font-size: 1rem; }
+
+      .links {
+        grid-template-columns: 1fr; /* solo una card por línea */
+        gap: 15px;
       }
-      .card {
-        height: 150px;
-      }
-      .card a {
-        font-size: 1rem;
-      }
-    }
-  </style>
+
+    </style>
 </head>
 <body>
 
   <h1>Radio en directo y pódcast</h1>
   <div class="links">
     <div class="card live"><a href="radio_live.html"><span>📻</span> Escuchar la radio en directo</a></div>
-    <div class="card bol"><a href="radio_bol.html"><span>📡</span> Los boletines de la SER en directo</a></div>
+    <div class="card bol"><a href="radio_bol.html"><span>📡</span> Boletines de la SER en directo</a></div>
     <div class="card programas"><a href="radio_programas.html"><span>🎙️</span> Podcast informativos de la SER</a></div>
     <div class="card boletos"><a href="radio_boletos.html"><span>🔥</span> Podcast boletines de la SER</a></div>
     <div class="card mananas"><a href="radio_mañanas.html"><span>🦅</span> Podcast mañanas en la radio</a></div>

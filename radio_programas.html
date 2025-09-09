@@ -2,43 +2,95 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pódcast en línea</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { text-align: center; }
-    .podcast { 
-      margin-bottom: 50px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #ddd;
-    }
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  h1 { text-align: center; }
+  .podcast { 
+    margin-bottom: 50px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+  }
+  .podcast-contenido {
+    display: flex;
+    align-items: center; /* centra verticalmente la imagen con el contenido */
+    gap: 40px; /* espacio entre imagen y contenido */
+  }
+  .podcast-texto { flex: 1; }
+  .podcast img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  audio { width: 100%; margin-top: 10px; display: block; }
+  .titulo-principal { font-weight: bold; margin: 0; }
+  .titulo-secundario { color: gray; font-style: italic; margin: 2px 0 0 0; }
+  .controles {
+    margin-top: 5px;
+  }
+  .controles button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background: #f0f0f0;
+    cursor: pointer;
+  }
+  .controles button:hover { background: #ddd; }
+
+  /* 📱 Móviles */
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+
     .podcast-contenido {
-      display: flex;
-      align-items: center; /* centra verticalmente la imagen con el contenido */
-      gap: 40px; /* espacio entre imagen y contenido */
+      flex-direction: column; /* Imagen arriba, texto abajo */
+      gap: 10px;              /* menos espacio entre imagen y texto */
+      align-items: center;    /* centra todo horizontalmente */
+      text-align: center;     /* centra el texto */
     }
-    .podcast-texto { flex: 1; }
+
     .podcast img {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 5px;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;        /* centrada horizontalmente */
     }
-    audio { width: 100%; margin-top: 10px; display: block; }
-    .titulo-principal { font-weight: bold; margin: 0; }
-    .titulo-secundario { color: gray; font-style: italic; margin: 2px 0 0 0; }
+    
+    .podcast-texto {
+      width: 100%;            /* ocupa todo el ancho disponible */
+    }
+    
+    .titulo-principal {
+      text-align: center;     /* título centrado */
+    }
+
+    audio {
+      width: 100%;            /* reproductor sin márgenes */
+    }
+    
     .controles {
-      margin-top: 5px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center; /* botones centrados */
+      gap: 5px;
+      margin-top: 30px;    
     }
+
     .controles button {
-      margin-right: 10px;
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      background: #f0f0f0;
-      cursor: pointer;
+      margin: 0;
     }
-    .controles button:hover { background: #ddd; }
-  </style>
+
+  }
+
+  /* 💻 Escritorio grande */
+  @media (min-width: 601px) {
+    .podcast-contenido {
+      gap: 40px;
+    }
+  }
+</style>
+
 </head>
 <body>
   <h1>Pódcast en línea<br><br></h1>
