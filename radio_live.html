@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a237e">
+
   <title>Radio en directo</title>
   <style>
     /* Estilos base */
@@ -296,13 +300,21 @@
   }
 
   // Android media
-
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: 'Radio en directo',
       artwork: [
         { src: 'resources/radio_mini.jpeg', type: 'image/jpeg' },
       ]
+    });
+  }
+
+  // Registrar el Service Worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("✅ Service Worker registrado"))
+        .catch(err => console.error("❌ Error al registrar SW:", err));
     });
   }
 
