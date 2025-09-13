@@ -1,4 +1,4 @@
-const CACHE_NAME = "radio-cache-v1";
+const CACHE_NAME = "radio-cache-v2";
 const FILES_TO_CACHE = [
   "radio_live.html",
   "resources/radio_mini.jpeg",
