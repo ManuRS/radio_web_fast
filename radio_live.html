@@ -4,8 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
+  <link rel="icon" href="resources/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="resources/favicon.ico" type="image/x-icon">
+
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1a237e">
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
   <title>Radio en directo</title>
   <style>
@@ -53,6 +58,21 @@
       cursor: pointer;
       box-sizing: border-box;
       transition: border 0.3s ease, box-shadow 0.2s ease;
+
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    /* clase usada tanto para fade-in (al quitarla) como fade-out (al añadirla) */
+    .card.fade {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+
+    /* al final de la transición la tarjeta pasará a hidden para colapsar el espacio */
+    .card.hidden {
+      display: none !important;
     }
 
     /* Tarjeta activa con borde rojo */
@@ -143,11 +163,35 @@
     .onda-cero::before { background-image: url('resources/ondacero.webp'); }
     .rne::before { background-image: url('resources/rne.webp'); }
     .esradio::before { background-image: url('resources/esradio.jpg'); }
-    .los40::before { background-image: url('resources/los40e.jpg'); }
+    .rac1::before { background-image: url('resources/rac1.webp'); }
+
+    .sercat::before { background-image: url('resources/sercat.png'); }
+    .catradio::before { background-image: url('resources/catradio.png'); }
+    .radio4::before { background-image: url('resources/radio4.png'); }
+    .radio3::before { background-image: url('resources/radio3.png'); }
+    .marca::before { background-image: url('resources/marca.png'); }
+    .radio5::before { background-image: url('resources/radio5.png'); }
+
+    .los40::before { background-image: url('resources/los40_estudio.jpg'); }
     .los40-classic::before { background-image: url('resources/los40c_micro.jpg'); }
     .megastar::before { background-image: url('resources/mega2.jpg'); }
-    .rockfm::before { background-image: url('resources/rockfm2.jpg'); }
     .hitfm::before { background-image: url('resources/hitfm.jpg'); }
+    .rockfm::before { background-image: url('resources/rockfm.webp'); }
+    .melodiafm::before { background-image: url('resources/melodiafm.png'); }
+
+    .europafm::before { background-image: url('resources/europafm.webp'); }
+    .cadena-100::before { background-image: url('resources/cadena100.webp'); }
+    .cadena-dial::before { background-image: url('resources/dial.webp'); }
+    .kissfm::before { background-image: url('resources/kissfm.webp'); }
+    .los40-dance::before { background-image: url('resources/los40_dance.webp'); }
+    .los40-urban::before { background-image: url('resources/los40_urban.webp'); }
+
+    .clasica::before { background-image: url('resources/clasica.webp'); }
+    .flaixfm::before { background-image: url('resources/flaixfm.webp'); }
+    .flaixbac::before { background-image: url('resources/flaixbac.webp'); }
+    .rac105::before { background-image: url('resources/rac105.png'); }
+    .radiole::before { background-image: url('resources/radiole.jpg'); }
+    .fiestaradio::before { background-image: url('resources/fiestaradio.webp'); }
 
     @media (max-width: 42em) {
       h1 { font-size: 1.5rem; }
@@ -219,6 +263,31 @@
       from { opacity: 0; transform: scale(0.9); }
       to { opacity: 1; transform: scale(1); }
     }
+
+    /* Categorías */
+    .category-btn {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #e0e0e0;
+      color: #1a237e;
+      transition: background 0.3s ease;
+    }
+
+    .category-btn:hover {
+      background: #c5cae9;
+    }
+
+    .category-btn.active {
+      background: #1a237e;
+      color: #fff;
+      font-weight: bold;
+    }
+
+
   </style>
 
 </head>
@@ -226,10 +295,16 @@
 
 <h1>Radio en directo</h1>
 
+<!-- Botones de categorías -->
+<div id="category-buttons" style="margin: 20px; text-align: center;">
+  <button class="category-btn active" onclick="filterStations('general', this)">Generalistas</button>
+  <button class="category-btn" onclick="filterStations('musical', this)">Musicales</button>
+</div>
+
 <div class="links">
 
   <!-- Cadena SER -->
-  <div class="card cadena-ser" onclick="playPause(this)">
+  <div class="card cadena-ser general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">Cadena SER</span>
       <span class="live-indicator">Escuchando</span>
@@ -238,7 +313,7 @@
   </div>
 
   <!-- COPE -->
-  <div class="card cope" onclick="playPause(this)">
+  <div class="card cope general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">COPE</span>
       <span class="live-indicator">Escuchando</span>
@@ -247,16 +322,16 @@
   </div>
 
   <!-- Onda Cero -->
-  <div class="card onda-cero" onclick="playPause(this)">
+  <div class="card onda-cero general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">Onda Cero</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://cast.direcnode.com/proxy/ondacero/stream"></audio>
+    <audio data-src="https://atres-live.ondacero.es/live/ondacero/bitrate_1.m3u8"></audio>
   </div>
 
   <!-- RNE -->
-  <div class="card rne" onclick="playPause(this)">
+  <div class="card rne general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">Radio Nacional</span>
       <span class="live-indicator">Escuchando</span>
@@ -265,7 +340,7 @@
   </div>
 
   <!-- esRadio -->
-  <div class="card esradio" onclick="playPause(this)">
+  <div class="card esradio general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">esRadio</span>
       <span class="live-indicator">Escuchando</span>
@@ -273,8 +348,73 @@
     <audio data-src="https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-med.aac"></audio>
   </div>
 
+  <!-- RAC1 -->
+  <div class="card rac1 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">RAC1</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://22713.live.streamtheworld.com/RAC_1.mp3"></audio>
+  </div>
+
+  <!-- SER Catalunya -->
+  <div class="card sercat general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">SER Catalunya</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://27783.live.streamtheworld.com/SER_CAT.mp3"></audio>
+  </div>
+
+  <!-- Catalunya Radio -->
+  <div class="card catradio general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Catalunya Ràdio</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8"></audio>
+  </div>
+
+  <!-- Ràdio 4 -->
+  <div class="card radio4 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Ràdio 4</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high"></audio>
+  </div>
+
+  <!-- Radio 3 -->
+  <div class="card radio3 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio 3</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high"></audio>
+  </div>
+
+  <!-- Radio MARCA -->
+  <div class="card marca general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio MARCA</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://23543.live.streamtheworld.com/RADIOMARCA_NACIONAL.mp3"></audio>
+  </div>
+
+  <!-- Radio 5 -->
+  <div class="card radio5 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio 5</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rne5/mur/mp3/high"></audio>
+  </div>
+
+  <!-- ------------------------------------------ -->
+
   <!-- LOS40 -->
-  <div class="card los40" onclick="playPause(this)">
+  <div class="card los40 musical" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">LOS40</span>
       <span class="live-indicator">Escuchando</span>
@@ -283,16 +423,16 @@
   </div>
 
   <!-- LOS40 CLASSIC -->
-  <div class="card los40-classic" onclick="playPause(this)">
+  <div class="card los40-classic musical" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">LOS40 CLASSIC</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://emisoras.cadenaser.com/LOS40_CLASSIC"></audio>
+    <audio data-src="https://25483.live.streamtheworld.com/LOS40_CLASSICAAC.aac"></audio>
   </div>
 
   <!-- MegaStar -->
-  <div class="card megastar" onclick="playPause(this)">
+  <div class="card megastar musical" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">MegaStar</span>
       <span class="live-indicator">Escuchando</span>
@@ -300,17 +440,8 @@
     <audio data-src="https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3"></audio>
   </div>
 
-  <!-- RockFM -->
-  <div class="card rockfm" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">RockFM</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3"></audio>
-  </div>
-
   <!-- HitFM -->
-  <div class="card hitfm" onclick="playPause(this)">
+  <div class="card hitfm musical" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">HitFM</span>
       <span class="live-indicator">Escuchando</span>
@@ -318,15 +449,140 @@
     <audio data-src="http://hitfm.kissfmradio.cires21.com/hitfm.mp3"></audio>
   </div>
 
+  <!-- RockFM -->
+  <div class="card rockfm musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">RockFM</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3"></audio>
+  </div>
+
+  <!-- Melodía FM -->
+  <div class="card melodiafm musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Melodía FM</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://25453.live.streamtheworld.com/MELODIA_FMAAC.aac"></audio>
+  </div>
+
+  <!-- Europa FM -->
+  <div class="card europafm musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Europa FM</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://str1.mediatelekom.net:9950/live"></audio>
+  </div>
+
+  <!-- Cadena 100 -->
+  <div class="card cadena-100 musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Cadena 100</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://cadena100-cope-rrcast.flumotion.com/cope/cadena100.mp3"></audio>
+  </div>
+
+  <!-- Cadena DIAL -->
+  <div class="card cadena-dial musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Cadena DIAL</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://emisoras.cadenaser.com/CADENADIAL"></audio>
+  </div>
+
+  <!-- KissFM -->
+  <div class="card kissfm musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">KissFM</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="http://kissfm.kissfmradio.cires21.com/kissfm.mp3"></audio>
+  </div>
+
+  <!-- LOS40 DANCE -->
+  <div class="card los40-dance musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">LOS40 DANCE</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://25483.live.streamtheworld.com/LOS40_CLASSICAAC.aac"></audio>
+  </div>
+
+  <!-- LOS40 URBAN -->
+  <div class="card los40-urban musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">LOS40 URBAN</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://emisoras.cadenaser.com/LOS40_URBAN"></audio>
+  </div>
+
+  <!-- Radio Clasica -->
+  <div class="card clasica musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio Clásica</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high"></audio>
+  </div>
+
+  <!-- Flaix FM -->
+  <div class="card flaixfm musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Flaix FM</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://us-b4-p-e-cg11-audio.cdn.mdstrm.com/live-audio-aw/65afe4a0357cec56667ac739"></audio>
+  </div>
+
+  <!-- Flaixbac -->
+  <div class="card flaixbac musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Flaixbac</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://us-b4-p-e-cg11-audio.cdn.mdstrm.com/live-audio-aw/65afe4a0357cec56667ac739"></audio>
+  </div>
+
+  <!-- RAC105 -->
+  <div class="card rac105 musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">RAC105</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://27953.live.streamtheworld.com/RAC105.mp3"></audio>
+  </div>
+
+  <!-- Radiolé -->
+  <div class="card radiole musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radiolé</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://20043.live.streamtheworld.com/RADIOLEAAC.aac"></audio>
+  </div>
+
+  <!-- Canal Fiesta Radio -->
+  <div class="card fiestaradio musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Canal Fiesta Radio</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://rtva-live-radio.flumotion.com/rtva/cfr.mp3"></audio>
+  </div>
+
 </div>
 
 <!-- Modal salir -->
 <div id="exit-modal" class="modal">
   <div class="modal-content">
-    <p>¿Quieres salir de la radio?</p>
+    <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
     <div class="buttons">
       <button id="stay-btn">Seguir escuchando</button>
-      <button id="exit-btn">Salir</button>
     </div>
   </div>
 </div>
@@ -334,35 +590,57 @@
 <script>
   let currentAudio = null;
   let currentCard = null;
+  let currentHls = null; // instancia de hls.js
 
-  function playPause(card) {
+function playPause(card) {
     const audio = card.querySelector('audio');
     const originalSrc = audio.getAttribute("data-src");
 
-    // Si ya hay otro sonando, lo paro y lo reinicio
+    // Si ya hay otro sonando, lo paro y limpio
     if (currentAudio && currentAudio !== audio) {
       currentAudio.pause();
-      currentAudio.removeAttribute("src"); // liberar stream anterior
+      if (currentHls) {
+        currentHls.destroy();
+        currentHls = null;
+      }
+      currentAudio.removeAttribute("src");
       currentAudio.load();
       if (currentCard) currentCard.classList.remove("playing");
     }
 
     if (audio.paused) {
-      // Asignar el src en el momento del play
-      if (!audio.src) {
-        audio.src = originalSrc;
+      if (originalSrc.endsWith(".m3u8")) {
+        // Caso HLS
+        if (Hls.isSupported()) {
+          currentHls = new Hls();
+          currentHls.loadSource(originalSrc);
+          currentHls.attachMedia(audio);
+          currentHls.on(Hls.Events.MANIFEST_PARSED, () => {
+            audio.play().catch(err => console.error("Error al reproducir HLS:", err));
+          });
+        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
+          // Safari
+          audio.src = originalSrc;
+          audio.play();
+        } else {
+          console.error("Este navegador no soporta HLS");
+        }
+      } else {
+        // Caso MP3 / AAC
+        if (!audio.src) audio.src = originalSrc;
+        audio.play().catch(err => console.error("Error al reproducir:", err));
       }
-      audio.load();
-      audio.play().catch(err => {
-        console.error("Error al reproducir:", err);
-      });
 
       card.classList.add("playing");
       currentAudio = audio;
       currentCard = card;
     } else {
       audio.pause();
-      audio.removeAttribute("src"); // liberar conexión
+      if (currentHls) {
+        currentHls.destroy();
+        currentHls = null;
+      }
+      audio.removeAttribute("src");
       audio.load();
 
       card.classList.remove("playing");
@@ -370,6 +648,38 @@
       currentCard = null;
     }
   }
+
+  // Filtrar emisoras con fade
+  function filterStations(category, btn) {
+    const cards = document.querySelectorAll('.card');
+
+    cards.forEach(card => {
+      if (card.classList.contains(category)) {
+        // Mostrar con fade-in
+        card.classList.remove("hidden");
+        setTimeout(() => {
+          card.style.position = "relative"; // vuelve a ocupar su espacio
+        }, 500);
+      } else {
+        // Ocultar con fade-out
+        card.classList.add("hidden");
+      }
+    });
+
+    // Marcar el botón activo
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Guardar categoría en localStorage
+    localStorage.setItem("selectedCategory", category);
+  }
+
+  // Mostrar la categoría guardada (o "general" por defecto)
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedCategory = localStorage.getItem("selectedCategory") || "general";
+    const btn = document.querySelector(`.category-btn[onclick*="${savedCategory}"]`);
+    filterStations(savedCategory, btn);
+  });
 
   // Android media
   if ('mediaSession' in navigator) {
@@ -393,7 +703,6 @@
   // Referencias al modal y botones
   const exitModal = document.getElementById("exit-modal");
   const stayBtn = document.getElementById("stay-btn");
-  const exitBtn = document.getElementById("exit-btn");
 
   // Interceptar botón atrás
   window.addEventListener("load", () => {
@@ -409,12 +718,6 @@
   // Botón "Seguir escuchando"
   stayBtn.addEventListener("click", () => {
     exitModal.style.display = "none";
-  });
-
-  // Botón "Salir"
-  exitBtn.addEventListener("click", () => {
-    // Cierra la PWA en Android (workaround: redirigir a "about:blank")
-    window.open("about:blank", "_self");
   });
 
   </script>
