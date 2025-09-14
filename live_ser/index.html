@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="icon" href="../resources/favicon3.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="../resources/favicon3.ico" type="image/x-icon">
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a237e">
+
+  <title>Radio en directo</title>
+  <style>
+    /* Estilos base */
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 2rem;
+      color: #1a237e;
+      text-align: center;
+    }
+
+    .links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      width: 90%;
+      margin: 40px auto;
+    }
+
+    /* Borde rojo animado */
+    .card {
+      position: relative;
+      border-radius: 15px;
+      overflow: hidden;
+      height: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.0);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: border 0.3s ease, box-shadow 0.2s ease;
+    }
+
+    /* Tarjeta activa con borde rojo */
+    .card.playing {
+      border: 4px solid transparent;
+      border-color: #ff1744; /* transición suave al rojo */
+    }
+
+    /* Imagen de fondo con blur */
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.85) blur(1px);
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    /* Overlay oscuro */
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1;
+      transition: background 0.3s ease;
+    }
+
+    /* Hover efecto */
+    .card:hover::before {
+      transform: scale(1.1);
+      filter: brightness(0.95) blur(0.2px);
+    }
+    .card:hover::after {
+      background: rgba(0,0,0,0.2);
+    }
+
+    /* Texto centrado */
+    .card-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center; /* centro horizontal */
+      justify-content: center; /* centro horizontal del contenido principal */
+      height: 100%; /* para que ocupe toda la tarjeta */
+    }
+
+    /* Separar el nombre de la emisora del indicador */
+    .station-name {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    /* Animación de parpadeo */
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+
+    /* Texto "Escuchando" animado */
+    .live-indicator {
+      position: absolute;
+      bottom: 10%; /* o donde quieras */
+      font-size: 0.9rem;
+      color: #ff1744;
+      font-weight: bold;
+      background: rgba(255,255,255,0.9);
+      padding: 4px 8px;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .card.playing .live-indicator {
+        opacity: 1; /* fade in cuando está activo */
+        animation: blink 5s infinite; /* parpadeo */
+    }
+
+    /* Ocultar controles del audio */
+    .card audio {
+      display: none;
+    }
+
+    /* Fondos de ejemplo */
+    .cadena-ser::before { background-image: url('../resources/micro.jpg'); }
+
+    @media (max-width: 42em) {
+      h1 { font-size: 1.5rem; }
+      .card { height: 300px; }
+      .card-content { font-size: 1rem; }
+
+      .links {
+        grid-template-columns: 1fr; /* solo una card por línea */
+        gap: 15px;
+      }
+    }
+
+    /* Modal oculto por defecto */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    /* Caja del modal */
+    .modal-content {
+      background: #fff;
+      color: #333;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      width: 80%;
+      max-width: 300px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content p {
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+    }
+
+    .modal-content button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #stay-btn {
+      background: #1a237e;
+      color: #fff;
+    }
+
+    #exit-btn {
+      background: #ff1744;
+      color: #fff;
+    }
+
+    /* Animación */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+
+</head>
+<body>
+
+<h1>Radio en directo</h1>
+
+<div class="links">
+
+  <!-- Cadena SER -->
+  <div class="card cadena-ser" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Cadena SER</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://emisoras.cadenaser.com/CADENASER"></audio>
+  </div>
+
+</div>
+
+<!-- Modal salir -->
+<div id="exit-modal" class="modal">
+  <div class="modal-content">
+    <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
+    <div class="buttons">
+      <button id="stay-btn">Seguir escuchando</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentAudio = null;
+  let currentCard = null;
+
+  function playPause(card) {
+    const audio = card.querySelector('audio');
+    const originalSrc = audio.getAttribute("data-src");
+
+    // Si ya hay otro sonando, lo paro y lo reinicio
+    if (currentAudio && currentAudio !== audio) {
+      currentAudio.pause();
+      currentAudio.removeAttribute("src"); // liberar stream anterior
+      currentAudio.load();
+      if (currentCard) currentCard.classList.remove("playing");
+    }
+
+    if (audio.paused) {
+      // Asignar el src en el momento del play
+      if (!audio.src) {
+        audio.src = originalSrc;
+      }
+      audio.load();
+      audio.play().catch(err => {
+        console.error("Error al reproducir:", err);
+      });
+
+      card.classList.add("playing");
+      currentAudio = audio;
+      currentCard = card;
+    } else {
+      audio.pause();
+      audio.removeAttribute("src"); // liberar conexión
+      audio.load();
+
+      card.classList.remove("playing");
+      currentAudio = null;
+      currentCard = null;
+    }
+  }
+
+  // Android media
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Radio en directo',
+      artwork: [
+        { src: '../resources/radio_mini.jpeg', type: 'image/jpeg' },
+      ]
+    });
+  }
+
+  // Registrar el Service Worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("✅ Service Worker registrado"))
+        .catch(err => console.error("❌ Error al registrar SW:", err));
+    });
+  }
+
+  // Referencias al modal y botones
+  const exitModal = document.getElementById("exit-modal");
+  const stayBtn = document.getElementById("stay-btn");
+
+  // Interceptar botón atrás
+  window.addEventListener("load", () => {
+    history.pushState(null, "", location.href);
+
+    window.addEventListener("popstate", () => {
+      // Mostrar modal en vez de cerrar
+      exitModal.style.display = "flex";
+      history.pushState(null, "", location.href); // volvemos a bloquear
+    });
+  });
+
+  // Botón "Seguir escuchando"
+  stayBtn.addEventListener("click", () => {
+    exitModal.style.display = "none";
+  });
+
+  </script>
+
+</body>
+</html>

@@ -1,8 +1,8 @@
 
-const CACHE_NAME = "radio-live-cache-v4";
+const CACHE_NAME = "radio-live-cache-v5";
 
 const FILES_TO_CACHE = [
-  "radio_live.html",
+  "index.html",
 
   "../resources/favicon.ico",
   "../resources/icon-192.png",
