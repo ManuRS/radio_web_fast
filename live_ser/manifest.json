@@ -2,7 +2,7 @@
   "name": "La SER en directo",
   "short_name": "SER Live",
 
-  "version": "5",
+  "version": "6",
 
   "start_url": "/radio_web_fast/live_ser/index.html",
   "display": "standalone",

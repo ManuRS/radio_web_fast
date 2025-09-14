@@ -2,7 +2,7 @@
   "name": "Radio en directo y podcast",
   "short_name": "Radio y podcast",
 
-  "version": "5",
+  "version": "6",
 
   "start_url": "/radio_web_fast/index.html",
   "display": "standalone",
@@ -19,5 +19,53 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+
+  "description": "Aplicación Web Progresiva para escuchar la radio española. Ligera y sencilla, sin cookies ni otros sistemas de seguimiento.",
+
+  "categories": [
+    "radio",
+    "news",
+    "music",
+    "utilities",
+  ],
+
+  "screenshots": [
+    {
+      "src": "capturas/cap1.png",
+      "type": "image/png",
+      "sizes": "485x958",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "capturas/cap2.png",
+      "type": "image/png",
+      "sizes": "485x958",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "capturas/cap3.png",
+      "type": "image/png",
+      "sizes": "485x958",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "capturas/wide1.png",
+      "type": "image/png",
+      "sizes": "1024x593",
+      "form_factor": "wide"
+    },
+    {
+      "src": "capturas/wide2.png",
+      "type": "image/png",
+      "sizes": "1024x593",
+      "form_factor": "wide"
+    },
+    {
+      "src": "capturas/wide3.png",
+      "type": "image/png",
+      "sizes": "1024x593",
+      "form_factor": "wide"
+    }
+  ],
 }
