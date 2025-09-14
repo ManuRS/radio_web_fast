@@ -1,12 +1,26 @@
 
-const CACHE_NAME = "radio-cache-v3";
+const CACHE_NAME = "radio-full-cache-v4";
 
 const FILES_TO_CACHE = [
-  "radio_live.html",
+  "index.html",
+  "live/index.html",
 
-  "resources/favicon.ico",
-  "resources/icon-192.png",
-  "resources/icon-512.png",
+  "resources/ser_a1.jpg",
+  "resources/redaser.jpg",
+  "resources/gran_via.jpg",
+  "resources/mesa_audio.webp",
+  "resources/radio_mini.jpeg",
+  "resources/sol.webp",
+  "resources/silksong.webp",
+  "resources/retiro.webp",
+  "resources/waves.jpg",
+  "resources/elpais.jpg",
+  "resources/spain.jpg",
+  "resources/mn.jpeg",
+
+  "resources/favicon2.ico",
+  "resources/icon2-192.png",
+  "resources/icon2-512.png",
   "resources/radio_mini.jpeg",
 
   "resources/micro.jpg",
