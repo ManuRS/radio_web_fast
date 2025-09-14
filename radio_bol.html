@@ -28,6 +28,8 @@
       margin-top: 20px;
       font-size: 1.2em;
       color: green;
+      text-align: center;
+      white-space: pre-line; /* permite saltos de línea con \n */
     }
 
     /* Botón de reproducción */
@@ -179,7 +181,7 @@
         audio.pause();
         audio.load();
         btn.textContent = "▶ Haz click aquí para otorgar permisos";
-        status.textContent = "Esperando (Fuera del horario de transmisión)";
+        status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
       }
     }
 
