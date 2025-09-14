@@ -1,6 +1,9 @@
 {
   "name": "Radio en directo y podcast",
   "short_name": "Radio y podcast",
+
+  "version": "5",
+
   "start_url": "/radio_web_fast/index.html",
   "display": "standalone",
   "background_color": "#ffffff",

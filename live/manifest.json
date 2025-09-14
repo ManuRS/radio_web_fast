@@ -1,18 +1,21 @@
 {
   "name": "Radio en directo",
   "short_name": "Radio",
+
+  "version": "5",
+
   "start_url": "/radio_web_fast/live/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1a237e",
   "icons": [
     {
-      "src": "resources/icon-192.png",
+      "src": "../resources/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "resources/icon-512.png",
+      "src": "../resources/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

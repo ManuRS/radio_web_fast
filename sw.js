@@ -21,7 +21,6 @@ const FILES_TO_CACHE = [
   "resources/favicon2.ico",
   "resources/icon2-192.png",
   "resources/icon2-512.png",
-  "resources/radio_mini.jpeg",
 
   "resources/micro.jpg",
   "resources/cope.jpg",
