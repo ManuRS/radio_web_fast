@@ -1,2 +1,2 @@
 # radio_web_fast
-Vive coding radio player
+Vibe coding radio player
