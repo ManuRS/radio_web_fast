@@ -53,6 +53,61 @@
         padding: 10px 20px;
       }
     }
+
+    /* Modal oculto por defecto */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    /* Caja del modal */
+    .modal-content {
+      background: #fff;
+      color: #333;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      width: 80%;
+      max-width: 300px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content p {
+      margin-bottom: 15px;
+      font-size: 1rem;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+    }
+
+    .modal-content button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #stay-btn {
+      background: #1a237e;
+      color: #fff;
+    }
+
+    #exit-btn {
+      background: #ff1744;
+      color: #fff;
+    }
+
   </style>
 </head>
 <body>
@@ -65,6 +120,16 @@
 
   <!-- Botón de reproducción único -->
   <button id="playButton">▶ Play</button>
+
+  <!-- Modal salir -->
+  <div id="exit-modal" class="modal">
+    <div class="modal-content">
+      <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
+      <div class="buttons">
+        <button id="stay-btn">Seguir en la página</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const audio = document.getElementById('radio');
@@ -114,7 +179,7 @@
         audio.pause();
         audio.load();
         btn.textContent = "▶ Haz click aquí para otorgar permisos";
-        status.textContent = "Fuera del horario de transmisión";
+        status.textContent = "Esperando (Fuera del horario de transmisión)";
       }
     }
 
@@ -145,6 +210,27 @@
     audio.addEventListener('ended', () => {
       btn.textContent = '▶ Play';
     });
+
+    // Referencias al modal y botones
+    const exitModal = document.getElementById("exit-modal");
+    const stayBtn = document.getElementById("stay-btn");
+
+    // Interceptar botón atrás
+    window.addEventListener("load", () => {
+      history.pushState(null, "", location.href);
+
+      window.addEventListener("popstate", () => {
+        // Mostrar modal en vez de cerrar
+        exitModal.style.display = "flex";
+        history.pushState(null, "", location.href); // volvemos a bloquear
+      });
+    });
+
+    // Botón "Seguir escuchando"
+    stayBtn.addEventListener("click", () => {
+      exitModal.style.display = "none";
+    });
+
   </script>
 </body>
 </html>
