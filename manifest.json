@@ -27,7 +27,7 @@
     "radio",
     "news",
     "music",
-    "utilities",
+    "utilities"
   ],
 
   "screenshots": [
@@ -67,5 +67,5 @@
       "sizes": "1024x593",
       "form_factor": "wide"
     }
-  ],
+  ]
 }
