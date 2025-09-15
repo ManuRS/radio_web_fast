@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-ser-cache-v6";
+const CACHE_NAME = "radio-ser-cache-v7";
 
 const FILES_TO_CACHE = [
   "index.html",
