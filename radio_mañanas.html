@@ -263,7 +263,10 @@
 
         if (p.nombre.includes("RNE")) {
           htmlImagen = "resources/lucas.webp" ? `<img src="resources/lucas.webp" alt="${p.nombre}">` : "";
-        }
+        } 
+        else if (p.nombre.includes("Federico")) {
+          htmlImagen = "resources/federico.webp" ? `<img src="resources/lucas.webp" alt="${p.nombre}">` : "";
+        } 
 
         if (audioUrl) {
           const tiempo = pubDateEncontrado ? tiempoDesde(pubDateEncontrado) : "";
