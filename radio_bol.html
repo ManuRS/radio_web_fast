@@ -121,7 +121,7 @@
   <audio id="radio" style="display:none;"></audio>
 
   <!-- Botón de reproducción único -->
-  <button id="playButton">▶ Play</button>
+  <!--<button id="playButton">▶ Play</button> -->
 
   <!-- Modal salir -->
   <div id="exit-modal" class="modal">
@@ -136,35 +136,35 @@
   <script>
     const audio = document.getElementById('radio');
     const status = document.getElementById('status');
-    const btn = document.getElementById('playButton');
+    //const btn = document.getElementById('playButton');
 
     const streamURL = "https://emisoras.cadenaser.com/CADENASER";
     audio.src = streamURL;
     var semaforo;
 
     const horariosPermitidos = [
-      { inicio: "07:59", fin: "08:21" },
-      { inicio: "09:00", fin: "09:07" },
-      { inicio: "09:59", fin: "10:07" },
-      { inicio: "10:59", fin: "11:07" },
-      { inicio: "11:59", fin: "12:21" },
-      { inicio: "12:59", fin: "13:07" },
-      { inicio: "13:59", fin: "14:07" },
-      { inicio: "15:59", fin: "16:07" },
-      { inicio: "16:59", fin: "17:07" },
-      { inicio: "17:59", fin: "18:07" },
-      { inicio: "18:59", fin: "19:07" },
-      { inicio: "19:59", fin: "20:26" },
+      { inicio: "07:59:50", fin: "08:21:10" },
+      { inicio: "08:59:50", fin: "09:05:50" },
+      { inicio: "09:59:30", fin: "10:05:50" },
+      { inicio: "10:59:30", fin: "11:05:50" },
+      { inicio: "11:59:30", fin: "12:21:10" },
+      { inicio: "12:59:30", fin: "13:06:10" },
+      { inicio: "13:59:30", fin: "14:06:10" },
+      { inicio: "15:59:30", fin: "16:05:20" },
+      { inicio: "16:59:30", fin: "17:05:20" },
+      { inicio: "17:59:30", fin: "18:05:20" },
+      { inicio: "18:59:30", fin: "19:04:30" },
+      { inicio: "19:59:30", fin: "20:26:10" },
     ];
 
     function convertirAHoraDecimal(horaStr) {
-      const [h, m] = horaStr.split(":").map(Number);
-      return h + m / 60;
+      const [h, m, s = 0] = horaStr.split(":").map(Number);
+      return h + m / 60 + s / 3600;
     }
-
+    
     function horaActualDecimal() {
       const ahora = new Date();
-      return ahora.getHours() + ahora.getMinutes() / 60;
+      return ahora.getHours() + ahora.getMinutes() / 60 + ahora.getSeconds() / 3600;
     }
 
     function estaEnHorario() {
@@ -184,19 +184,21 @@
         semaforo = true;
       } else if (!estaEnHorario() && semaforo) {
         audio.pause();
-        btn.textContent = "▶ Haz click aquí para otorgar permisos";
+        //btn.textContent = "▶ Haz click aquí para otorgar permisos";
         status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
         semaforo = false;
+      } else {
+        // Reset valor semaforo
+        semaforo = estaEnHorario() ? false : true;
       }
     }
 
     // Comprobar cada 5 segundos
-    semaforo = estaEnHorario() ? false : true;
     actualizarReproduccion();
     setInterval(actualizarReproduccion, 5000);
 
     // Control del botón de reproducción
-    btn.addEventListener('click', () => {
+    /*btn.addEventListener('click', () => {
       if (!estaEnHorario()) {
         //alert("Todo listo, la conexión será automática");
         btn.style.display = "none";
@@ -212,7 +214,7 @@
         audio.pause();
         btn.textContent = '▶ Play';
       }
-    });
+    });*/
 
     // Cuando termina el audio, reinicia el botón
     // TMP CREP QUE INNECESARIO
