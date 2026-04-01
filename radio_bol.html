@@ -140,6 +140,7 @@
 
     const streamURL = "https://emisoras.cadenaser.com/CADENASER";
     audio.src = streamURL;
+    var semaforo;
 
     const horariosPermitidos = [
       { inicio: "07:59", fin: "08:21" },
@@ -176,18 +177,21 @@
     }
 
     function actualizarReproduccion() {
-      if (estaEnHorario()) {
-        status.textContent = "Transmisión en vivo activa";
+      if (estaEnHorario() && !semaforo) {
         audio.load();
         audio.play();
-      } else {
+        status.textContent = "Transmisión en vivo activa";
+        semaforo = true;
+      } else if (!estaEnHorario() && semaforo) {
         audio.pause();
         btn.textContent = "▶ Haz click aquí para otorgar permisos";
         status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
+        semaforo = false;
       }
     }
 
     // Comprobar cada 5 segundos
+    semaforo = estaEnHorario() ? false : true;
     actualizarReproduccion();
     setInterval(actualizarReproduccion, 5000);
 
@@ -211,9 +215,10 @@
     });
 
     // Cuando termina el audio, reinicia el botón
-    audio.addEventListener('ended', () => {
-      btn.textContent = '▶ Play';
-    });
+    // TMP CREP QUE INNECESARIO
+    //audio.addEventListener('ended', () => {
+    //  btn.textContent = '▶ Play';
+    //});
 
     // Referencias al modal y botones
     const exitModal = document.getElementById("exit-modal");
