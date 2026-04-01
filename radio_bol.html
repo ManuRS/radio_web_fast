@@ -187,13 +187,11 @@
         //btn.textContent = "▶ Haz click aquí para otorgar permisos";
         status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
         semaforo = false;
-      } else {
-        // Reset valor semaforo
-        semaforo = estaEnHorario() ? false : true;
-      }
+      } 
     }
 
     // Comprobar cada 5 segundos
+    semaforo = estaEnHorario() ? false : true;
     actualizarReproduccion();
     setInterval(actualizarReproduccion, 5000);
 
