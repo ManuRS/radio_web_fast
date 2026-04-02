@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="resources/favicon2.ico" type="image/x-icon">
   <title>Boletines Cadena SER</title>
   <style>
     body {
@@ -121,7 +122,7 @@
   <audio id="radio" style="display:none;"></audio>
 
   <!-- Botón de reproducción único -->
-  <button id="playButton">▶ Play</button>
+  <button id="playButton">Algo ha salido mal</button>
 
   <!-- Modal salir -->
   <div id="exit-modal" class="modal">
@@ -138,23 +139,38 @@
     const status = document.getElementById('status');
     const btn = document.getElementById('playButton');
 
-    const streamURL = "https://emisoras.cadenaser.com/CADENASER";
+    // Por defecto
+    let streamURL = "https://emisoras.cadenaser.com/CADENASER";
+    // ?stream=b
+    const streamURL_alt = "https://25533.live.streamtheworld.com/SER_MADRIDAAC.aac";
+
+    // Leer parámetros de la URL
+    const params = new URLSearchParams(window.location.search);
+    const stream = params.get("stream");
+
+    // Elegir stream según parámetro
+    if (stream === "b") {
+      streamURL = streamURL_alt;
+    }
+    
+    // Aplicar al src
+    console.log(streamURL);
     audio.src = streamURL;
     var semaforo;
 
     const horariosPermitidos = [
-      { inicio: "07:59:40", fin: "08:21:10" },
-      { inicio: "08:59:40", fin: "09:04:50" },
-      { inicio: "09:59:20", fin: "10:05:50" },
-      { inicio: "10:59:20", fin: "11:05:50" },
-      { inicio: "11:59:20", fin: "12:21:10" },
-      { inicio: "12:59:20", fin: "13:06:10" },
-      { inicio: "13:59:20", fin: "14:06:10" },
-      { inicio: "15:59:20", fin: "16:05:20" },
-      { inicio: "16:59:20", fin: "17:05:20" },
-      { inicio: "17:59:20", fin: "18:05:20" },
-      { inicio: "18:59:20", fin: "19:04:30" },
-      { inicio: "19:59:20", fin: "20:26:10" },
+      { inicio: "07:59:00", fin: "08:20:30" },
+      { inicio: "08:59:00", fin: "09:05:00" },
+      { inicio: "09:59:00", fin: "10:06:00" },
+      { inicio: "10:59:00", fin: "11:06:00" },
+      { inicio: "11:59:00", fin: "12:21:20" },
+      { inicio: "12:59:00", fin: "13:06:20" },
+      { inicio: "13:59:00", fin: "14:06:20" },
+      { inicio: "15:59:00", fin: "16:05:30" },
+      { inicio: "16:59:00", fin: "17:05:30" },
+      { inicio: "17:59:00", fin: "18:05:30" },
+      { inicio: "18:59:00", fin: "19:04:30" },
+      { inicio: "19:59:00", fin: "20:25:30" },
     ];
 
     function convertirAHoraDecimal(horaStr) {
@@ -164,6 +180,7 @@
     
     function horaActualDecimal() {
       const ahora = new Date();
+      console.log(ahora.getHours()+':'+ahora.getMinutes()+':'+ahora.getSeconds());
       return ahora.getHours() + ahora.getMinutes() / 60 + ahora.getSeconds() / 3600;
     }
 
@@ -177,24 +194,31 @@
     }
 
     function actualizarReproduccion() {
-      if (estaEnHorario() && !semaforo) {
+      const enHorario = estaEnHorario();
+      if (enHorario && !semaforo) {
         audio.load();
         audio.play();
         status.textContent = "Transmisión en vivo activa";
         semaforo = true;
-      } else if (!estaEnHorario() && semaforo) {
+        console.log("Transmisión activada");
+      } else if (!enHorario && semaforo) {
         audio.pause();
         status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
         semaforo = false;
+        console.log("Transmisión desactivada");
       } 
     }
 
-    // Entendemos en que situación estamos  
+    // Comenzamos
     btn.textContent = "Haz click aquí para otorgar permisos";
+    
+    console.log("Iniciando semaforo");
     semaforo = estaEnHorario() ? false : true;
+
+    console.log("Comprobación inicial");
     actualizarReproduccion();
 
-    //Comprobar cada 4 segundos
+    console.log("== Iniciando bucle ==");
     setInterval(actualizarReproduccion, 4000);
 
     // Pulsar el boton asegura un mejor funcionamiento
