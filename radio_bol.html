@@ -121,7 +121,7 @@
   <audio id="radio" style="display:none;"></audio>
 
   <!-- Botón de reproducción único -->
-  <!--<button id="playButton">▶ Play</button> -->
+  <button id="playButton">▶ Play</button>
 
   <!-- Modal salir -->
   <div id="exit-modal" class="modal">
@@ -136,25 +136,25 @@
   <script>
     const audio = document.getElementById('radio');
     const status = document.getElementById('status');
-    //const btn = document.getElementById('playButton');
+    const btn = document.getElementById('playButton');
 
     const streamURL = "https://emisoras.cadenaser.com/CADENASER";
     audio.src = streamURL;
     var semaforo;
 
     const horariosPermitidos = [
-      { inicio: "07:59:30", fin: "08:21:10" },
-      { inicio: "08:59:30", fin: "09:05:50" },
-      { inicio: "09:59:10", fin: "10:05:50" },
-      { inicio: "10:59:10", fin: "11:05:50" },
-      { inicio: "11:59:10", fin: "12:21:10" },
-      { inicio: "12:59:10", fin: "13:06:10" },
-      { inicio: "13:59:10", fin: "14:06:10" },
-      { inicio: "15:59:10", fin: "16:05:20" },
-      { inicio: "16:59:10", fin: "17:05:20" },
-      { inicio: "17:59:10", fin: "18:05:20" },
-      { inicio: "18:59:10", fin: "19:04:30" },
-      { inicio: "19:59:10", fin: "20:26:10" },
+      { inicio: "07:59:40", fin: "08:21:10" },
+      { inicio: "08:59:40", fin: "09:04:50" },
+      { inicio: "09:59:20", fin: "10:05:50" },
+      { inicio: "10:59:20", fin: "11:05:50" },
+      { inicio: "11:59:20", fin: "12:21:10" },
+      { inicio: "12:59:20", fin: "13:06:10" },
+      { inicio: "13:59:20", fin: "14:06:10" },
+      { inicio: "15:59:20", fin: "16:05:20" },
+      { inicio: "16:59:20", fin: "17:05:20" },
+      { inicio: "17:59:20", fin: "18:05:20" },
+      { inicio: "18:59:20", fin: "19:04:30" },
+      { inicio: "19:59:20", fin: "20:26:10" },
     ];
 
     function convertirAHoraDecimal(horaStr) {
@@ -184,42 +184,25 @@
         semaforo = true;
       } else if (!estaEnHorario() && semaforo) {
         audio.pause();
-        //btn.textContent = "▶ Haz click aquí para otorgar permisos";
         status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
         semaforo = false;
       } 
     }
 
-    // Comprobar cada 5 segundos
+    // Entendemos en que situación estamos  
+    btn.textContent = "Haz click aquí para otorgar permisos";
     semaforo = estaEnHorario() ? false : true;
     actualizarReproduccion();
-    setInterval(actualizarReproduccion, 5000);
 
-    // Control del botón de reproducción
-    /*btn.addEventListener('click', () => {
-      if (!estaEnHorario()) {
-        //alert("Todo listo, la conexión será automática");
-        btn.style.display = "none";
-        return;
-      }
+    //Comprobar cada 4 segundos
+    setInterval(actualizarReproduccion, 4000);
 
-      if (audio.paused) {
-        audio.play().catch(() => {
-          alert("Debes interactuar con la página para permitir la reproducción");
-        });
-        btn.textContent = '⏸ Pausa';
-      } else {
-        audio.pause();
-        btn.textContent = '▶ Play';
-      }
-    });*/
-
-    // Cuando termina el audio, reinicia el botón
-    // TMP CREP QUE INNECESARIO
-    //audio.addEventListener('ended', () => {
-    //  btn.textContent = '▶ Play';
-    //});
-
+    // Pulsar el boton asegura un mejor funcionamiento
+    btn.addEventListener('click', () => {
+      btn.style.display = "none";
+      return;
+    });
+    
     // Referencias al modal y botones
     const exitModal = document.getElementById("exit-modal");
     const stayBtn = document.getElementById("stay-btn");
@@ -243,4 +226,3 @@
   </script>
 </body>
 </html>
-
