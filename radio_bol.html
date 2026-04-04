@@ -139,24 +139,34 @@
     const status = document.getElementById('status');
     const btn = document.getElementById('playButton');
 
-    // Por defecto
+    // URL por defecto
     let streamURL = "https://emisoras.cadenaser.com/CADENASER";
-    // ?stream=b
-    const streamURL_alt = "https://25533.live.streamtheworld.com/SER_MADRIDAAC.aac";
-
+  
     // Leer parámetros de la URL
     const params = new URLSearchParams(window.location.search);
     const stream = params.get("stream");
 
     // Elegir stream según parámetro
-    if (stream === "b") {
-      streamURL = streamURL_alt;
+    if (stream === "1") { // ?stream=1
+      streamURL = "https://emisoras.cadenaser.com/CADENASER";
+    } else if (stream === "2") { // ?stream=2
+      streamURL = "https://25533.live.streamtheworld.com/SER_MADRIDAAC.aac";
+    } else if (stream === "3") { // ?stream=3
+      streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MADRIDAAC.aac";
+    } else if (stream === "4") { // ?stream=4
+      streamURL = "https://27783.live.streamtheworld.com/SER_MAS_MADRIDAAC.aac";
+    } else if (stream === "5") { // ?stream=5
+      streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRIDAAC.aac";
     }
-    
+
     // Aplicar al src
     console.log(streamURL);
     audio.src = streamURL;
+
     var semaforo;
+    var fadeAudio;
+    var interval;
+    var timetext = true;
 
     const horariosPermitidos = [
       { inicio: "07:59:00", fin: "08:20:30" },
@@ -180,7 +190,9 @@
     
     function horaActualDecimal() {
       const ahora = new Date();
-      console.log(ahora.getHours()+':'+ahora.getMinutes()+':'+ahora.getSeconds());
+      if(timetext){
+        console.log(ahora.getHours()+':'+ahora.getMinutes()+':'+ahora.getSeconds());
+      }
       return ahora.getHours() + ahora.getMinutes() / 60 + ahora.getSeconds() / 3600;
     }
 
@@ -193,33 +205,108 @@
       });
     }
 
-    function actualizarReproduccion() {
+    function fadeOutVol() {
+      resta = 0.02
+      if (audio.volume-resta >= 0.0){
+        audio.volume -= resta;
+      }else{
+        /*Hemos terminado*/
+        audio.volume = 0.0;
+        audio.pause();
+        clearInterval(fadeAudio);
+      }
+    }
+
+    function fadeInVol() {
+      suma = 0.01
+      if (audio.volume+suma <= 1.0){
+        audio.volume += suma;
+      }else{
+        /*Hemos terminado*/
+        audio.volume = 1.0;
+        clearInterval(fadeAudio);
+      }
+    }
+
+    function actualizarReproduccion(safeMode=false) {
+
       const enHorario = estaEnHorario();
-      if (enHorario && !semaforo) {
+
+      if (enHorario && !semaforo && safeMode) {
+        /*Página cargada en horario de reproducción*/
+        audio.volume = 1.0;
         audio.load();
         audio.play();
-        status.textContent = "Transmisión en vivo activa";
+
+        /*Otros*/
         semaforo = true;
-        console.log("Transmisión activada");
-      } else if (!enHorario && semaforo) {
+        status.textContent = "Transmisión en vivo preparada";
+        console.log("Transmisión preparada");
+
+        /*Interval fast*/
+        console.log("== 3. Iniciando bucle ==");
+        interval = setInterval(actualizarReproduccion, 4000);
+
+      } else if (enHorario && !semaforo) {
+        
+        /*Reproducir ya*/
+        audio.volume = 0.01;
+        audio.load();
+        audio.play();
+        
+        /*Fijar cuando subir volumen*/
+        hora = new Date();
+        minuto_hardcode = 59;
+        segundos_hardcode = 40;
+        delaysecs = (minuto_hardcode*60 + segundos_hardcode) - (hora.getMinutes()*60 + hora.getSeconds());
+
+        setTimeout(() => {
+          fadeAudio = setInterval(fadeInVol, 100);
+          status.textContent = "Transmisión en vivo activa";
+          console.log("Transmisión activada");
+        }, delaysecs*1000);
+        
+        /*Otros*/
+        semaforo = true;
+        status.textContent = "Transmisión en vivo preparada";
+        console.log("Transmisión preparada");
+
+        /*Interval fast*/
+        clearInterval(interval);
+        interval = setInterval(actualizarReproduccion, 4000);
+        
+      } else if (!enHorario && semaforo && safeMode) {
+        /*Página cargada*/
         audio.pause();
-        status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
         semaforo = false;
+        status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
         console.log("Transmisión desactivada");
+
+        /*Interval relax*/
+        console.log("== 3. Iniciando bucle ==");
+        interval = setInterval(actualizarReproduccion, 20000);
+
+      } else if (!enHorario && semaforo) {
+        fadeAudio = setInterval(fadeOutVol, 100);
+        semaforo = false;
+        status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
+        console.log("Transmisión desactivada");
+
+        /*Interval relax*/
+        clearInterval(interval);
+        interval = setInterval(actualizarReproduccion, 20000);
       } 
     }
 
     // Comenzamos
     btn.textContent = "Haz click aquí para otorgar permisos";
     
-    console.log("Iniciando semaforo");
+    console.log("== 1. Definiendo semaforo ==");
     semaforo = estaEnHorario() ? false : true;
+    console.log("Semaforo " + semaforo);
 
-    console.log("Comprobación inicial");
-    actualizarReproduccion();
-
-    console.log("== Iniciando bucle ==");
-    setInterval(actualizarReproduccion, 4000);
+    console.log("== 2. Comprobación inicial ==");
+    actualizarReproduccion(true);
 
     // Pulsar el boton asegura un mejor funcionamiento
     btn.addEventListener('click', () => {
