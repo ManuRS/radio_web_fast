@@ -120,6 +120,7 @@
 
   <!-- Reproductor oculto -->
   <audio id="radio" style="display:none;"></audio>
+  <audio id="radio_prep" style="display:none;"></audio>
 
   <!-- Botón de reproducción único -->
   <button id="playButton">Algo ha salido mal</button>
@@ -136,6 +137,8 @@
 
   <script>
     const audio = document.getElementById('radio');
+    const audio_prep = document.getElementById('radio_prep');
+    
     const status = document.getElementById('status');
     const btn = document.getElementById('playButton');
 
@@ -205,20 +208,8 @@
       });
     }
 
-    function fadeOutVol() {
-      resta = 0.02
-      if (audio.volume-resta >= 0.0){
-        audio.volume -= resta;
-      }else{
-        /*Hemos terminado*/
-        audio.volume = 0.0;
-        audio.pause();
-        clearInterval(fadeAudio);
-      }
-    }
-
     function fadeInVol() {
-      suma = 0.01
+      suma = 0.06
       if (audio.volume+suma <= 1.0){
         audio.volume += suma;
       }else{
@@ -228,6 +219,34 @@
       }
     }
 
+    function fadeOutVol() {
+      resta = 0.06
+      if (audio.volume-resta >= 0.0){
+        audio.volume -= resta;
+      }else{
+        /*Hemos terminado*/
+        audio.volume = 0.0;
+        audio.pause();
+        clearInterval(fadeAudio);
+        desco_fin();
+      }
+    }
+
+    function desco_ini(){
+      audio_prep.src = "sounds/desco_ini.mp3";
+      audio_prep.play();
+    }
+
+    function desco_fin(){
+      audio_prep.src = "sounds/desco_fin.mp3";
+      audio_prep.play();
+    }
+
+    function pin(){
+      audio_prep.src = "sounds/pin_noid.mp3";
+      audio_prep.play();
+    }
+    
     function actualizarReproduccion(safeMode=false) {
 
       const enHorario = estaEnHorario();
@@ -260,6 +279,10 @@
         segundos_hardcode = 40;
         delaysecs = (minuto_hardcode*60 + segundos_hardcode) - (hora.getMinutes()*60 + hora.getSeconds());
 
+        setTimeout(() => {
+          desco_ini();
+        }, (delaysecs-3)*1000);
+        
         setTimeout(() => {
           fadeAudio = setInterval(fadeInVol, 100);
           status.textContent = "Transmisión en vivo activa";
@@ -310,6 +333,9 @@
 
     // Pulsar el boton asegura un mejor funcionamiento
     btn.addEventListener('click', () => {
+      if (!estaEnHorario()) {
+        pin();
+      }
       btn.style.display = "none";
       return;
     });
