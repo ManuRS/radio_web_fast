@@ -172,18 +172,18 @@
     var timetext = true;
 
     const horariosPermitidos = [
-      { inicio: "07:58:30", fin: "08:20:15" },
+      { inicio: "07:58:30", fin: "08:20:10" },
       { inicio: "08:58:30", fin: "09:05:00" },
-      { inicio: "09:58:30", fin: "10:05:45" },
-      { inicio: "10:58:30", fin: "11:05:45" },
-      { inicio: "11:58:30", fin: "12:20:15" },
+      { inicio: "09:58:30", fin: "10:05:50" },
+      { inicio: "10:58:30", fin: "11:05:50" },
+      { inicio: "11:58:30", fin: "12:20:10" },
       { inicio: "12:58:30", fin: "13:06:30" },
       { inicio: "13:58:30", fin: "14:06:30" },
-      { inicio: "15:58:30", fin: "16:05:15" },
-      { inicio: "16:58:30", fin: "17:05:15" },
-      { inicio: "17:58:30", fin: "18:05:15" },
+      { inicio: "15:58:30", fin: "16:05:20" },
+      { inicio: "16:58:30", fin: "17:05:20" },
+      { inicio: "17:58:30", fin: "18:05:20" },
       { inicio: "18:58:30", fin: "19:04:30" },
-      { inicio: "19:58:30", fin: "20:25:15" },
+      { inicio: "19:58:30", fin: "20:25:10" },
     ];
 
     function convertirAHoraDecimal(horaStr) {
@@ -233,11 +233,13 @@
     }
 
     function desco_ini(){
+      audio_prep.volume = 0.7;
       audio_prep.src = "sounds/desco_ini.mp3";
       audio_prep.play();
     }
 
     function desco_fin(){
+      audio_prep.volume = 1.0;
       audio_prep.src = "sounds/desco_fin.mp3";
       audio_prep.play();
     }
@@ -264,7 +266,7 @@
 
         /*Interval fast*/
         console.log("== 3. Iniciando bucle ==");
-        interval = setInterval(actualizarReproduccion, 4000);
+        interval = setInterval(actualizarReproduccion, 1000);
 
       } else if (enHorario && !semaforo) {
         
@@ -276,30 +278,30 @@
         /*Fijar cuando subir volumen*/
         hora = new Date();
         minuto_hardcode = 59;
-        segundos_hardcode = 40;
+        segundos_hardcode = 44;
         delaysecs = (minuto_hardcode*60 + segundos_hardcode) - (hora.getMinutes()*60 + hora.getSeconds());
 
         if (delaysecs-3 > 0){
           // Pin solo si da tiempo
           setTimeout(() => {
             desco_ini();
-          }, (delaysecs-3)*1000);
+          }, (delaysecs-4)*1000);
         }
         
         setTimeout(() => {
           fadeAudio = setInterval(fadeInVol, 100);
-          status.textContent = "Transmisión en vivo activa";
+          status.textContent = "Transmisión en directo activa";
           console.log("Transmisión activada");
         }, delaysecs*1000);
         
         /*Otros*/
         semaforo = true;
-        status.textContent = "Transmisión en vivo preparada";
+        status.textContent = "Transmisión en directo preparada";
         console.log("Transmisión preparada");
 
         /*Interval fast*/
         clearInterval(interval);
-        interval = setInterval(actualizarReproduccion, 4000);
+        interval = setInterval(actualizarReproduccion, 1000);
         
       } else if (!enHorario && semaforo && safeMode) {
         /*Página cargada*/
