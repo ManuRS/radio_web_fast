@@ -172,18 +172,18 @@
     var timetext = true;
 
     const horariosPermitidos = [
-      { inicio: "07:59:00", fin: "08:20:15" },
-      { inicio: "08:59:00", fin: "09:05:00" },
-      { inicio: "09:59:00", fin: "10:05:45" },
-      { inicio: "10:59:00", fin: "11:05:45" },
-      { inicio: "11:59:00", fin: "12:20:15" },
-      { inicio: "12:59:00", fin: "13:06:30" },
-      { inicio: "13:59:00", fin: "14:06:30" },
-      { inicio: "15:59:00", fin: "16:05:15" },
-      { inicio: "16:59:00", fin: "17:05:15" },
-      { inicio: "17:59:00", fin: "18:05:15" },
-      { inicio: "18:59:00", fin: "19:04:30" },
-      { inicio: "19:59:00", fin: "20:25:15" },
+      { inicio: "07:58:30", fin: "08:20:15" },
+      { inicio: "08:58:30", fin: "09:05:00" },
+      { inicio: "09:58:30", fin: "10:05:45" },
+      { inicio: "10:58:30", fin: "11:05:45" },
+      { inicio: "11:58:30", fin: "12:20:15" },
+      { inicio: "12:58:30", fin: "13:06:30" },
+      { inicio: "13:58:30", fin: "14:06:30" },
+      { inicio: "15:58:30", fin: "16:05:15" },
+      { inicio: "16:58:30", fin: "17:05:15" },
+      { inicio: "17:58:30", fin: "18:05:15" },
+      { inicio: "18:58:30", fin: "19:04:30" },
+      { inicio: "19:58:30", fin: "20:25:15" },
     ];
 
     function convertirAHoraDecimal(horaStr) {
@@ -279,9 +279,12 @@
         segundos_hardcode = 40;
         delaysecs = (minuto_hardcode*60 + segundos_hardcode) - (hora.getMinutes()*60 + hora.getSeconds());
 
-        setTimeout(() => {
-          desco_ini();
-        }, (delaysecs-3)*1000);
+        if (delaysecs-3 > 0){
+          // Pin solo si da tiempo
+          setTimeout(() => {
+            desco_ini();
+          }, (delaysecs-3)*1000);
+        }
         
         setTimeout(() => {
           fadeAudio = setInterval(fadeInVol, 100);
