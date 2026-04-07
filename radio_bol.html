@@ -25,7 +25,7 @@
       text-align: center;
     }
 
-    #status {
+    .status {
       margin-top: 20px;
       font-size: 1.2em;
       color: green;
@@ -41,7 +41,7 @@
       border: none;
       cursor: pointer;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      background: #1a73e8;
+      background: red;
       color: white;
       margin-top: 30px;
     }
@@ -124,20 +124,40 @@
 
   </style>
 </head>
+
 <body>
 
   <h1>Solo boletines en directo</h1>
-  <div id="status"></div>
 
   <!-- Reproductor oculto -->
-  <audio id="radio" style="display:none;"></audio>
+  <audio id="radio_news" style="display:none;"></audio>
   <audio id="radio_prep" style="display:none;"></audio>
   <audio id="radio_music" style="display:none"></audio>
 
-  <br><br><input type="range" id="radio_music_volume" min="0" max="1" step="0.01" value="1"><br>
+  <!-- Sliders para el volumen -->
+  <div id="status_news" class="status">Volumen noticias</div><br>
+  <input type="range" id="radio_news_volume" min="0" max="1" step="0.01" value="1"><br>
+
+  <div id="status_music" class="status">Volumen música</div><br>
+  <input type="range" id="radio_music_volume" min="0" max="1" step="0.01" value="0.5"><br>
 
   <!-- Botón de reproducción único -->
   <button id="playButton">Algo ha salido mal</button>
+
+  <!-- Enlaces para la música -->
+  <br><div id="status_news" class="status">Cargar modo música:</div><br><br>
+
+  <div style="display: inline-flex; gap: 10px; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 1rem;">
+    <a href="?music=2" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">LOS40</a>
+    <a href="?music=3" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">CLASSIC</a>
+    <a href="?music=4" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">MEGASTAR</a>
+  </div>
+  <br><br>
+  <div style="display: inline-flex; gap: 10px; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 1rem;">
+    <a href="?music=5" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">ROCKFM</a>
+    <a href="?music=6" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">HITFM</a>
+    <a href="" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">SOLO NOTICIAS</a>
+  </div>
 
   <!-- Modal salir -->
   <div id="exit-modal" class="modal">
@@ -150,14 +170,28 @@
   </div>
 
   <script>
-    const audio = document.getElementById('radio');
+
+    /*====================*/
+    /*==   JAVASCRIPT   ==*/
+    /*====================*/
+    const audio_news = document.getElementById('radio_news');
     const audio_prep = document.getElementById('radio_prep');
     const audio_music = document.getElementById('radio_music');
 
-    const audio_volume = document.getElementById('radio_music_volume');
+    const news_volume = document.getElementById('radio_news_volume');
+    const music_volume = document.getElementById('radio_music_volume');
 
-    const status = document.getElementById('status');
     const btn = document.getElementById('playButton');
+
+    let semaforo, interval;
+    let fadeAudio_ID, fadeMusic_ID;
+
+    let max_news_volume = 1.0;
+    let max_music_volume = 0.5;
+
+    /*============================*/
+    /*==  PARAMETROS DE LA URL  ==*/
+    /*============================*/
 
     // URL por defecto
     let streamURL = "https://emisoras.cadenaser.com/CADENASER";
@@ -181,38 +215,48 @@
       streamURL = "https://emisoras.cadenaser.com/CADENASER";
     }
 
-    if (music === "2") { // ?music=1
+    // Elegir stream música según parámetro
+    if (music === "2") { // ?music=2
       musicURL = "https://emisoras.cadenaser.com/LOS40";
-    } else if (music === "3") { // ?music=2
+    } else if (music === "3") { // ?music=3
       musicURL = "https://emisoras.cadenaser.com/LOS40_CLASSIC";
-    } else if (music === "4") { // ?music=2
+    } else if (music === "4") { // ?music=4
       musicURL = "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3";
-    } else if (music === "5") { // ?music=2
+    } else if (music === "5") { // ?music=5
       musicURL = "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3";
-    } else if (music === "6") { // ?music=2
+    } else if (music === "6") { // ?music=6
       musicURL = "http://hitfm.kissfmradio.cires21.com/hitfm.mp3";
     } else {
       musicURL = "none";
     }
 
-    //musicURL = "https://emisoras.cadenaser.com/LOS40";
+    // Variable a mano para pruebas
+    // musicURL = "https://emisoras.cadenaser.com/LOS40";
 
-    // Aplicar al src
+    /*=========================*/
+    /*==   ASIGNAR LAS URL   ==*/
+    /*=========================*/
+
+    /* URL de las noticias*/
     console.log(streamURL);
-    audio.src = streamURL;
+    audio_news.src = streamURL;
 
-    
+    /* URL de la música */ 
     if (musicURL != "none"){
         console.log(musicURL);
         audio_music.src = musicURL;
+    } else {
+      // No hay música
+      var slider = document.getElementById('radio_music_volume');
+      slider.disabled = true;
+      var st = document.getElementById('status_music');
+      st.textContent = "Modo sin música";
     }
-    
-    var semaforo;
-    var interval;
-    
-    var fadeAudio_ID;
-    var fadeMusic_ID;
-    
+
+    /*================*/
+    /*==  HORARIOS  ==*/
+    /*================*/
+
     const horariosPermitidos = [
       { inicio: "07:58:30", fin: "08:20:10" },
       { inicio: "08:58:30", fin: "09:05:00" },
@@ -230,9 +274,11 @@
 
     const minuto_hardcode = 59; // 59
     const segundos_hardcode = 44; // 44
-    const timetext = true;
+    const timetext = true; // Time console log
 
-    let max_volume = 1.0;
+    /*================*/
+    /*==   FECHAS   ==*/
+    /*================*/
 
     function convertirAHoraDecimal(horaStr) {
       const [h, m, s = 0] = horaStr.split(":").map(Number);
@@ -256,9 +302,14 @@
       });
     }
 
-    function fadeInVol(audioToFade, interval_ID) {
+    /*=================================*/
+    /*== FUNCIONES AUXILIARES SONIDO ==*/
+    /*=================================*/
+
+    // Fade in
+    function fadeInVol(audioToFade, interval_ID, max_volume) {
       let suma = 0.06
-      if (audioToFade.volume+suma <= max_volume){
+      if (audioToFade.volume+suma < max_volume){
         audioToFade.volume += suma;
       }else{
         /*Hemos terminado*/
@@ -267,9 +318,10 @@
       }
     }
 
+    // Fade out
     function fadeOutVol(audioToFade, interval_ID) {
       let resta = 0.06
-      if (audioToFade.volume-resta >= 0.0){
+      if (audioToFade.volume-resta > 0.0){
         audioToFade.volume -= resta;
       }else{
         /*Hemos terminado*/
@@ -279,180 +331,209 @@
       }
     }
 
+    // Pin de inicio de desconexión
     function desco_ini(){
-      audio_prep.volume = 0.7*max_volume;
+      audio_prep.volume = 0.7*max_news_volume;
       audio_prep.src = "sounds/desco_ini.mp3";
       audio_prep.play();
     }
 
+    // Pin de fin de desconexión
     function desco_fin(){
-      audio_prep.volume = max_volume;
+      audio_prep.volume = max_news_volume;
       audio_prep.src = "sounds/desco_alt.mp3";
       audio_prep.play();
-
-      if (musicURL != "none"){ //!!!!!!!!!!!
-        audio_music.load();
-        audio_music.play();
-      }
     }
 
+    // Pin generico
     function pin(){
       audio_prep.src = "sounds/pin_noid.mp3";
       audio_prep.play();
     }
-    
+
+    /*=======================*/
+    /*== FUNCION DIRECTORA ==*/
+    /*=======================*/ 
     function actualizarReproduccion(safeMode=false) {
 
       const enHorario = estaEnHorario();
 
       if (enHorario && !semaforo && safeMode) {
-        /*Página cargada en horario de reproducción*/
-        audio.volume = max_volume;
-        audio.load();
-        audio.play();
+        /** CARGA - PERIODO DE REPRODUCCIÓN **/
 
-        /*Otros*/
-        semaforo = true;
-        status.textContent = "Transmisión en vivo preparada";
-        console.log("Transmisión preparada");
-
-        /*Interval fast*/
-        console.log("== 3. Iniciando bucle ==");
-        interval = setInterval(actualizarReproduccion, 1000);
+        // Noticias play
+        play_news();
+        
+        // Intervalos rápidos
+        clearInterval(interval);
+        interval = setInterval(actualizarReproduccion, 1.0 * 1000);
 
       } else if (enHorario && !semaforo) {
-        
-        /* Horario de reproducción*/
-        audio.volume = 0.01;
-        audio.load();
-        audio.play();
-        
-        /*Fijar cuando subir volumen*/
+        /** PERIODO DE REPRODUCCIÓN **/
+
+        // Calculo delay
         hora = new Date();
-        delaysecs = (minuto_hardcode*60 + segundos_hardcode) - (hora.getMinutes()*60 + hora.getSeconds());
+        actual = hora.getMinutes()*60 + hora.getSeconds();
+        objetivo = minuto_hardcode*60 + segundos_hardcode;
+        delaysecs = objetivo - actual;
 
-        /* Fade out musica*/
-        if (musicURL != "none"){
-        
-          if (delaysecs-3 > 0){
-            /* Hay que esperar para hacerlo*/
-            setTimeout(() => {
-              fadeMusic_ID = setInterval(() => {fadeOutVol(audio_music, fadeMusic_ID);}, 100);
-            }, (delaysecs-5.5)*1000);
-          } else {
-            /* Lo hacemos ya*/
-            fadeMusic_ID = setInterval(() => {fadeOutVol(audio_music, fadeMusic_ID);}, 100);
-          }
-        }
-        
-        /* El pin si da tiempo*/
-        if (delaysecs-3 > 0){
-          setTimeout(() => {
-            desco_ini();
-          }, (delaysecs-4)*1000);
+        // Noticias play
+        play_news(delaysecs * 1000);
+
+        if (delaysecs-3.0 > 0) {
+          /// Fade out música + pin
+          stop_music( (delaysecs-5.5) * 1000 );
+          setTimeout( () => { desco_ini(); }, (delaysecs-4.0) * 1000 );
+        } else {
+          // No da tiempo, paro musica
+          stop_music();
         }
 
-        /*Fade in noticias*/
-        setTimeout(() => {
-          fadeAudio_ID = setInterval(() => {fadeInVol(audio, fadeAudio_ID);}, 100);
-          status.textContent = "Transmisión en directo activa";
-          console.log("Transmisión activada");
-        }, delaysecs*1000);
-        
-        /*Otros*/
-        semaforo = true;
-        status.textContent = "Transmisión en directo preparada";
-        console.log("Transmisión preparada");
-
-        /*Interval fast*/
+        // Intervalos rápidos
         clearInterval(interval);
-        interval = setInterval(actualizarReproduccion, 1000);
-        
+        interval = setInterval(actualizarReproduccion, 1.0 * 1000);
+
       } else if (!enHorario && semaforo && safeMode) {
-        /* Página cargada en periodo de espera */
-        audio.pause();
+        /** CARGA - PERIODO DE ESPERA **/
+
+        // Música play
+        play_music();
+
+        // Otros
         semaforo = false;
-        status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
+        btn.style.background = '#1a73e8';
+        btn.textContent = "Fuera del horario de noticias";
         console.log("Transmisión desactivada");
 
-        /* Interval relax */
+        // Intervalos relajados
         console.log("== 3. Iniciando bucle ==");
-        interval = setInterval(actualizarReproduccion, 20000);
-
-        /* La música */
-        if (musicURL != "none"){
-          audio_music.load();
-          audio_music.play();
-        }
+        interval = setInterval(actualizarReproduccion, 20.0 * 1000);     
 
       } else if (!enHorario && semaforo) {
-        /* Cambio a periodo de espera */
-        fadeAudio_ID = setInterval(() => {fadeOutVol(audio, fadeAudio_ID);}, 100);
-        setTimeout(() => {
-          desco_fin();
-        }, 2000);
-          
+        /** PERIODO DE ESPERA **/
+
+        // Noticias stop
+        stop_news();
+
+        // Pin desco + música
+        setTimeout(() => { desco_fin();}, 2.0 * 1000);
+        setTimeout(() => { play_music(); }, 5.5 * 1000);
+
+        // Otros          
         semaforo = false;
-        status.innerHTML  = "Esperando<br>(Fuera del horario de transmisión)";
+        btn.style.background = '#1a73e8';
+        btn.textContent = "Fuera del horario";
         console.log("Transmisión desactivada");
 
-        /*Interval relax*/
+        // Intervalos relajados
         clearInterval(interval);
-        interval = setInterval(actualizarReproduccion, 20000);
-
-        /* La música */
-        if (musicURL != "none"){
-          setTimeout(() => {
-            /*Reiniciar con fade in*/
-            audio_music.volume = 0.01;
-            audio_music.load();
-            audio_music.play();
-            fadeMusic_ID = setInterval(() => {fadeInVol(audio_music, fadeMusic_ID);}, 100);
-          }, 5500);
-        }
+        interval = setInterval(actualizarReproduccion, 20.0 * 1000);
 
       } 
     }
 
-    // Comenzamos
-    btn.textContent = "Haz click aquí para otorgar permisos";
-    
-    console.log("== 1. Definiendo semaforo ==");
-    semaforo = estaEnHorario() ? false : true;
-    console.log("Semaforo " + semaforo);
+    /*===========================*/
+    /*==   PLAY / STOP AUDIO   ==*/
+    /*===========================*/
 
-    console.log("== 2. Comprobación inicial ==");
-    actualizarReproduccion(true);
+    /* Reproducir noticias */
+    function play_news(delay=0) {
 
-    // El volumen
-    audio_volume.addEventListener("input", (e) => {
-        max_volume = e.target.value;
-        if (semaforo){
-          // Están sonando las noticias
-          audio.volume = e.target.value;
-        } else{
-          // Esta sonando la música
-          audio_music.volume = e.target.value;
-        }
-    });
+      audio_news.volume = 0.01;
+      audio_news.load();
+      audio_news.play();
 
-    // Pulsar el boton asegura un mejor funcionamiento
-    btn.addEventListener('click', () => {
-      if (!estaEnHorario() && musicURL == "none") {
-        pin();
+      semaforo = true;
+
+      if (delay>0.0){
+        // Otros cuando hay delay
+        btn.style.background = 'brown';
+        btn.textContent = "Transmisión de noticias preparada";
+        console.log("Transmisión preparada");
+      } 
+   
+      setTimeout(() => {
+        // El fade in lleva retraso
+        fadeAudio_ID = setInterval(() => {fadeInVol(audio_news, fadeAudio_ID, max_news_volume);}, 100);
+
+        // Otros definitivo
+        btn.style.background = 'green';
+        btn.textContent = "Trasmitiendo noticias en directo";
+        console.log("Transmisión activada");
+      }, delay);
+
+    }
+
+    /* Parar noticias */
+    function stop_news(){
+      fadeAudio_ID = setInterval(() => {fadeOutVol(audio_news, fadeAudio_ID);}, 100);
+    }
+
+    /* Reproducir música */
+    function play_music() {
+      if (musicURL != "none"){
+        // Reiniciar con fade in
+        audio_music.volume = 0.01;
+        audio_music.load();
+        audio_music.play();
+        fadeMusic_ID = setInterval(() => {fadeInVol(audio_music, fadeMusic_ID, max_music_volume);}, 100);
       }
-      btn.style.display = "none";
-      return;
-    });
+    }
+
+    /* Parar música */
+    function stop_music(delay=0) {
+      if (musicURL != "none"){
+        // Para con delay opcional
+        setTimeout(() => {
+          fadeMusic_ID = setInterval(() => {fadeOutVol(audio_music, fadeMusic_ID);}, 100);
+        }, delay);
+      }
+    }
     
-    // Referencias al modal y botones
+    /*===========================*/
+    /*==    MAIN FUNCTION      ==*/
+    /*===========================*/
+
+    // La llamada está en el listerner del botón "btn"
+    function main_function (){
+      console.log("== 1. Definiendo semaforo ==");
+      semaforo = estaEnHorario() ? false : true;
+      console.log("Semaforo " + semaforo);
+  
+      console.log("== 2. Comprobación inicial ==");
+      actualizarReproduccion(true);  
+    }
+
+    /*===========================*/
+    /*==  INTERACCIÓN USUARIO  ==*/
+    /*===========================*/
+    
+    // Volumen de las noticias
+    news_volume.addEventListener("input", (e) => {
+      max_news_volume = e.target.value;
+      audio_news.volume = e.target.value;
+    });
+
+    // Volumen de la música
+    music_volume.addEventListener("input", (e) => {
+      max_music_volume = e.target.value;
+      audio_music.volume = e.target.value;
+    });
+
+    // Pulsar el botón para empezar
+    btn.textContent = "Haz click aquí para otorgar permisos";
+    btn.addEventListener('click', () => {
+      pin();
+      setTimeout(() => { main_function(); }, 1500);
+    },{once:true});
+    
+    // Referencias al modal y boton salida
     const exitModal = document.getElementById("exit-modal");
     const stayBtn = document.getElementById("stay-btn");
 
     // Interceptar botón atrás
     window.addEventListener("load", () => {
       history.pushState(null, "", location.href);
-
       window.addEventListener("popstate", () => {
         // Mostrar modal en vez de cerrar
         exitModal.style.display = "flex";
@@ -464,6 +545,16 @@
     stayBtn.addEventListener("click", () => {
       exitModal.style.display = "none";
     });
+
+    // Android media
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'Radio en directo',
+        artwork: [
+          { src: 'resources/mesa_audio.webp', type: 'image/jpeg' },
+        ]
+      });
+    }
 
   </script>
 </body>
