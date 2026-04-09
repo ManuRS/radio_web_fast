@@ -333,16 +333,38 @@
 
     // Pin de inicio de desconexión
     function desco_ini(){
-      audio_prep.volume = 0.7*max_news_volume;
-      audio_prep.src = "sounds/desco_ini.mp3";
+      audio_prep.volume = 1.0*max_news_volume;
+      audio_prep.src = "sounds/desco_ini_gen.mp3";
       audio_prep.play();
     }
 
     // Pin de fin de desconexión
     function desco_fin(){
-      audio_prep.volume = max_news_volume;
-      audio_prep.src = "sounds/desco_alt.mp3";
+      audio_prep.volume = 0.7*max_news_volume;
       audio_prep.play();
+    }
+
+    // Función auxiliar
+    function select_random_desco_fin(){
+      let num_random_1 = Math.floor(Math.random() * 3);
+      let num_random_2 = Math.floor(Math.random() * 2);
+
+      if (music === "2" && num_random == 0) {
+        audio_prep.src = "sounds/los40_a.mp3";
+        return 32;
+      } else if (music === "2" && num_random == 1) {
+        audio_prep.src = "sounds/los40_b.mp3";
+        return 28;
+      } else if (music === "3" && num_random !== 0) {
+        audio_prep.src = "sounds/los40c_a.mp3";
+        return 9.5;
+      } else if (num_random_2 == 0) {
+        audio_prep.src = "sounds/cortinilla_desconexion.mp3";
+        return 14;
+      } else {
+        audio_prep.src = "sounds/desco_fin_hxh.mp3";
+        return 5;
+      }
     }
 
     // Pin generico
@@ -382,8 +404,8 @@
 
         if (delaysecs-3.0 > 0) {
           /// Fade out música + pin
-          stop_music( (delaysecs-5.5) * 1000 );
-          setTimeout( () => { desco_ini(); }, (delaysecs-4.0) * 1000 );
+          stop_music( (delaysecs-4.0) * 1000 );
+          setTimeout( () => { desco_ini(); }, (delaysecs-3.0) * 1000 );
         } else {
           // No da tiempo, paro musica
           stop_music();
@@ -415,9 +437,10 @@
         // Noticias stop
         stop_news();
 
-        // Pin desco + música
+        // Pin desco (incluye llamada a play music)
+        let t_desco_ini_aux = select_random_desco_fin();
         setTimeout(() => { desco_fin();}, 2.0 * 1000);
-        setTimeout(() => { play_music(); }, 5.5 * 1000);
+        setTimeout(() => { play_music(); }, t_desco_ini_aux * 1000);
 
         // Otros          
         semaforo = false;
@@ -466,7 +489,7 @@
 
     /* Parar noticias */
     function stop_news(){
-      fadeAudio_ID = setInterval(() => {fadeOutVol(audio_news, fadeAudio_ID);}, 100);
+      fadeAudio_ID = setInterval(() => {fadeOutVol(audio_news, fadeAudio_ID);}, 150);
     }
 
     /* Reproducir música */
@@ -476,7 +499,7 @@
         audio_music.volume = 0.01;
         audio_music.load();
         audio_music.play();
-        fadeMusic_ID = setInterval(() => {fadeInVol(audio_music, fadeMusic_ID, max_music_volume);}, 100);
+        fadeMusic_ID = setInterval(() => {fadeInVol(audio_music, fadeMusic_ID, max_music_volume);}, 300);
       }
     }
 
@@ -524,7 +547,7 @@
     btn.textContent = "Haz click aquí para otorgar permisos";
     btn.addEventListener('click', () => {
       pin();
-      setTimeout(() => { main_function(); }, 1500);
+      setTimeout(() => { main_function(); }, 1200);
     },{once:true});
     
     // Referencias al modal y boton salida
