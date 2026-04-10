@@ -349,13 +349,13 @@
       let num_random_1 = Math.floor(Math.random() * 3);
       let num_random_2 = Math.floor(Math.random() * 2);
 
-      if (music === "2" && num_random == 0) {
+      if (music === "2" && num_random_1 == 0) {
         audio_prep.src = "sounds/los40_a.mp3";
         return 32;
-      } else if (music === "2" && num_random == 1) {
+      } else if (music === "2" && num_random_1 == 1) {
         audio_prep.src = "sounds/los40_b.mp3";
         return 28;
-      } else if (music === "3" && num_random !== 0) {
+      } else if (music === "3" && num_random_1 !== 0) {
         audio_prep.src = "sounds/los40c_a.mp3";
         return 9.5;
       } else if (num_random_2 == 0) {
