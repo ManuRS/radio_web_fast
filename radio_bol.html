@@ -156,7 +156,7 @@
   <div style="display: inline-flex; gap: 10px; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 1rem;">
     <a href="?music=5" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">ROCKFM</a>
     <a href="?music=6" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">HITFM</a>
-    <a href="" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">SOLO NOTICIAS</a>
+    <a href="/" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">SOLO NOTICIAS</a>
   </div>
 
   <!-- Modal salir -->
@@ -258,18 +258,18 @@
     /*================*/
 
     const horariosPermitidos = [
-      { inicio: "07:58:30", fin: "08:20:10" },
-      { inicio: "08:58:30", fin: "09:05:00" },
-      { inicio: "09:58:30", fin: "10:05:50" },
-      { inicio: "10:58:30", fin: "11:05:50" },
-      { inicio: "11:58:30", fin: "12:20:10" },
-      { inicio: "12:58:30", fin: "13:06:30" },
-      { inicio: "13:58:30", fin: "14:06:30" },
-      { inicio: "15:58:30", fin: "16:05:20" },
-      { inicio: "16:58:30", fin: "17:05:20" },
-      { inicio: "17:58:30", fin: "18:05:20" },
-      { inicio: "18:58:30", fin: "19:04:30" },
-      { inicio: "19:58:30", fin: "20:25:10" },
+      { inicio: "07:58:30", fin: "08:20:08" },
+      { inicio: "08:58:30", fin: "09:04:20" },
+      { inicio: "09:58:30", fin: "10:05:48" },
+      { inicio: "10:58:30", fin: "11:05:48" },
+      { inicio: "11:58:30", fin: "12:20:08" },
+      { inicio: "12:58:30", fin: "13:06:15" },
+      { inicio: "13:58:30", fin: "14:06:15" },
+      { inicio: "15:58:30", fin: "16:05:18" },
+      { inicio: "16:58:30", fin: "17:05:18" },
+      { inicio: "17:58:30", fin: "18:05:18" },
+      { inicio: "18:58:30", fin: "19:04:20" },
+      { inicio: "19:58:30", fin: "20:25:08" },
     ];
 
     const minuto_hardcode = 59; // 59
@@ -347,7 +347,7 @@
     // Función auxiliar
     function select_random_desco_fin(){
       let num_random_1 = Math.floor(Math.random() * 3);
-      let num_random_2 = Math.floor(Math.random() * 2);
+      let num_random_2 = Math.floor(Math.random() * 4);
 
       if (music === "2" && num_random_1 == 0) {
         audio_prep.src = "sounds/los40_a.mp3";
@@ -361,6 +361,12 @@
       } else if (num_random_2 == 0) {
         audio_prep.src = "sounds/cortinilla_conversacion.mp3";
         return 14;
+      } else if (num_random_2 == 1) {
+        audio_prep.src = "sounds/claim_corto.mp3";
+        return 5;
+      } else if (num_random_2 == 3) {
+        audio_prep.src = "sounds/radio_madrid.mp3";
+        return 8;
       } else {
         audio_prep.src = "sounds/desco_fin_hxh.mp3";
         return 5;
