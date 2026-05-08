@@ -26,7 +26,7 @@
     }
 
     .status {
-      margin-top: 20px;
+      margin-top: 15px;
       font-size: 1.2em;
       color: green;
       text-align: center;
@@ -129,6 +129,12 @@
 
   <h1>Solo boletines en directo</h1>
 
+  <div style="width: 100%; text-align: center; margin-bottom: 15px; margin-top: 10px;">
+  <img id="logo-emisora" alt="Logo Emisora" style="height: 60px; object-fit: contain; transition: opacity 0.3s;">
+  </div>
+  
+  <canvas id="visualizer" style="height: 80px; margin-bottom: 0px;"></canvas>
+
   <!-- Reproductor oculto -->
   <audio id="radio_news" style="display:none;"></audio>
   <audio id="radio_prep" style="display:none;"></audio>
@@ -145,14 +151,14 @@
   <button id="playButton">Algo ha salido mal</button>
 
   <!-- Enlaces para la música -->
-  <br><div id="status_news" class="status">Cargar modo música:</div><br><br>
+  <br><div id="status_news" class="status">Cargar modo música</div><br>
 
   <div style="display: inline-flex; gap: 10px; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 1rem;">
     <a href="?music=2" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">LOS40</a>
     <a href="?music=3" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">CLASSIC</a>
     <a href="?music=4" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">MEGASTAR</a>
   </div>
-  <br><br>
+  <br>
   <div style="display: inline-flex; gap: 10px; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 1rem;">
     <a href="?music=5" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">ROCKFM</a>
     <a href="?music=6" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">HITFM</a>
@@ -182,6 +188,7 @@
     const music_volume = document.getElementById('radio_music_volume');
 
     const btn = document.getElementById('playButton');
+    const imgLogo = document.getElementById('logo-emisora');
 
     let semaforo, interval;
     let fadeAudio_ID, fadeMusic_ID;
@@ -215,17 +222,26 @@
       streamURL = "https://emisoras.cadenaser.com/CADENASER";
     }
 
+    imgLogo_news = "resources/live/ser.png";
+    imgLogo_pin = "resources/live/pin.png";
+    imgLogo.src = "resources/live/off.png";
+    
     // Elegir stream música según parámetro
     if (music === "2") { // ?music=2
       musicURL = "https://emisoras.cadenaser.com/LOS40";
+      imgLogo_music = "resources/live/los40.png";
     } else if (music === "3") { // ?music=3
       musicURL = "https://emisoras.cadenaser.com/LOS40_CLASSIC";
+      imgLogo_music = "resources/live/classic.png";
     } else if (music === "4") { // ?music=4
       musicURL = "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3";
+      imgLogo_music = "resources/live/megastar.png";
     } else if (music === "5") { // ?music=5
       musicURL = "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3";
+      imgLogo_music = "resources/live/rockfm.png";
     } else if (music === "6") { // ?music=6
       musicURL = "http://hitfm.kissfmradio.cires21.com/hitfm.mp3";
+      imgLogo_music = "resources/live/hitfm.png";
     } else {
       musicURL = "none";
     }
@@ -333,6 +349,7 @@
 
     // Pin de inicio de desconexión
     function desco_ini(){
+      imgLogo.src = imgLogo_pin;
       audio_prep.volume = 1.0*max_news_volume;
       audio_prep.src = "sounds/desco_ini_gen.mp3";
       audio_prep.play();
@@ -340,6 +357,7 @@
 
     // Pin de fin de desconexión
     function desco_fin(){
+      imgLogo.src = imgLogo_pin;
       audio_prep.volume = 0.7*max_news_volume;
       audio_prep.play();
     }
@@ -377,6 +395,97 @@
     function pin(){
       audio_prep.src = "sounds/pin_noid.mp3";
       audio_prep.play();
+    }
+
+    /*===================================*/
+    /*== VISUALIZADOR SINTÉTICO (FAKE) ==*/
+    /*===================================*/
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
+    
+    // Configuramos un array de datos manual
+    const bufferLength = 10; // Número de barras
+    let dataArray = new Array(bufferLength).fill(0);
+    
+    function setupVisualizer() {
+      draw();
+    }
+    
+    function isSomethingPlaying() {
+      return !audio_news.paused || !audio_music.paused || !audio_prep.paused;
+    }
+    
+    /*==================================*/
+    /*== VISUALIZADOR ORGÁNICO (FAKE)  ==*/
+    /*==================================*/
+    
+    // Variables para el control de suavizado
+    let speedFactors = Array.from({ length: bufferLength }, () => 0.003 + Math.random() * 0.007);
+    let phaseOffsets = Array.from({ length: bufferLength }, () => Math.random() * Math.PI * 2);
+    let noiseHeights = Array.from({ length: bufferLength }, () => Math.random() * 100);
+    
+    function draw() {
+        requestAnimationFrame(draw);
+    
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    
+        const playing = isSomethingPlaying();
+        const time = Date.now();
+    
+        for (let i = 0; i < bufferLength; i++) {
+            if (playing) {
+                // Ruido Browniano
+                let variacion = (Math.random() - 0.5) * 5; // Salto de hasta * 5px
+                noiseHeights[i] += variacion;
+    
+                // Mantener el ruido dentro de unos límites (que no se escape del canvas)
+                if (noiseHeights[i] < 20) noiseHeights[i] += 10;
+                if (noiseHeights[i] > canvas.height * 0.8) noiseHeights[i] -= 10;
+    
+                // Onda base
+                let baseSin = Math.sin(time * speedFactors[i] + phaseOffsets[i]) * 20;
+                let targetHeight = noiseHeights[i] + baseSin;
+    
+                // Suavizado de seguridad
+                dataArray[i] = dataArray[i] + (targetHeight - dataArray[i]) * 0.3;
+    
+            } else {
+                dataArray[i] *= 0.8;
+                noiseHeights[i] *= 0.8;
+            }
+        }
+    
+        // Renderizado
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        const barWidth = (canvas.width / bufferLength) * 0.6;
+        const spacing = (canvas.width / bufferLength) * 0.4;
+        let x = spacing / 2;
+
+        canvasCtx.fillStyle = '#1a237e';
+    
+        for (let i = 0; i < bufferLength; i++) {
+            let barHeight = Math.max(dataArray[i], 4);
+            let y = (canvas.height - barHeight) / 2;
+            roundRect(canvasCtx, x, y, barWidth, barHeight, 6);
+            x += barWidth + spacing;
+        }
+    }
+    
+    // Función auxiliar para que las barras no sean rectángulos secos
+    function roundRect(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        ctx.fill();
     }
 
     /*=======================*/
@@ -486,6 +595,7 @@
         fadeAudio_ID = setInterval(() => {fadeInVol(audio_news, fadeAudio_ID, max_news_volume);}, 100);
 
         // Otros definitivo
+        imgLogo.src = imgLogo_news;
         btn.style.background = 'green';
         btn.textContent = "Trasmitiendo noticias en directo";
         console.log("Transmisión activada");
@@ -502,6 +612,7 @@
     function play_music() {
       if (musicURL != "none"){
         // Reiniciar con fade in
+        imgLogo.src = imgLogo_music;
         audio_music.volume = 0.01;
         audio_music.load();
         audio_music.play();
@@ -552,6 +663,7 @@
     // Pulsar el botón para empezar
     btn.textContent = "Haz click aquí para otorgar permisos";
     btn.addEventListener('click', () => {
+      setupVisualizer();
       pin();
       setTimeout(() => { main_function(); }, 1200);
     },{once:true});
