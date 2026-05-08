@@ -163,11 +163,13 @@
   
 <script>
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('¡SW registrado con éxito!', reg))
-        .catch(err => console.warn('Fallo al registrar el SW', err));
-    });
+    // Registramos directamente sin esperar al 'load'
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(reg => {
+        console.log('Service Worker registrado');
+        reg.update();
+      })
+      .catch(err => console.warn('Error registro Service Worker');
   }
 </script>
   
