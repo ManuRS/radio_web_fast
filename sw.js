@@ -1,11 +1,16 @@
 
-const CACHE_NAME = "radio-full-cache-v11";
+const CACHE_NAME = "radio-full-cache-v12";
 
 const FILES_TO_CACHE = [
   "./",
-
   "./index.html",
+
   "./live/index.html",
+  "./live_ser/index.html",
+
+  "./manifest.json",
+  "./live/manifest.json",
+  "./live_ser/manifest.json",
 
   "./resources/ser_a1.jpg",
   "./resources/redaser.jpg",
@@ -75,7 +80,7 @@ const FILES_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Instalando archivos...');
+      console.log('Descargando cache');
       // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
       return Promise.allSettled(
         FILES_TO_CACHE.map(url => {
@@ -92,7 +97,12 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+        keys.map(key => {
+          // SOLO borra si empieza por nuestro prefijo pero no es la versión actual
+          if (key.startsWith('radio-full') && key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
       );
     }).then(() => {
       // Una vez limpia la caché, reclamamos el control
