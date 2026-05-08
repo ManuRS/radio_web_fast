@@ -1,8 +1,10 @@
 
-const CACHE_NAME = "radio-live-cache-v7";
+const CACHE_NAME = "radio-live-cache-v11";
 
 const FILES_TO_CACHE = [
-  "index.html",
+  "./",
+
+  "./index.html",
 
   "../resources/favicon.ico",
   "../resources/icon-192.png",
@@ -46,30 +48,44 @@ const FILES_TO_CACHE = [
 ];
 
 // Instalación
-self.addEventListener("install", event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('Instalando archivos...');
+      // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
+      return Promise.allSettled(
+        FILES_TO_CACHE.map(url => {
+          return cache.add(url).catch(err => console.warn(`No se pudo cachear: ${url}`));
+        })
+      );
+    })
   );
   self.skipWaiting();
 });
 
 // Activación
-self.addEventListener("activate", event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(key => {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      }))
-    )
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
+    }).then(() => {
+      // Una vez limpia la caché, reclamamos el control
+      return self.clients.claim();
+    })
   );
-  self.clients.claim();
 });
 
 // Fetch: cache-first
-self.addEventListener("fetch", event => {
-  if (event.request.url.startsWith("http")) {
-    event.respondWith(
-      caches.match(event.request).then(resp => resp || fetch(event.request))
-    );
-  }
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      // Si el archivo está en la caché, lo devolvemos. Si no, lo pedimos a la red.
+      return response || fetch(event.request);
+    }).catch(() => {
+      // Opcional: Si falla todo (estás offline y no está en caché)
+      console.log('Service Worker fetch event exception');
+    })
+  );
 });
