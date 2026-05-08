@@ -1,7 +1,9 @@
 
-const CACHE_NAME = "radio-full-cache-v7";
+const CACHE_NAME = "radio-full-cache-v8";
 
 const FILES_TO_CACHE = [
+  "./"
+
   "index.html",
   "live/index.html",
 
@@ -56,33 +58,54 @@ const FILES_TO_CACHE = [
   "resources/rac105.png",
   "resources/radiole.jpg",
   "resources/fiestaradio.webp",
+
+  "resources/live/classic.png",
+  "resources/live/hitfm.png",
+  "resources/live/los40.png",
+  "resources/live/megastar.png",
+  "resources/live/null.png",
+  "resources/live/off.png",
+  "resources/live/pin.png",
+  "resources/live/rockfm.png",
+  "resources/live/ser.png",
+ 
 ];
 
 // Instalación
-self.addEventListener("install", event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => {
+      // Usamos map para intentar cachear cada archivo individualmente
+      return Promise.allSettled(
+        FILES_TO_CACHE.map(url => {
+          return cache.add(url).catch(err => console.error("Fallo al cachear:", url, err));
+        })
+      );
+    })
   );
   self.skipWaiting();
 });
 
 // Activación
-self.addEventListener("activate", event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(key => {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      }))
-    )
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      );
+    }).then(() => {
+      // Una vez limpia la caché, reclamamos el control
+      return self.clients.claim();
+    })
   );
-  self.clients.claim();
 });
 
 // Fetch: cache-first
-self.addEventListener("fetch", event => {
-  if (event.request.url.startsWith("http")) {
-    event.respondWith(
-      caches.match(event.request).then(resp => resp || fetch(event.request))
-    );
-  }
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      // Si está en caché, devuélvelo. Si no, búscalo en internet.
+      return response || fetch(event.request);
+    })
+  );
 });
