@@ -449,10 +449,12 @@
     
                 // Suavizado de seguridad
                 dataArray[i] = dataArray[i] + (targetHeight - dataArray[i]) * 0.3;
-    
+              
+                canvasCtx.fillStyle = '#1a237e';
             } else {
-                dataArray[i] *= 0.8;
-                noiseHeights[i] *= 0.8;
+                dataArray[i] *= 1.0;
+                noiseHeights[i] *= 1.0;
+                canvasCtx.fillStyle = '#e64c3c';
             }
         }
     
@@ -462,8 +464,6 @@
         const spacing = (canvas.width / bufferLength) * 0.4;
         let x = spacing / 2;
 
-        canvasCtx.fillStyle = '#1a237e';
-    
         for (let i = 0; i < bufferLength; i++) {
             let barHeight = Math.max(dataArray[i], 4);
             let y = (canvas.height - barHeight) / 2;
