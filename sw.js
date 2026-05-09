@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v12";
+const CACHE_NAME = "radio-full-cache-v20";
 
 const FILES_TO_CACHE = [
   "./",
@@ -73,7 +73,20 @@ const FILES_TO_CACHE = [
   "./resources/live/pin.png",
   "./resources/live/rockfm.png",
   "./resources/live/ser.png",
- 
+
+  "./sounds/claim_corto.mp3",
+  "./sounds/cortinilla_conversacion.mp3",
+
+  "./sounds/desco_alt.mp3",
+  "./sounds/desco_fin.mp3",  
+  "./sounds/desco_fin_hxh.mp3",  
+  "./sounds/desco_ini_gen.mp3",  
+
+  "./sounds/los40_a.mp3",
+  "./sounds/los40_b.mp3",
+  "./sounds/los40c_a.mp3",
+  "./sounds/pin_noid.mp3",
+  "./sounds/radio_madrid.mp3",
 ];
 
 // Instalación
