@@ -34,7 +34,7 @@
     }
 
     .status {
-      margin-top: 15px;
+      margin-top: 5px;
       font-size: 1.2em;
       color: green;
       text-align: center;
@@ -137,11 +137,11 @@
 
   <h1>Solo boletines en directo</h1>
 
-  <div style="width: 100%; text-align: center; margin-bottom: 15px; margin-top: 10px;">
+  <div style="width: 100%; text-align: center; margin-bottom: 20px; margin-top: 15px;">
   <img id="logo-emisora" alt="Logo Emisora" style="height: 60px; object-fit: contain; transition: opacity 0.3s;">
   </div>
   
-  <canvas id="visualizer" style="height: 80px; margin-bottom: 0px;"></canvas>
+  <canvas id="visualizer" style="height: 80px; margin-bottom: 25px; margin-top: 5px;"></canvas>
 
   <!-- Reproductor oculto -->
   <audio id="radio_news" style="display:none;"></audio>
@@ -446,7 +446,7 @@
       for (let i = 0; i < bufferLength; i++) {
           if (playing) {
               // Ruido Browniano
-              let variacion = (Math.random() - 0.5) * 5; // Salto de hasta * 5px
+              let variacion = (Math.random() - 0.5) * 1; // Salto de hasta * 5px
               noiseHeights[i] += variacion;
   
               // Mantener el ruido dentro de unos límites (que no se escape del canvas)
@@ -486,16 +486,7 @@
   // Función auxiliar para que las barras no sean rectángulos secos
   function roundRect(ctx, x, y, width, height, radius) {
       ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
+      ctx.roundRect(x, y, width, height, radius);
       ctx.fill();
   }
 
