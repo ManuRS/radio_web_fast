@@ -136,6 +136,25 @@
       margin-top: 6px;
     }
 
+    /* Definimos la animación */
+    @keyframes altavoz-beat {
+      0% {
+        transform: scale(1); /* Tamaño original */
+      }
+      25% {
+        transform: scale(var(--bounce-scale, 1.1));  /* Zoom in rápido */
+      }
+      100% {
+        transform: scale(1); /* Vuelta lenta al origen */
+      }
+    }
+    
+    /* Clase que aplicaremos al logo cuando esté sonando */
+    .logo-sonando {
+      animation: altavoz-beat 0.6s infinite cubic-bezier(0.17, 0.67, 0.83, 0.67);
+      /* El cubic-bezier le da ese toque de "rebote" mecánico de un altavoz */
+    }
+
   </style>
 </head>
 
@@ -419,6 +438,14 @@
   }
 
   /*===================================*/
+  /*=====      OTROS ESTILOS      =====*/
+  /*===================================*/
+  imgLogo.addEventListener('animationiteration', () => {
+      const randomScale = (Math.random() * (1.5 - 1.15) + 1.15).toFixed(2);
+      imgLogo.style.setProperty('--bounce-scale', randomScale);
+  });
+
+  /*===================================*/
   /*== VISUALIZADOR SINTÉTICO (FAKE) ==*/
   /*===================================*/
   const canvas = document.getElementById('visualizer');
@@ -626,6 +653,7 @@
     if (musicURL != "none"){
       // Reiniciar con fade in
       imgLogo.src = imgLogo_music;
+      imgLogo.classList.add('logo-sonando');
       audio_music.volume = 0.01;
       audio_music.load();
       audio_music.play();
@@ -638,6 +666,7 @@
     if (musicURL != "none"){
       // Para con delay opcional
       setTimeout(() => {
+        imgLogo.classList.remove('logo-sonando');
         fadeMusic_ID = setInterval(() => {fadeOutVol(audio_music, fadeMusic_ID);}, 100);
       }, delay);
     }
