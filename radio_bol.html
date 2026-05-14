@@ -751,7 +751,7 @@
       const officialNow = new Date(officialBaseTime.getTime() + elapsed);
 
       document.getElementById("officialTime").innerText = "Hora oficial " + formatTime(officialNow);
-      const minus_time = new Date(officialNow.getTime() - 6000);
+      const minus_time = new Date(officialNow.getTime() - 5000);
       document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time);
     }
   }
@@ -762,8 +762,8 @@
   // Actualizar cada segundo
   setInterval(actualizarRelojes, 1000);
 
-  // Refrescar hora oficial cada minuto
-  setInterval(obtenerHoraOficial, 60000);
+  // Refrescar hora oficial dos minuto
+  setInterval(obtenerHoraOficial, 2*60000);
 
 </script>
 </html>
