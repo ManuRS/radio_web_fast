@@ -720,7 +720,7 @@
   // Obtener hora oficial desde internet
   async function obtenerHoraOficial() {
     try {
-      const response = await fetch("https://worldtimeapi.org/api/ip");
+      const response = await fetch("https://time.now/developer/api/timezone/Europe/Madrid");
       const data = await response.json();
 
       officialBaseTime = new Date(data.datetime);
