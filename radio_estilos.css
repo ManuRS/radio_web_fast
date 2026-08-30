@@ -1,4 +1,9 @@
 
+
+/*************
+SLIDER SUPERIOR VOLUMEN
+*************/
+ 
 /* Control de volumen */
 .volume-control {
   margin: 20px auto 20px;
@@ -38,3 +43,38 @@
   background: darkblue;
   cursor: pointer;
 }
+
+/*************
+BOTONES BAJO EL PLAYER
+*************/
+
+/* 💻 ESCRITORIO (Reglas por defecto) */
+    .botones-reproduccion {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      width: auto; /* Evita que ocupen toda la pantalla */
+    }
+
+    .botones-reproduccion button {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+
+    /* 📱 MÓVIL (Solo se activa en pantallas pequeñas) */
+    @media (max-width: 600px) {
+      .botones-reproduccion {
+        width: 100%;
+        justify-content: space-between;
+        gap: 5px;
+      }
+      
+      .botones-reproduccion button {
+        flex: 1; /* Aquí es donde forzamos que se estiren por igual */
+        padding: 10px 0;
+        box-sizing: border-box;
+      }
+    }

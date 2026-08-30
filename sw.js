@@ -1,9 +1,22 @@
 
-const CACHE_NAME = "radio-full-cache-v30";
+const CACHE_NAME = "radio-full-cache-v31";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
+  "./radio_bol.html",
+  "./radio_boletos.html",
+  "./radio_daily.html",
+  "./radio_elpais.html",
+  "./radio_extra.html",
+  "./radio_finde.html",
+  "./radio_fun.html",
+  "./radio_map.html",
+  "./radio_mañanas.html",
+  "./radio_programas.html",
+  
+  "./radio_estilos.css",
+  "./radio_scripts.js",
 
   "./live/index.html",
   "./live_ser/index.html",
