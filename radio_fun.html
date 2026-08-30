@@ -148,9 +148,17 @@
     }
     
   </style>
+
+  <link rel="stylesheet" href="radio_estilos.css">
+
 </head>
 <body>
   <h1>Pódcast en línea<br><br></h1>
+
+  <div class="volume-control">
+    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+  </div>
+
   <div id="lista"></div>
 
   <!-- Modal salir -->
@@ -164,6 +172,15 @@
   </div>
 
   <script>
+    // LÓGICA DEL VOLUMEN GLOBAL
+    const volumeSlider = document.getElementById("volume-slider");
+    volumeSlider.addEventListener("input", function() {
+      const audios = document.querySelectorAll("audio");
+      audios.forEach(audio => {
+        audio.volume = this.value;
+      });
+    });
+
     const podcasts = [
 
       { nombre: "Recarga Activa", url: "https://feeds.megaphone.fm/ANAITMEDIASL2541363674", capitulo: [": "] },
@@ -272,14 +289,16 @@
                 <audio controls style="background-color: #f1f3f4;" src="${audioUrl}"></audio>
                 <div class="controles">
                   <br>
+                  <div class="botones-reproduccion">
                   <button onclick="
-                      let a=this.parentElement.previousElementSibling;
+                      let a=this.closest('.podcast-texto').querySelector('audio');
                       if(a.paused){ a.play(); this.textContent='⏸ Pausa'; }
                       else { a.pause(); this.textContent='▶ Play'; }
                   ">▶ Play</button>
-                  <button onclick="this.parentElement.previousElementSibling.currentTime = Math.max(0,this.parentElement.previousElementSibling.currentTime-10)">⏪ -10s</button>
-                  <button onclick="this.parentElement.previousElementSibling.currentTime = Math.min(this.parentElement.previousElementSibling.duration,this.parentElement.previousElementSibling.currentTime+10)">⏩ +10s</button>
-                  <button onclick="let a=this.parentElement.previousElementSibling;a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏸ x1':'⏩ x2'">⏩ x2</button>
+                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
+                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
+                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏸ x1':'⏩ x2'">⏩ x2</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -289,6 +308,12 @@
 
         } else {
           contenedor.innerHTML = `<p class="titulo-principal">${p.nombre} (No se encontró el capítulo "${p.capitulo}")</p>`;
+        }
+
+        // AL CARGAR UN NUEVO AUDIO, LE ASIGNAMOS EL VOLUMEN ACTUAL DEL SLIDER GLOBAL
+        const nuevoAudio = contenedor.querySelector("audio");
+        if (nuevoAudio) {
+          nuevoAudio.volume = volumeSlider.value;
         }
 
       } catch (e) {
@@ -317,5 +342,8 @@
     });
 
   </script>
+
+  <script src="radio_scripts.js"></script>
+
 </body>
 </html>

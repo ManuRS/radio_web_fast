@@ -1,0 +1,40 @@
+
+/* Control de volumen */
+.volume-control {
+  margin: 20px auto 20px;
+  text-align: center;
+  width: 100%;
+}
+
+#volume-slider {
+  -webkit-appearance: none;
+  width: 280px;
+  height: 14px;
+  background: #ddd;
+  border-radius: 30px;
+  outline: none;
+  transition: background 0.3s;
+  accent-color: darkblue;
+  cursor: pointer;
+}
+
+/* Punto del slider para Chrome, Safari, Edge */
+#volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px; /* Ancho del punto */
+  height: 24px; /* Alto del punto */
+  border-radius: 50%; /* Lo hace redondo */
+  background: darkblue; /* Color del punto */
+  cursor: pointer;
+}
+
+/* Punto del slider para Firefox */
+#volume-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: none; /* Quita el borde por defecto */
+  border-radius: 50%;
+  background: darkblue;
+  cursor: pointer;
+}
