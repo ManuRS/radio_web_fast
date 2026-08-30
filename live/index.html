@@ -287,6 +287,45 @@
       font-weight: bold;
     }
 
+    /* Control de volumen */
+    .volume-control {
+      margin: 20px auto 20px;
+      text-align: center;
+      width: 100%;
+    }
+    
+    #volume-slider {
+      -webkit-appearance: none;
+      width: 280px;
+      height: 14px;
+      background: #ddd;
+      border-radius: 30px;
+      outline: none;
+      transition: background 0.3s;
+      accent-color: darkblue;
+      cursor: pointer;
+    }
+
+    /* Punto del slider para Chrome, Safari, Edge */
+    #volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px; /* Ancho del punto */
+      height: 24px; /* Alto del punto */
+      border-radius: 50%; /* Lo hace redondo */
+      background: darkblue; /* Color del punto */
+      cursor: pointer;
+    }
+
+    /* Punto del slider para Firefox */
+    #volume-slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border: none; /* Quita el borde por defecto */
+      border-radius: 50%;
+      background: darkblue;
+      cursor: pointer;
+    }
 
   </style>
 
@@ -299,6 +338,10 @@
 <div id="category-buttons" style="margin: 20px; text-align: center;">
   <button class="category-btn active" onclick="filterStations('general', this)">Generalistas</button>
   <button class="category-btn" onclick="filterStations('musical', this)">Musicales</button>
+</div>
+
+<div class="volume-control">
+  <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
 </div>
 
 <div class="links">
@@ -592,6 +635,15 @@
   let currentCard = null;
   let currentHls = null; // instancia de hls.js
 
+  // Referencia al slider de volumen
+  const volumeSlider = document.getElementById('volume-slider');
+  // Event listener para cambiar el volumen en tiempo real
+  volumeSlider.addEventListener('input', (e) => {
+    if (currentAudio) {
+      currentAudio.volume = e.target.value;
+    }
+  });
+
 function playPause(card) {
     const audio = card.querySelector('audio');
     const originalSrc = audio.getAttribute("data-src");
@@ -609,6 +661,9 @@ function playPause(card) {
     }
 
     if (audio.paused) {
+      // Aplicar el volumen actual del slider al nuevo audio
+      audio.volume = volumeSlider.value;
+      
       if (originalSrc.endsWith(".m3u8")) {
         // Caso HLS
         if (Hls.isSupported()) {
