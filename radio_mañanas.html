@@ -194,17 +194,12 @@
       { nombre: "Herrera a las 8", url: "https://www.cope.es/api/es/programas/herrera-en-cope/audios/rss.xml", capitulo: ["08:00H"] }, 
       { nombre: "Herrera a las 9", url: "https://www.cope.es/api/es/programas/herrera-en-cope/audios/rss.xml", capitulo: ["09:00H"] }, 
 
-
-      { nombre: "Monólogo de Alsina", url: "https://www.ondacero.es/rss/podcast/mount/ATRESMEDIA_MAS_DE_UNO_P/fastly", capitulo: ["Monólogo de Alsina"] },
-      { nombre: "Más de uno ", url: "https://www.ondacero.es/rss/podcast/mount/ATRESMEDIA_MAS_DE_UNO_P/fastly", capitulo: ["Más de uno "] },
-
+      { nombre: "Monólogo de Alsina", url: "https://www.ondacero.es/rss/podcast/triton/mount/ATRESMEDIA_MAS_DE_UNO_AOD_P/origin/fastly", capitulo: ["Monólogo de Alsina"] },
+      { nombre: "Más de uno ", url: "https://www.ondacero.es/rss/podcast/triton/mount/ATRESMEDIA_MAS_DE_UNO_AOD_P/origin/fastly", capitulo: ["Más de uno "] },
 
       { nombre: "Las mañanas de RNE - 6h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Primera hora"] },
-
       { nombre: "Las mañanas de RNE - 7h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Segunda hora"] },
-
       { nombre: "Las mañanas de RNE - 8h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Tercera hora"] },
-
       { nombre: "Las mañanas de RNE - 9h", url: "https://api2.rtve.es/api/programas/119312/audios.rss", capitulo: ["Cuarta hora"] },      
     ];
 
@@ -280,10 +275,10 @@
         imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
         htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
 
-        if (p.nombre.includes("RNE")) {
+        if (p.nombre.includes("RNE-fixoff")) {
           htmlImagen = "resources/lucas.webp" ? `<img src="resources/lucas.webp" alt="${p.nombre}">` : "";
         } 
-        else if (p.nombre.includes("Federico")) {
+        else if (p.nombre.includes("Federico-fixoff")) {
           htmlImagen = "resources/federico.webp" ? `<img src="resources/federico.webp" alt="${p.nombre}">` : "";
         } 
 
