@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v34";
+const CACHE_NAME = "radio-full-cache-v34b";
 
 const FILES_TO_CACHE = [
   "./",
@@ -58,6 +58,7 @@ const FILES_TO_CACHE = [
 
   "./resources/radioexterior.png",
   "./resources/sermas.webp",
+  "./resources/lasexta.webp",
 
   "./resources/los40_estudio.jpg",
   "./resources/los40c_micro.jpg",
