@@ -2,7 +2,7 @@
   "name": "Radio en directo",
   "short_name": "Radio",
 
-  "version": "30",
+  "version": "34",
 
   "start_url": "/radio_web_fast/live/index.html",
   "display": "standalone",

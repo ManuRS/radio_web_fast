@@ -88,7 +88,7 @@
       inset: 0;
       background-size: cover;
       background-position: center;
-      filter: brightness(0.85) blur(1px);
+      filter: brightness(0.75) blur(2px);
       transition: transform 0.3s ease, filter 0.3s ease;
     }
 
@@ -105,7 +105,7 @@
     /* Hover efecto */
     .card:hover::before {
       transform: scale(1.1);
-      filter: brightness(0.95) blur(0.2px);
+      filter: brightness(1.0) blur(0.0px);
     }
     .card:hover::after {
       background: rgba(0,0,0,0.2);
@@ -124,8 +124,13 @@
     /* Separar el nombre de la emisora del indicador */
     .station-name {
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       font-weight: bold;
+    }
+
+    .card:hover .station-name {
+      opacity: 0;
+      visibility: hidden;
     }
 
     /* Animación de parpadeo */
@@ -171,6 +176,10 @@
     .radio3::before { background-image: url('../resources/radio3.png'); }
     .marca::before { background-image: url('../resources/marca.png'); }
     .radio5::before { background-image: url('../resources/radio5.png'); }
+
+    .radioexterior::before { background-image: url('../resources/radioexterior.png'); }
+    .ser-mas::before { background-image: url('../resources/sermas.webp'); }
+    .lasexta::before { background-image: url('../resources/lasexta.webp'); }
 
     .los40::before { background-image: url('../resources/los40_estudio.jpg'); }
     .los40-classic::before { background-image: url('../resources/los40c_micro.jpg'); }
@@ -400,31 +409,13 @@
     <audio data-src="https://22713.live.streamtheworld.com/RAC_1.mp3"></audio>
   </div>
 
-  <!-- SER Catalunya -->
-  <div class="card sercat general" onclick="playPause(this)">
+  <!-- SER Más -->
+  <div class="card ser-mas general" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">SER Catalunya</span>
+      <span class="station-name">SER+</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://27783.live.streamtheworld.com/SER_CAT.mp3"></audio>
-  </div>
-
-  <!-- Catalunya Radio -->
-  <div class="card catradio general" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">Catalunya Ràdio</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8"></audio>
-  </div>
-
-  <!-- Radio MARCA -->
-  <div class="card marca general" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">Radio MARCA</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://23543.live.streamtheworld.com/RADIOMARCA_NACIONAL.mp3"></audio>
+    <audio data-src="https://27753.live.streamtheworld.com/CADENASER_ALT1AAC.aac"></audio>
   </div>
 
   <!-- Radio 3 -->
@@ -436,14 +427,14 @@
     <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high"></audio>
   </div>
 
-  <!-- Ràdio 4 -->
-  <div class="card radio4 general" onclick="playPause(this)">
+  <!-- Radio MARCA -->
+  <div class="card marca general" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">Ràdio 4</span>
+      <span class="station-name">Radio MARCA</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high"></audio>
-  </div>  
+    <audio data-src="https://23543.live.streamtheworld.com/RADIOMARCA_NACIONAL.mp3"></audio>
+  </div>
 
   <!-- Radio 5 -->
   <div class="card radio5 general" onclick="playPause(this)">
@@ -454,6 +445,51 @@
     <audio data-src="https://dispatcher.rndfnk.com/crtve/rne5/mur/mp3/high"></audio>
   </div>
 
+  <!-- SER Catalunya -->
+  <div class="card sercat general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">SER Catalunya</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://27783.live.streamtheworld.com/SER_CAT.mp3"></audio>
+  </div>
+
+  <!-- Ràdio 4 -->
+  <div class="card radio4 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Ràdio 4</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high"></audio>
+  </div>  
+
+  <!-- Catalunya Radio -->
+  <div class="card catradio general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Catalunya Ràdio</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8"></audio>
+  </div>
+
+  <!-- Radio Exterior -->
+  <div class="card radioexterior general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio Exterior</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/rne/rne_re_main_dvr.m3u8"></audio>
+  </div>
+
+  <!-- La Sexta -->
+  <div class="card lasexta general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">laSexta</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://audiotvlive.atresmedia.com/h264/live/lasexta/audio_1.m3u8"></audio>
+  </div>
+  
   <!-- ------------------------------------------ -->
 
   <!-- LOS40 -->
@@ -489,7 +525,7 @@
       <span class="station-name">HitFM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="http://hitfm.kissfmradio.cires21.com/hitfm.mp3"></audio>
+    <audio data-src="https://hitfm.kissfmradio.cires21.com/hitfm.mp3"></audio>
   </div>
 
   <!-- RockFM -->
@@ -543,7 +579,7 @@
       <span class="station-name">KissFM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="http://kissfm.kissfmradio.cires21.com/kissfm.mp3"></audio>
+    <audio data-src="https://kissfm.kissfmradio.cires21.com/kissfm.mp3"></audio>
   </div>
 
   <!-- LOS40 DANCE -->
