@@ -1,0 +1,28 @@
+
+<audio data-src="https://emisoras.cadenaser.com/CADENASER"></audio>
+
+<audio data-src="https://emisoras.cadenaser.com/LOS40"></audio>
+<audio data-src="https://emisoras.cadenaser.com/LOS40_CLASSIC"></audio>
+
+<audio data-src="https://emisoras.cadenaser.com/LOS40_DANCE"></audio>
+<audio data-src="https://emisoras.cadenaser.com/LOS40_URBAN"></audio>
+
+---------------
+
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MADRIDAAC.aac"></audio>
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRIDAAC.acc"></audio>
+
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASERAAC.aac"></audio>
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER2AAC.aac"></audio>
+
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER_ALT1AAC.aac"></audio>
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER_ALT2AAC.aac"></audio>
+
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_ZAMORAAAC.aac"></audio>
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_MADRID_NORTEAAC.aac"></audio>
+
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CORDOBAAAC.aac"></audio>
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_GRANADAAAC.aac"></audio>
+
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_BARCELONAAAC.aac"></audio>
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3"></audio>

@@ -241,7 +241,7 @@
   /*============================*/
 
   // URL por defecto
-  let streamURL = "https://emisoras.cadenaser.com/CADENASER";
+  let streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MADRIDAAC.aac";
   let musicURL = "none";
 
   // Leer parámetros de la URL
@@ -249,17 +249,13 @@
   const stream = params.get("stream");
   const music = params.get("music");
 
-  // Elegir stream noticias según parámetro
+  // Elegir stream noticias según parámetro, 
   if (stream === "2") { // ?stream=2
-    streamURL = "https://25533.live.streamtheworld.com/SER_MADRIDAAC.aac";
+    streamURL = "hhttps://emisoras.cadenaser.com/CADENASER";
   } else if (stream === "3") { // ?stream=3
-    streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MADRIDAAC.aac";
-  } else if (stream === "4") { // ?stream=4
-    streamURL = "https://27783.live.streamtheworld.com/SER_MAS_MADRIDAAC.aac";
-  } else if (stream === "5") { // ?stream=5
     streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRIDAAC.aac";
   } else {
-    streamURL = "https://emisoras.cadenaser.com/CADENASER";
+    streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MADRIDAAC.aac";
   }
 
   imgLogo_news = "resources/live/ser.png";
@@ -268,10 +264,10 @@
   
   // Elegir stream música según parámetro
   if (music === "2") { // ?music=2
-    musicURL = "https://emisoras.cadenaser.com/LOS40";
+    musicURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40";
     imgLogo_music = "resources/live/los40.png";
   } else if (music === "3") { // ?music=3
-    musicURL = "https://emisoras.cadenaser.com/LOS40_CLASSIC";
+    musicURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC";
     imgLogo_music = "resources/live/classic.png";
   } else if (music === "4") { // ?music=4
     musicURL = "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3";
