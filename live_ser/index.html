@@ -273,7 +273,7 @@
       <span class="station-name">Cadena SER</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://emisoras.cadenaser.com/CADENASER"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MADRIDAAC.aac"></audio>
   </div>
 
 </div>
@@ -301,12 +301,30 @@
     }
   });
 
+  let latencyInterval = null;
+  let reconnectTimer = null;
+  let reconnecting = false;
+
   function playPause(card) {
     const audio = card.querySelector('audio');
     const originalSrc = audio.getAttribute("data-src");
 
+    // Limpiar intervalo de latencia previo si existía
+    if (latencyInterval) {
+      clearInterval(latencyInterval);
+      latencyInterval = null;
+    }
+
     // Si ya hay otro sonando, lo paro y lo reinicio
     if (currentAudio && currentAudio !== audio) {
+
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      reconnecting = false;
+
       currentAudio.pause();
       currentAudio.removeAttribute("src"); // liberar stream anterior
       currentAudio.load();
@@ -318,19 +336,38 @@
       audio.volume = volumeSlider.value;
       
       // Asignar el src en el momento del play
-      if (!audio.src) {
-        audio.src = originalSrc;
-      }
+      if (!audio.src) audio.src = originalSrc;
       audio.load();
-      audio.play().catch(err => {
-        console.error("Error al reproducir:", err);
-      });
+      audio.play().catch(err => {console.error("Error al reproducir:", err);});
+
+      // Control para evitar que el streaming de audio clásico se quede retrasado
+      latencyInterval = setInterval(() => {
+        if (!audio.paused && audio.buffered.length > 0) {
+          const livePosition = audio.buffered.end(audio.buffered.length - 1);
+          const margenSegundos = livePosition - audio.currentTime;
+
+          console.log(`Margen con el directo: ${margenSegundos.toFixed(2)} segundos`);
+
+          // Si el retraso acumulado supera los 4 segundos, saltamos al borde actual
+          if (livePosition - audio.currentTime > 4) {
+            audio.currentTime = livePosition;
+          }
+        }
+      }, 10000);
 
       card.classList.add("playing");
       currentAudio = audio;
       currentCard = card;
     } else {
       audio.pause();
+
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      reconnecting = false;
+
       audio.removeAttribute("src"); // liberar conexión
       audio.load();
 
@@ -338,6 +375,94 @@
       currentAudio = null;
       currentCard = null;
     }
+  }
+
+    // Reconexión automática ante problemas de conexión
+  document.querySelectorAll('.card audio').forEach(audio => {
+
+    audio.addEventListener('error', () => {
+      console.log("⚠️ Error en el stream");
+      reconnectAudio(audio);
+    });
+
+    audio.addEventListener('ended', () => {
+      console.log("⚠️ El stream ha terminado");
+      reconnectAudio(audio);
+    });
+
+    audio.addEventListener('stalled', () => {
+      console.log("⚠️ Stream detenido");
+      reconnectAudio(audio);
+    });
+
+  });
+
+  function reconnectAudio(audio) {
+    // Solo reconectar si sigue siendo la emisora activa
+    if (audio !== currentAudio || audio.paused || reconnecting) return;
+
+    reconnecting = true;
+
+    clearTimeout(reconnectTimer);
+
+    reconnectTimer = setTimeout(() => {
+      // Comprobar de nuevo que sigue siendo la emisora activa
+      if (audio !== currentAudio || audio.paused) {
+        reconnecting = false;
+        return;
+      }
+
+      const src = audio.getAttribute("data-src");
+      if (!src) {
+        reconnecting = false;
+        return;
+      }
+
+      console.log("🔄 Reconectando con la emisora...");
+
+      // HLS
+      if (src.endsWith(".m3u8")) {
+        if (currentHls) {
+          currentHls.destroy();
+          currentHls = null;
+        }
+
+        if (Hls.isSupported()) {
+          currentHls = new Hls({
+            liveSyncDurationCount: 6,
+            liveMaxLatencyDurationCount: 15
+          });
+
+          currentHls.loadSource(src);
+          currentHls.attachMedia(audio);
+
+          currentHls.on(Hls.Events.MANIFEST_PARSED, () => {
+            audio.play().catch(err => console.error("Error al reconectar HLS:", err));
+            reconnecting = false;
+          });
+
+        } else {
+          audio.src = src;
+          audio.load();
+          audio.play().catch(err => console.error("Error al reconectar:", err));
+          reconnecting = false;
+        }
+
+      // MP3 / AAC
+      } else {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+
+        audio.src = src;
+        audio.load();
+
+        audio.play().catch(err => console.error("Error al reconectar:", err));
+
+        reconnecting = false;
+      }
+
+    }, 6000); // Esperamos 6 segundos antes de reconectar
   }
 
   // Android media
