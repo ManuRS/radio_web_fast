@@ -85,7 +85,7 @@ var emisoras = [
   { "nombre": "Radio Granada", "ciudad": "Granada", "lat": 37.1773, "lon": -3.5986, "frecuencia": "102.5 FM / 1080 OM + 103.4 FM" },
   { "nombre": "Radio Guadix", "ciudad": "Guadix", "lat": 37.300, "lon": -3.130, "frecuencia": "101.8 FM" },
   { "nombre": "Radio Huelva", "ciudad": "Huelva", "lat": 37.2620, "lon": -6.9470, "frecuencia": "98.1 FM" },
-  { "nombre": "Radio Jaén", "ciudad": "Jaén", "lat": 37.7690, "lon": -3.7900, "frecuencia": "100.0 FM / 1026 OM + 95.3 FM" },
+  { "nombre": "Radio Jaén", "ciudad": "Jaén", "lat": 37.7690, "lon": -3.7900, "frecuencia": "100.0 FM / 1026 OM" },
   { "nombre": "Radio Jerez", "ciudad": "Jerez de la Frontera", "lat": 36.7019, "lon": -6.1380, "frecuencia": "106.8 FM / 1026 OM" },
   { "nombre": "Radio Jódar", "ciudad": "Jódar", "lat": 37.844, "lon": -3.352, "frecuencia": "95.3 FM" },
   { "nombre": "Radio Lebrija", "ciudad": "Lebrija", "lat": 36.919, "lon": -6.0764, "frecuencia": "102.9 FM" }, // Hasta abril 2026 era COPE
@@ -126,7 +126,7 @@ var emisoras = [
   { "nombre": "SER Cinco Villas", "ciudad": "Ejea de los Caballeros", "lat": 42.129, "lon": -1.116, "frecuencia": "94.1 FM" },
   { "nombre": "Radio Graus", "ciudad": "Graus", "lat": 42.189, "lon": 0.337, "frecuencia": "95.1 FM" },
   { "nombre": "Radio Huesca", "ciudad": "Huesca", "lat": 42.140, "lon": -0.409, "frecuencia": "102.0 FM / 1080 OM" },
-  { "nombre": "Radio Jaca SER Pirineos", "ciudad": "Jaca", "lat": 42.570, "lon": -0.548, "frecuencia": "92.3 FM" },
+  { "nombre": "Radio Jaca SER Pirineos", "ciudad": "Jaca", "lat": 42.570, "lon": -0.548, "frecuencia": "92.3 FM / 89.1 FM" },
   { "nombre": "Radio La Comarca", "ciudad": "Alcañiz", "lat": 41.049, "lon": -0.132, "frecuencia": "95.9 FM" },
   { "nombre": "Radio Benasque SER", "ciudad": "Benasque", "lat": 42.600, "lon": 0.518, "frecuencia": "95.1 FM" },
   { "nombre": "Radio Sabiñánigo", "ciudad": "Sabiñánigo", "lat": 42.515, "lon": -0.379, "frecuencia": "89.1 FM" },
@@ -152,19 +152,19 @@ var emisoras = [
   { "nombre": "Radio Menorca", "ciudad": "Mahón", "lat": 39.889, "lon": 4.265, "frecuencia": "95.7 FM" },
 
   // CANARIAS
-  { "nombre": "Radio Club Tenerife", "ciudad": "Santa Cruz de Tenerife", "lat": 28.468, "lon": -16.248, "frecuencia": "101.1 FM / 91.1 FM / 95.9 FM / 106.3 FM / 103.0 FM / 99.8 FM / 1179 OM" },
-  { "nombre": "SER Las Palmas", "ciudad": "Las Palmas de Gran Canaria", "lat": 28.100, "lon": -15.413, "frecuencia": "100.8 FM" },
-  { "nombre": "SER Lanzarote", "ciudad": "Arrecife", "lat": 28.960, "lon": -13.547, "frecuencia": "101.2 FM" },
-  { "nombre": "SER Fuerteventura", "ciudad": "Puerto del Rosario", "lat": 28.504, "lon": -13.862, "frecuencia": "96.9 FM" },
-  { "nombre": "SER La Palma", "ciudad": "Santa Cruz de La Palma", "lat": 28.683, "lon": -17.764, "frecuencia": "100.5 FM" },
-  { "nombre": "SER La Gomera", "ciudad": "San Sebastián de La Gomera", "lat": 28.091, "lon": -17.112, "frecuencia": "96.7 FM" },
-  { "nombre": "SER El Hierro", "ciudad": "Valverde", "lat": 27.809, "lon": -17.909, "frecuencia": "103.2 FM" },
-
+  { "nombre": "Radio Club Tenerife", "ciudad": "Santa Cruz de Tenerife (Tenerife)", "lat": 28.468, "lon": -16.248, "frecuencia": "101.1 / 99.8 / 95.9 / 103.0 / 91.1 / 106.3 FM / 1179 OM" },
+  { "nombre": "Radio Garoé", "ciudad": "La Frontera (El Hierro)", "lat": 27.7535, "lon": -18.0108, "frecuencia": "92.0 FM" },
+  { "nombre": "Radio La Palma", "ciudad": "Los Llanos de Aridane (La Palma)", "lat": 28.6580, "lon": -17.914, "frecuencia": "101.6 FM" },
+  { "nombre": "SER La Gomera", "ciudad": "San Sebastián de La Gomera (La Gomera)", "lat": 28.0883, "lon": -17.1524, "frecuencia": "99.2 FM" },
+  { "nombre": "SER Lanzarote", "ciudad": "Arrecife (Lanzarote)", "lat": 28.960, "lon": -13.547, "frecuencia": "89.7 FM" },
+  { "nombre": "SER Las Palmas", "ciudad": "Las Palmas de Gran Canaria (Gran Canaria)", "lat": 28.100, "lon": -15.413, "frecuencia": "106.0 FM / 99.8 FM / 100.3 FM" },
+  { "nombre": "SER Maspalomas", "ciudad": "San Bartolomé de Tirajana (Gran Canaria)", "lat": 27.9246, "lon": -15.5730, "frecuencia": "99.6 FM" },
+  
   // CANTABRIA
-  { "nombre": "Radio Santander", "ciudad": "Santander", "lat": 43.462, "lon": -3.810, "frecuencia": "101.1 FM / 1.179 OM" },
+  { "nombre": "Radio Santander", "ciudad": "Santander", "lat": 43.462, "lon": -3.810, "frecuencia": "102.4 FM" },
   { "nombre": "SER Torrelavega", "ciudad": "Torrelavega", "lat": 43.351, "lon": -4.050, "frecuencia": "94.7 FM" },
-  { "nombre": "SER Castro Urdiales", "ciudad": "Castro Urdiales", "lat": 43.386, "lon": -3.210, "frecuencia": "105.0 FM" },
-  { "nombre": "SER Asón", "ciudad": "Santoña", "lat": 43.447, "lon": -3.461, "frecuencia": "105.3 FM" },
+  { "nombre": "SER Castro Urdiales", "ciudad": "Castro Urdiales", "lat": 43.386, "lon": -3.210, "frecuencia": "90.3 FM" },
+  { "nombre": "SER Asón", "ciudad": "Santoña", "lat": 43.447, "lon": -3.461, "frecuencia": "99.9 FM" },
   { "nombre": "SER Tres Mares", "ciudad": "Reinosa", "lat": 43.013, "lon": -4.137, "frecuencia": "106.8 FM" },
 
   // CATALUÑA
@@ -209,7 +209,7 @@ var emisoras = [
   { "nombre": "Radio Limia", "ciudad": "Xinzo de Limia", "lat": 42.062, "lon": -7.728, "frecuencia": "89.1 FM" },
   { "nombre": "Radio Lugo", "ciudad": "Lugo", "lat": 43.011, "lon": -7.558, "frecuencia": "95.6 FM / 1287 OM" },
   { "nombre": "Radio Mariña", "ciudad": "Mondoñedo", "lat": 43.425, "lon": -7.362, "frecuencia": "90.2 FM" },
-  { "nombre": "Radio Nordés", "ciudad": "Cee", "lat": 42.955, "lon": -9.190, "frecuencia": "92.2 FM / 95.7 FM / 97.0 FM" },
+  { "nombre": "Radio Nordés", "ciudad": "Cee", "lat": 42.955, "lon": -9.190, "frecuencia": "92.2 FM / 95.7 FM / 88.5 FM" },
   { "nombre": "Radio Ourense", "ciudad": "Ourense", "lat": 42.336, "lon": -7.864, "frecuencia": "103.9 FM / 1584 OM" },
   { "nombre": "Radio Pontevedra", "ciudad": "Pontevedra", "lat": 42.432, "lon": -8.647, "frecuencia": "98.7 FM / 1116 OM" },
   { "nombre": "Radio Principal Monforte", "ciudad": "Monforte de Lemos", "lat": 42.535, "lon": -7.516, "frecuencia": "97.0 FM" },
@@ -241,12 +241,13 @@ var emisoras = [
   { "nombre": "SER Soria", "ciudad": "Soria", "lat": 41.765, "lon": -2.476, "frecuencia": "99.9 FM" },
 
   // CASTILLA-LA MANCHA
+  { "nombre": "Radio 90 Motilla", "ciudad": "Motilla del Palancar", "lat": 39.5630, "lon": -1.9120, "frecuencia": "94.3 FM" },
   { "nombre": "Radio Albacete", "ciudad": "Albacete", "lat": 38.995, "lon": -1.855, "frecuencia": "100.3 FM / 1116 OM" },
   { "nombre": "Radio Azul", "ciudad": "Las Pedroñeras", "lat": 39.448, "lon": -2.673, "frecuencia": "92.2 FM" },
   { "nombre": "Radio Puertollano", "ciudad": "Puertollano", "lat": 38.687, "lon": -4.104, "frecuencia": "105.8 FM" },
   { "nombre": "Radio Tarancón", "ciudad": "Tarancón", "lat": 40.007, "lon": -3.003, "frecuencia": "88.0 FM" },
   { "nombre": "SER Alcázar", "ciudad": "Alcázar de San Juan", "lat": 39.390, "lon": -3.210, "frecuencia": "88.4 FM" },
-  { "nombre": "SER Almadén", "ciudad": "Almadén", "lat": 38.761, "lon": -4.843, "frecuencia": "88.4 FM" },
+  { "nombre": "SER Almadén", "ciudad": "Almadén", "lat": 38.761, "lon": -4.843, "frecuencia": "103.8 FM" },
   { "nombre": "SER Ciudad Real", "ciudad": "Ciudad Real", "lat": 38.986, "lon": -3.926, "frecuencia": "100.4 FM" },
   { "nombre": "SER Cuenca", "ciudad": "Cuenca", "lat": 40.071, "lon": -2.133, "frecuencia": "103.8 FM" },
   { "nombre": "SER Guadalajara", "ciudad": "Guadalajara", "lat": 40.630, "lon": -3.166, "frecuencia": "95.5 FM" },
@@ -256,11 +257,11 @@ var emisoras = [
 
   // COMUNIDAD DE MADRID
   { "nombre": "Radio Aranjuez", "ciudad": "Aranjuez", "lat": 40.031, "lon": -3.606, "frecuencia": "89.3 FM" },
-  { "nombre": "Radio Madrid", "ciudad": "Madrid", "lat": 40.416, "lon": -3.703, "frecuencia": "105.4 FM / 810 OM + 104.3 FM" },
+  { "nombre": "Radio Madrid", "ciudad": "Madrid", "lat": 40.416, "lon": -3.703, "frecuencia": "105.4 FM / 104.3 FM" },
   { "nombre": "SER Henares", "ciudad": "Alcalá de Henares", "lat": 40.481, "lon": -3.360, "frecuencia": "103.1 FM" },
   { "nombre": "SER Madrid Norte", "ciudad": "Alcobendas", "lat": 40.547, "lon": -3.639, "frecuencia": "89.6 FM" },
   { "nombre": "SER Madrid Oeste", "ciudad": "Móstoles", "lat": 40.323, "lon": -3.868, "frecuencia": "102.3 FM" },
-  { "nombre": "SER Madrid Sierra", "ciudad": "Collado Villalba", "lat": 40.633, "lon": -4.008, "frecuencia": "Emisión online" },
+  { "nombre": "SER Madrid Sierra", "ciudad": "Collado Villalba", "lat": 40.633, "lon": -4.008, "frecuencia": "95.4 FM" },
   { "nombre": "SER Madrid Sur", "ciudad": "Fuenlabrada", "lat": 40.283, "lon": -3.794, "frecuencia": "94.4 FM" },
 
   // COMUNIDAD VALENCIANA
@@ -284,12 +285,12 @@ var emisoras = [
   // LA RIOJA
   { "nombre": "Radio Calahorra", "ciudad": "Calahorra", "lat": 42.304, "lon": -1.961, "frecuencia": "93.7 FM" },
   { "nombre": "Radio Haro", "ciudad": "Haro", "lat": 42.585, "lon": -2.853, "frecuencia": "100.7 FM" },
-  { "nombre": "Radio Rioja", "ciudad": "Logroño", "lat": 42.466, "lon": -2.449, "frecuencia": "99.8 FM / 1179 OM" },
+  { "nombre": "Radio Rioja", "ciudad": "Logroño", "lat": 42.466, "lon": -2.449, "frecuencia": "99.8 FM / 93.7 FM" },
 
   // NAVARRA
   { "nombre": "Radio Alsasua", "ciudad": "Alsasua", "lat": 42.895, "lon": -2.169, "frecuencia": "97.3 FM" },
   { "nombre": "Radio Estella", "ciudad": "Estella", "lat": 42.674, "lon": -2.035, "frecuencia": "97.9 FM" },
-  { "nombre": "Radio Pamplona", "ciudad": "Pamplona", "lat": 42.818, "lon": -1.644, "frecuencia": "100.4 FM / 97.9 OM" },
+  { "nombre": "Radio Pamplona", "ciudad": "Pamplona", "lat": 42.818, "lon": -1.644, "frecuencia": "100.4 FM / 97.9 FM" },
   { "nombre": "Radio Tafalla", "ciudad": "Tafalla", "lat": 42.526, "lon": -1.676, "frecuencia": "93.9 FM" },
   { "nombre": "SER Tudela", "ciudad": "Tudela", "lat": 42.063, "lon": -1.603, "frecuencia": "90.4 FM" },
 

@@ -233,8 +233,65 @@
   let semaforo, interval;
   let fadeAudio_ID, fadeMusic_ID;
 
+  let reconnectTimers = new Map();
+  let reconnecting = new Set();
+
   let max_news_volume = 1.0;
   let max_music_volume = 0.5;
+
+  let latencyInterval = null;
+
+  function reconnectAudio(audio) {
+
+    // Solo reconectar streams de radio
+    if (audio !== audio_news && audio !== audio_music) return;
+
+    // Si está pausado, probablemente lo hemos parado nosotros
+    if (audio.paused) return;
+
+    // Evitar varios intentos simultáneos
+    if (reconnecting.has(audio)) return;
+
+    reconnecting.add(audio);
+
+    if (reconnectTimers.has(audio)) {
+      clearTimeout(reconnectTimers.get(audio));
+    }
+
+    const timer = setTimeout(() => {
+
+      // Puede haber sido detenido durante la espera
+      if (audio.paused) {
+        reconnecting.delete(audio);
+        return;
+      }
+
+      const src = audio === audio_news ? streamURL : musicURL;
+
+      if (!src || src === "none") {
+        reconnecting.delete(audio);
+        return;
+      }
+
+      console.log("🔄 Reconectando stream:", src);
+
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+
+      audio.src = src;
+      audio.load();
+
+      audio.play().catch(err => {
+        console.error("❌ Error al reconectar:", err);
+      });
+
+      reconnecting.delete(audio);
+
+    }, 6000);
+
+    reconnectTimers.set(audio, timer);
+  }
 
   /*============================*/
   /*==  PARAMETROS DE LA URL  ==*/
@@ -615,7 +672,24 @@
 
     audio_news.volume = 0.01;
     audio_news.load();
-    audio_news.play();
+    audio_news.play().catch(err => console.error("Error al reproducir:", err));
+
+    clearInterval(latencyInterval);
+
+    // Control para evitar que el streaming de audio clásico se quede retrasado
+    latencyInterval = setInterval(() => {
+      if (!audio_news.paused && audio_news.buffered.length > 0) {
+        const livePosition = audio_news.buffered.end(audio_news.buffered.length - 1);
+        const margenSegundos = livePosition - audio_news.currentTime;
+
+        console.log(`Margen con el directo: ${margenSegundos.toFixed(2)} segundos`);
+
+        // Si el retraso acumulado supera los 4 segundos, saltamos al borde actual
+        if (livePosition - audio_news.currentTime > 4) {
+          audio_news.currentTime = livePosition;
+        }
+      }
+    }, 10000);
 
     semaforo = true;
 
@@ -652,8 +726,25 @@
       imgLogo.classList.add('logo-sonando');
       audio_music.volume = 0.01;
       audio_music.load();
-      audio_music.play();
+      audio_music.play().catch(err => console.error("Error al reproducir:", err));
       fadeMusic_ID = setInterval(() => {fadeInVol(audio_music, fadeMusic_ID, max_music_volume);}, 300);
+
+      clearInterval(latencyInterval);
+
+      // Control para evitar que el streaming de audio clásico se quede retrasado
+      latencyInterval = setInterval(() => {
+        if (!audio_music.paused && audio_music.buffered.length > 0) {
+          const livePosition = audio_music.buffered.end(audio_music.buffered.length - 1);
+          const margenSegundos = livePosition - audio_music.currentTime;
+
+          console.log(`Margen con el directo: ${margenSegundos.toFixed(2)} segundos`);
+
+          // Si el retraso acumulado supera los 4 segundos, saltamos al borde actual
+          if (livePosition - audio_music.currentTime > 4) {
+            audio_music.currentTime = livePosition;
+          }
+        }
+      }, 10000);
     }
   }
 
@@ -681,6 +772,29 @@
     console.log("== 2. Comprobación inicial ==");
     actualizarReproduccion(true);  
   }
+
+  /*================================*/
+  /*== RECONEXIÓN DE LOS STREAMS ==*/
+  /*================================*/
+
+  [audio_news, audio_music].forEach(audio => {
+
+    audio.addEventListener("error", () => {
+      console.log("⚠️ Error en stream");
+      reconnectAudio(audio);
+    });
+
+    audio.addEventListener("ended", () => {
+      console.log("⚠️ Stream terminado");
+      reconnectAudio(audio);
+    });
+
+    audio.addEventListener("stalled", () => {
+      console.log("⚠️ Stream detenido");
+      reconnectAudio(audio);
+    });
+
+  });
 
   /*===========================*/
   /*==  INTERACCIÓN USUARIO  ==*/

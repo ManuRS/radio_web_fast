@@ -680,9 +680,11 @@
     }
   });
 
-let latencyInterval = null;
+  let latencyInterval = null;
+  let reconnectTimer = null;
+  let reconnecting = false;
 
-function playPause(card) {
+  function playPause(card) {
     const audio = card.querySelector('audio');
     const originalSrc = audio.getAttribute("data-src");
 
@@ -694,6 +696,14 @@ function playPause(card) {
 
     // Si ya hay otro sonando, lo paro y limpio
     if (currentAudio && currentAudio !== audio) {
+
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      reconnecting = false;
+
       currentAudio.pause();
       if (currentHls) {
         currentHls.destroy();
@@ -746,7 +756,7 @@ function playPause(card) {
               audio.currentTime = livePosition;
             }
           }
-        }, 6000);
+        }, 10000);
 
       }
 
@@ -755,6 +765,14 @@ function playPause(card) {
       currentCard = card;
     } else {
       audio.pause();
+
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      reconnecting = false;
+
       if (currentHls) {
         currentHls.destroy();
         currentHls = null;
@@ -766,6 +784,94 @@ function playPause(card) {
       currentAudio = null;
       currentCard = null;
     }
+  }
+
+  // Reconexión automática ante problemas de conexión
+  document.querySelectorAll('.card audio').forEach(audio => {
+
+    audio.addEventListener('error', () => {
+      console.log("⚠️ Error en el stream");
+      reconnectAudio(audio);
+    });
+
+    audio.addEventListener('ended', () => {
+      console.log("⚠️ El stream ha terminado");
+      reconnectAudio(audio);
+    });
+
+    audio.addEventListener('stalled', () => {
+      console.log("⚠️ Stream detenido");
+      reconnectAudio(audio);
+    });
+
+  });
+
+  function reconnectAudio(audio) {
+    // Solo reconectar si sigue siendo la emisora activa
+    if (audio !== currentAudio || audio.paused || reconnecting) return;
+
+    reconnecting = true;
+
+    clearTimeout(reconnectTimer);
+
+    reconnectTimer = setTimeout(() => {
+      // Comprobar de nuevo que sigue siendo la emisora activa
+      if (audio !== currentAudio || audio.paused) {
+        reconnecting = false;
+        return;
+      }
+
+      const src = audio.getAttribute("data-src");
+      if (!src) {
+        reconnecting = false;
+        return;
+      }
+
+      console.log("🔄 Reconectando con la emisora...");
+
+      // HLS
+      if (src.endsWith(".m3u8")) {
+        if (currentHls) {
+          currentHls.destroy();
+          currentHls = null;
+        }
+
+        if (Hls.isSupported()) {
+          currentHls = new Hls({
+            liveSyncDurationCount: 6,
+            liveMaxLatencyDurationCount: 15
+          });
+
+          currentHls.loadSource(src);
+          currentHls.attachMedia(audio);
+
+          currentHls.on(Hls.Events.MANIFEST_PARSED, () => {
+            audio.play().catch(err => console.error("Error al reconectar HLS:", err));
+            reconnecting = false;
+          });
+
+        } else {
+          audio.src = src;
+          audio.load();
+          audio.play().catch(err => console.error("Error al reconectar:", err));
+          reconnecting = false;
+        }
+
+      // MP3 / AAC
+      } else {
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+
+        audio.src = src;
+        audio.load();
+
+        audio.play().catch(err => console.error("Error al reconectar:", err));
+
+        reconnecting = false;
+      }
+
+    }, 6000); // Esperamos 6 segundos antes de reconectar
   }
 
   // Filtrar emisoras con fade

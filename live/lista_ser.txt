@@ -26,3 +26,7 @@
 
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_BARCELONAAAC.aac"></audio>
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3"></audio>
+
+---------------
+
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASERAAC_SC.aac"></audio>

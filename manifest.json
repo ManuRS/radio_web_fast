@@ -2,7 +2,7 @@
   "name": "Radio en directo y podcast",
   "short_name": "Radio y podcast",
 
-  "version": "36",
+  "version": "40",
 
   "start_url": "/radio_web_fast/index.html",
   "display": "standalone",
