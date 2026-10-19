@@ -18,7 +18,7 @@ Reproductor de radio *vibecodeado* con...
 - Solo radio en directo: https://manurs.github.io/radio_web_fast/live
 - Solo un botón con la SER: https://manurs.github.io/radio_web_fast/live_ser
 
-### Hitos
+## Hitos
 
 - Programado en septiembre de 2025, utilizando las versiones gratuitas de Gemini y ChatGPT a través de la web (sin emplear paradigmas estilo Claude Code / OpenAI Codex). Se utilizaron únicamente *prompts* contra los modelos de lenguaje y sus respuestas en formato de texto (sin que los modelos tuvieran acceso a entornos ni capacidad de ejecutar comandos)
 
@@ -33,8 +33,8 @@ Reproductor de radio *vibecodeado* con...
 - Base de código madura y que funciona correctamente para mis casos de uso
 - Sería necesario refactorizar el código si se desea ampliar significativamente su funcionalidad
 
-### Libre de rastreos
+## Libre de rastreos
 
 - El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica con los servidores de emisión de audio y con los feeds de podcast
 - La web descarga una sola vez 6MB que se guardan como cache de la web. Son las imágenes que se usan en el menú y para seleccionar emisoras
-- Los anuncios al escuchar están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o podcast
+- Los anuncios al escuchar están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o el podcast

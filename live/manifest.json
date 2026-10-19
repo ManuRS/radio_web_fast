@@ -32,37 +32,25 @@
 
   "screenshots": [
     {
-      "src": "capturas/cap1.png",
+      "src": "../capturas/cap1.png",
       "type": "image/png",
       "sizes": "485x958",
       "form_factor": "narrow"
     },
     {
-      "src": "capturas/cap2.png",
+      "src": "../capturas/cap3.png",
       "type": "image/png",
       "sizes": "485x958",
       "form_factor": "narrow"
     },
     {
-      "src": "capturas/cap3.png",
-      "type": "image/png",
-      "sizes": "485x958",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "capturas/wide1.png",
+      "src": "../capturas/wide2.png",
       "type": "image/png",
       "sizes": "1024x593",
       "form_factor": "wide"
     },
     {
-      "src": "capturas/wide2.png",
-      "type": "image/png",
-      "sizes": "1024x593",
-      "form_factor": "wide"
-    },
-    {
-      "src": "capturas/wide3.png",
+      "src": "../capturas/wide3.png",
       "type": "image/png",
       "sizes": "1024x593",
       "form_factor": "wide"
