@@ -57,10 +57,9 @@
       align-items: center;
       cursor: pointer;
       box-sizing: border-box;
-      transition: border 0.3s ease, box-shadow 0.2s ease;
+      transition: box-shadow 0.3s ease, opacity 0.5s ease;
 
       opacity: 1;
-      transition: opacity 0.5s ease;
     }
 
     /* clase usada tanto para fade-in (al quitarla) como fade-out (al añadirla) */
@@ -75,10 +74,11 @@
       display: none !important;
     }
 
-    /* Tarjeta activa con borde rojo */
-    .card.playing {
-      border: 4px solid transparent;
-      border-color: #ff1744; /* transición suave al rojo */
+    /* Tarjeta activa: el borde se dibuja en la capa superior, sin alterar el tamaño */
+    .card.playing::after {
+      border: 4px solid #ff1744;
+      border-radius: inherit;
+      box-sizing: border-box;
     }
 
     /* Imagen de fondo con blur */
@@ -102,13 +102,35 @@
       transition: background 0.3s ease;
     }
 
-    /* Hover efecto */
-    .card:hover::before {
-      transform: scale(1.1);
-      filter: brightness(1.0) blur(0.0px);
+    /* En móviles, la emisora seleccionada adopta el aspecto del hover de escritorio */
+    @media (hover: none), (pointer: coarse) {
+      .card.playing::before {
+        transform: scale(1.1);
+        filter: brightness(1.0) blur(0.0px);
+      }
+      .card.playing::after {
+        background: rgba(0,0,0,0.2);
+      }
+      .card.playing .station-name {
+        opacity: 0;
+        visibility: hidden;
+      }
     }
-    .card:hover::after {
-      background: rgba(0,0,0,0.2);
+
+    /* Hover solo en dispositivos con ratón: evita estados pegados en móviles */
+    @media (hover: hover) and (pointer: fine) {
+      .card:hover::before {
+        transform: scale(1.1);
+        filter: brightness(1.0) blur(0.0px);
+      }
+      .card:hover::after {
+        background: rgba(0,0,0,0.2);
+      }
+
+      .card:hover .station-name {
+        opacity: 0;
+        visibility: hidden;
+      }
     }
 
     /* Texto centrado */
@@ -126,11 +148,9 @@
       text-align: center;
       font-size: 1.4rem;
       font-weight: bold;
-    }
-
-    .card:hover .station-name {
-      opacity: 0;
-      visibility: hidden;
+      color: #fff;
+      /* Sombra suave para mejorar ligeramente el contraste */
+      text-shadow: 0 1px 2px rgba(0,0,0,0.65);
     }
 
     /* Animación de parpadeo */
@@ -165,10 +185,10 @@
     /* Fondos de ejemplo */
     .cadena-ser::before { background-image: url('../resources/micro.jpg'); }
     .cope::before { background-image: url('../resources/cope.jpg'); }
-    .onda-cero::before { background-image: url('../resources/ondacero.webp'); }
+    .onda-cero::before { background-image: url('../resources/ondacero_b.webp'); }
     .rne::before { background-image: url('../resources/rne.webp'); }
     .esradio::before { background-image: url('../resources/esradio.jpg'); }
-    .rac1::before { background-image: url('../resources/rac1.webp'); }
+    .rac1::before { background-image: url('../resources/rac1b.webp'); }
 
     .sercat::before { background-image: url('../resources/sercat.png'); }
     .catradio::before { background-image: url('../resources/catradio.png'); }
@@ -189,7 +209,7 @@
     .melodiafm::before { background-image: url('../resources/melodiafm.png'); }
 
     .europafm::before { background-image: url('../resources/europafm.webp'); }
-    .cadena-100::before { background-image: url('../resources/cadena100.webp'); }
+    .cadena-100::before { background-image: url('../resources/cadena100b.png'); }
     .cadena-dial::before { background-image: url('../resources/dial.webp'); }
     .kissfm::before { background-image: url('../resources/kissfm.webp'); }
     .los40-dance::before { background-image: url('../resources/los40_dance.webp'); }
