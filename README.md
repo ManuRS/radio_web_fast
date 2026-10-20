@@ -26,7 +26,9 @@ Reproductor de radio *vibecodeado* con...
 
 ### Problemas
 
-- Código repetido: Inicialmente,este proyecto no estaba pensado para ser alojado en un servidor; el objetivo era crear una solución autónoma, basada en HTML y que funcionara sin conexión. Como resultado, gran parte del código se repite en muchas de las páginas. Esto supone un problema a la hora de realizar cambios, ya que es necesario aplicarlos en múltiples archivos
+- Código repetido: Inicialmente este proyecto no estaba pensado para ser alojado en un servidor; el objetivo era crear un arhivo HTML guardado en la memoria del dispositivo. Como resultado, gran parte del código se repite en muchas de las páginas. Esto supone un problema a la hora de realizar cambios, ya que es necesario aplicarlos en múltiples archivos
+
+- Sin grandes protecciones contra las conexiones inestables o intermitentes (por ejemplo, no gestiona reconexiones y apenas compensa el *delay* en la reproducción)
 
 ### Estado del proyecto
 
@@ -36,5 +38,5 @@ Reproductor de radio *vibecodeado* con...
 ## Libre de rastreos
 
 - El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica con los servidores de emisión de audio y con los feeds de podcast
-- La web descarga una sola vez 6MB que se guardan como cache de la web. Son las imágenes que se usan en el menú y para seleccionar emisoras
+- La web descarga una sola vez 6MB que se guardan como cache del sitio. Son las imágenes que se usan en el menú y para seleccionar emisoras
 - Los anuncios al escuchar están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o el podcast

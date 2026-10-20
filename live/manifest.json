@@ -1,8 +1,8 @@
 {
-  "name": "Radio en directo",
-  "short_name": "Radio",
+  "name": "Radio Web Fast Live",
+  "short_name": "Radio WF Live",
 
-  "version": "50",
+  "version": "51",
 
   "start_url": "/radio_web_fast/live/index.html",
   "display": "standalone",

@@ -1,8 +1,8 @@
 {
-  "name": "Radio en directo y podcast",
-  "short_name": "Radio y podcast",
+  "name": "Radio Web Fast",
+  "short_name": "Radio WF",
 
-  "version": "50",
+  "version": "51",
 
   "start_url": "/radio_web_fast/index.html",
   "display": "standalone",
