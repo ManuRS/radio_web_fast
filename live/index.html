@@ -43,6 +43,24 @@
       margin: 40px auto;
     }
 
+    /* Separadores de sección dentro de la parrilla */
+    .category-separator {
+      grid-column: 1 / -1; /* Ocupa todo el ancho de la rejilla */
+      text-align: center; /* Alineado a la izquierda */
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #1a237e;
+      margin: 20px 0 10px 0;
+      padding: 10px 0; /* Quitamos padding lateral y mantenemos vertical */
+      /* border-bottom: 2px solid #1a237e; <- ELIMINADA la línea */
+      transition: opacity 0.5s ease;
+    }
+
+    /* Ocultar separadores cuando no correspondan a la categoría activa */
+    .category-separator.hidden {
+      display: none !important;
+    }
+
     /* Borde rojo animado */
     .card {
       position: relative;
@@ -190,15 +208,19 @@
     .esradio::before { background-image: url('../resources/esradio.jpg'); }
     .rac1::before { background-image: url('../resources/rac1b.webp'); }
 
+    .ser-mas::before { background-image: url('../resources/sermas.webp'); }
+    .cope-mas::before { background-image: url('../resources/copemas.webp'); }
+    .marca::before { background-image: url('../resources/marca.png'); }
+    .radio3::before { background-image: url('../resources/radio3.png'); }
+    .radio5::before { background-image: url('../resources/radio5.png'); }
+    .radioexterior::before { background-image: url('../resources/radioexterior.png'); }
+
     .sercat::before { background-image: url('../resources/sercat.png'); }
     .catradio::before { background-image: url('../resources/catradio.png'); }
     .radio4::before { background-image: url('../resources/radio4.png'); }
-    .radio3::before { background-image: url('../resources/radio3.png'); }
-    .marca::before { background-image: url('../resources/marca.png'); }
-    .radio5::before { background-image: url('../resources/radio5.png'); }
 
-    .radioexterior::before { background-image: url('../resources/radioexterior.png'); }
-    .ser-mas::before { background-image: url('../resources/sermas.webp'); }
+    .la1::before { background-image: url('../resources/la1.webp'); }
+    .canal24h::before { background-image: url('../resources/24h.webp'); }
     .lasexta::before { background-image: url('../resources/lasexta.webp'); }
 
     .los40::before { background-image: url('../resources/los40_estudio.jpg'); }
@@ -390,7 +412,7 @@
       <span class="station-name">COPE</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://flucast-bl02.flumotion.com/cope/net1.mp3"></audio>
+    <audio data-src="https://flucast09-h-cloud.flumotion.com/cope/net1.mp3"></audio>
   </div>
 
   <!-- Onda Cero -->
@@ -438,13 +460,13 @@
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRID.mp3"></audio>
   </div>
 
-  <!-- Radio 3 -->
-  <div class="card radio3 general" onclick="playPause(this)">
+  <!-- COPE Más -->
+  <div class="card cope-mas general" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">Radio 3</span>
+      <span class="station-name">COPE MÁS</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high"></audio>
+    <audio data-src="https://flucast31-h-cloud.flumotion.com/cope/net2.mp3"></audio>
   </div>
 
   <!-- Radio MARCA -->
@@ -456,6 +478,15 @@
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOMARCA_NACIONAL.mp3"></audio>
   </div>
 
+  <!-- Radio 3 -->
+  <div class="card radio3 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio 3</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high"></audio>
+  </div>
+
   <!-- Radio 5 -->
   <div class="card radio5 general" onclick="playPause(this)">
     <div class="card-content">
@@ -463,33 +494,6 @@
       <span class="live-indicator">Escuchando</span>
     </div>
     <audio data-src="https://dispatcher.rndfnk.com/crtve/rne5/mur/mp3/high"></audio>
-  </div>
-
-  <!-- SER Catalunya -->
-  <div class="card sercat general" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">SER Catalunya</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3"></audio>
-  </div>
-
-  <!-- Ràdio 4 -->
-  <div class="card radio4 general" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">Ràdio 4</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high"></audio>
-  </div>  
-
-  <!-- Catalunya Radio -->
-  <div class="card catradio general" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">Catalunya Ràdio</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8"></audio>
   </div>
 
   <!-- Radio Exterior -->
@@ -501,6 +505,51 @@
     <audio data-src="https://rtvelivestream.rtve.es/rtvesec/rne/rne_re_main_dvr.m3u8"></audio>
   </div>
 
+  <!-- SER Catalunya -->
+  <div class="card sercat general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">SER Catalunya</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3"></audio>
+  </div>
+
+  <!-- Catalunya Radio -->
+  <div class="card catradio general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Catalunya Ràdio</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8"></audio>
+  </div>
+
+  <!-- Ràdio 4 -->
+  <div class="card radio4 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Ràdio 4</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high"></audio>
+  </div>  
+
+  <!-- RTVE La1 -->
+  <div class="card la1 general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">La 1</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr_720.m3u8"></audio>
+  </div>
+
+  <!-- RTVE 24h -->
+  <div class="card canal24h general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Canal 24h</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8"></audio>
+  </div>
+
   <!-- La Sexta -->
   <div class="card lasexta general" onclick="playPause(this)">
     <div class="card-content">
@@ -510,15 +559,8 @@
     <audio data-src="https://audiotvlive.atresmedia.com/h264/live/lasexta/audio_1.m3u8"></audio>
   </div>
 
-  <!-- RTVE 24h
-  <div class="card 24h general" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">24h</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8"></audio>
-  </div> -->
-  
+  <!-- <div class="category-separator general">Test</div> -->
+
   <!-- ------------------------------------------ -->
 
   <!-- LOS40 -->
@@ -593,15 +635,6 @@
     <audio data-src="https://cadena100-cope-rrcast.flumotion.com/cope/cadena100.mp3"></audio>
   </div>
 
-  <!-- Cadena DIAL -->
-  <div class="card cadena-dial musical" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">Cadena DIAL</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"></audio>
-  </div>
-
   <!-- KissFM -->
   <div class="card kissfm musical" onclick="playPause(this)">
     <div class="card-content">
@@ -609,6 +642,15 @@
       <span class="live-indicator">Escuchando</span>
     </div>
     <audio data-src="https://kissfm.kissfmradio.cires21.com/kissfm.mp3"></audio>
+  </div>
+
+  <!-- Cadena DIAL -->
+  <div class="card cadena-dial musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Cadena DIAL</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"></audio>
   </div>
 
   <!-- LOS40 DANCE -->
@@ -629,13 +671,13 @@
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_URBAN.mp3"></audio>
   </div>
 
-  <!-- Radio Clasica -->
-  <div class="card clasica musical" onclick="playPause(this)">
+  <!-- RAC105 -->
+  <div class="card rac105 musical" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">Radio Clásica</span>
+      <span class="station-name">RAC105</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RAC105.mp3"></audio>
   </div>
 
   <!-- Flaix FM -->
@@ -656,13 +698,13 @@
     <audio data-src="https://us-b4-p-e-qg12-audio.cdn.mdstrm.com/live-audio-aw/65afe517d47dc208abd053d2"></audio>
   </div>
 
-  <!-- RAC105 -->
-  <div class="card rac105 musical" onclick="playPause(this)">
+  <!-- Radio Clasica -->
+  <div class="card clasica musical" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">RAC105</span>
+      <span class="station-name">Radio Clásica</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RAC105.mp3"></audio>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high"></audio>
   </div>
 
   <!-- Radiolé -->
@@ -903,20 +945,21 @@
     }, 6000); // Esperamos 6 segundos antes de reconectar
   }
 
-  // Filtrar emisoras con fade
+// Filtrar emisoras y separadores con fade
   function filterStations(category, btn) {
-    const cards = document.querySelectorAll('.card');
+    // Seleccionamos tanto las tarjetas como los separadores
+    const items = document.querySelectorAll('.card, .category-separator');
 
-    cards.forEach(card => {
-      if (card.classList.contains(category)) {
-        // Mostrar con fade-in
-        card.classList.remove("hidden");
+    items.forEach(item => {
+      if (item.classList.contains(category)) {
+        // Mostrar elemento
+        item.classList.remove("hidden");
         setTimeout(() => {
-          card.style.position = "relative"; // vuelve a ocupar su espacio
+          item.style.position = "relative";
         }, 500);
       } else {
-        // Ocultar con fade-out
-        card.classList.add("hidden");
+        // Ocultar elemento
+        item.classList.add("hidden");
       }
     });
 

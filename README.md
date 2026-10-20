@@ -2,7 +2,7 @@
 
 Reproductor de radio *vibecodeado* con...
 
-- Una lista actualizada de emisiones de radio en directo, que incluye enlaces oficiales a las principales emisoras españolas (más de 12 cadenas generalistas y más de 30 emisoras musicales)
+- Una lista actualizada de emisiones de radio en directo, que incluye enlaces oficiales a las principales emisoras españolas (más de 10 cadenas generalistas y más de 15 emisoras musicales)
 
 - Una página que reproduce una emisión musical (o permanece en silencio) con conexión automática durante el día (de 8 a 20) a los boletines de la Cadena SER
 
@@ -34,6 +34,11 @@ Reproductor de radio *vibecodeado* con...
 
 - Base de código madura y que funciona correctamente para mis casos de uso
 - Sería necesario refactorizar el código si se desea ampliar significativamente su funcionalidad
+
+### Aportaciones
+
+- Abierto a solicitudes para añadir streams de emisoras. Mensajes a través de LinkedIn o mediante Issues / Pull Request de GitHub
+- Normas: se añaden streams oficiales y siempre intentando usar los enlaces canónicos pre-balanceo de servidores
 
 ## Libre de rastreos
 
