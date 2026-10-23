@@ -24,21 +24,23 @@ if (volumeSlider) {
 const exitModal = document.getElementById("exit-modal");
 const stayBtn = document.getElementById("stay-btn");
 
-// Interceptar botón atrás
-window.addEventListener("load", () => {
-  history.pushState(null, "", location.href);
+if (exitModal && stayBtn) {
+  // Interceptar botón atrás
+  window.addEventListener("load", () => {
+    history.pushState(null, "", location.href);
 
-  window.addEventListener("popstate", () => {
-    // Mostrar modal en vez de cerrar
-    exitModal.style.display = "flex";
-    history.pushState(null, "", location.href); // volvemos a bloquear
+    window.addEventListener("popstate", () => {
+      // Mostrar modal en vez de cerrar
+      exitModal.style.display = "flex";
+      history.pushState(null, "", location.href); // volvemos a bloquear
+    });
   });
-});
 
-// Botón "Seguir escuchando"
-stayBtn.addEventListener("click", () => {
-  exitModal.style.display = "none";
-});
+  // Botón "Seguir escuchando"
+  stayBtn.addEventListener("click", () => {
+    exitModal.style.display = "none";
+  });
+}
 
 /*********
   MODO OSCURO
