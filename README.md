@@ -14,9 +14,11 @@ Reproductor de radio *vibecodeado* con...
 
 ### Puntos de instalación como Aplicación Web Progresiva (PWA)
 
-- Completa: https://manurs.github.io/radio_web_fast
-- Solo radio en directo: https://manurs.github.io/radio_web_fast/live
-- Solo un botón con la SER: https://manurs.github.io/radio_web_fast/live_ser
+- Radio en directo (la más recomendable): https://manurs.github.io/radio_web_fast/live
+
+- Aplicación completa (adaptada a mi uso personal): https://manurs.github.io/radio_web_fast
+
+- Modo sencillo (solo un botón con la SER): https://manurs.github.io/radio_web_fast/live_ser
 
 ## Hitos
 

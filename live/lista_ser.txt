@@ -1,5 +1,5 @@
 
-ICECAST - PARECE DESMONTADO A SEPTIEMBRE DE 2026
+ICECAST SER - PARECE DESMONTADO A SEPTIEMBRE DE 2026
 
 <audio data-src="https://emisoras.cadenaser.com/CADENASER"></audio>
 
@@ -11,7 +11,7 @@ ICECAST - PARECE DESMONTADO A SEPTIEMBRE DE 2026
 
 ---------------
 
-ACC - MALA CALIDAD 56 KB/S + SBR (EN ALGUNOS STREAM SOLO A 22KH y CON PS)
+ACC SER - MALA CALIDAD 56 KB/S + SBR (EN ALGUNOS STREAM SOLO A 22KH y CON PS)
 ** SBR = Spectral Band Replication (Sin frecuencias altas, reconstruidas en destino con estimaciones)
 ** PS =  Parametric Stereo (Transmisión mono que se hace estereo por efecto recreado, no por realidad)
 ** Información a Septiembre de 2026
@@ -32,10 +32,11 @@ ACC - MALA CALIDAD 56 KB/S + SBR (EN ALGUNOS STREAM SOLO A 22KH y CON PS)
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_ASO_GRANADAAAC.aac"></audio>
 
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_BARCELONAAAC.aac"></audio>
+<audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CATAAC.aac"></audio>
 
 ---------------
 
-MP3 - 128 KB/S (Tambien algunas a 96 kb/s) A SEPTIEMBRE DE 2026
+MP3 SER - 128 KB/S y 96 KB/S (SEPTIEMBRE DE 2026)
 
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3"></audio>
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER2.mp3"></audio>
@@ -57,8 +58,22 @@ MP3 - 128 KB/S (Tambien algunas a 96 kb/s) A SEPTIEMBRE DE 2026
 
 ----------------
 
-OTRAS COSAS
+OTRAS COSAS - ITALIA
 
-https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr_720.m3u8
-https://rtvelivestream.rtve.es/rtvesec/la2/la2_main_dvr_720.m3u8
-https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8
+Rai Radio 1
+http://icestreaming.rai.it/1.mp3
+
+Radio 24
+https://shoutcast3.radio24.ilsole24ore.com/stream.mp3
+
+RTL 102.5
+https://streamingv2.shoutcast.com/rtl-1025_48.aac
+
+Deejay
+https://streamcdnp4-4c4b867c89244861ac216426883d1ad0.msvdn.net/radiodeejay/radiodeejay/play1.m3u8
+
+Radio 105
+https://icecast.unitedradio.it/Radio105.mp3
+
+Kiss Kiss 	
+https://kisskiss.fluidstream.eu/KissKiss.aac

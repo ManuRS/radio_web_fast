@@ -1,0 +1,65 @@
+/* Tema claro/oscuro reutilizable para las páginas de radio */
+:root {
+  color-scheme: light;
+  --page-background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
+  --page-text: #333;
+  --heading-color: #1a237e;
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --toggle-background: rgba(255, 255, 255, 0.92);
+  --toggle-text: #1a237e;
+  --toggle-border: rgba(26, 35, 126, 0.2);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page-background: linear-gradient(135deg, #111827, #1b263b);
+  --page-text: #e5e7eb;
+  --heading-color: #c7d2fe;
+  --card-shadow: 0 5px 16px rgba(0, 0, 0, 0.35);
+  --toggle-background: rgba(35, 47, 69, 0.96);
+  --toggle-text: #f3f4f6;
+  --toggle-border: rgba(199, 210, 254, 0.25);
+}
+
+.theme-toggle {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid var(--toggle-border);
+  border-radius: 999px;
+  background: var(--toggle-background);
+  color: var(--toggle-text);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-toggle:hover { transform: translateY(-2px); }
+.theme-toggle:focus-visible { outline: 3px solid #7986cb; outline-offset: 3px; }
+
+@media (max-width: 42em) {
+  .theme-toggle {
+    position: static;
+    align-self: center;
+    margin: 40px auto max(40px, env(safe-area-inset-bottom));
+    min-height: 42px;
+    padding: 0 14px;
+    font-size: 0.92rem;
+  }
+  .theme-toggle:hover { transform: translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle { transition: none; }
+}

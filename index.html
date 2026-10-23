@@ -8,28 +8,46 @@
   <link rel="shortcut icon" href="resources/favicon2.ico" type="image/x-icon">
 
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a237e">
+  <meta name="theme-color" content="#1a237e" id="theme-color-meta">
 
   <title>Radio en directo y pódcast</title>
+
+  <script>
+    // Aplicar el tema guardado antes de mostrar la página para evitar destellos.
+    try {
+      const savedTheme = localStorage.getItem('radio-page-theme');
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        document.documentElement.dataset.theme = savedTheme;
+      }
+    } catch (error) {
+      // Si el almacenamiento está bloqueado, la página funciona en modo claro.
+    }
+  </script>
+
+  <link rel="stylesheet" href="theme-styles.css">
+  <link rel="stylesheet" href="theme-colors.css">
+
   <style>
     /* Estilos base */
     body {
       font-family: "Segoe UI", Roboto, sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
-      color: #333;
+      background: var(--page-background);
+      color: var(--page-text);
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      transition: background 0.25s ease, color 0.25s ease;
     }
 
     h1 {
-      margin-top: 40px;
+      margin: 40px 16px 0;
       font-size: 2rem;
-      color: #1a237e;
+      color: var(--heading-color);
       text-align: center;
+      transition: color 0.25s ease;
     }
 
     /* Contenedor de enlaces */
@@ -39,7 +57,7 @@
       gap: 20px;
       max-width: 1000px;
       width: 90%;
-      margin: 40px auto;
+      margin: 40px auto 0 auto;
     }
 
     /* Estilo para cada tarjeta */
@@ -48,7 +66,7 @@
       border-radius: 15px;
       overflow: hidden;
       height: 175px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      box-shadow: var(--card-shadow);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       text-align: center;
       display: flex;
@@ -85,6 +103,8 @@
     .card:hover::after {
       background: rgba(0,0,0,0.2);
     }
+
+    .card:hover::after { background: rgba(0, 0, 0, 0.2); }
 
     /* Texto centrado */
     .card a {
@@ -154,12 +174,20 @@
     <div class="card fun"><a href="radio_fun.html"><span>🎮</span> Podcast entretenimiento</a></div>
     <div class="card finde"><a href="radio_finde.html"><span>🔋</span> Fin de semana en la SER</a></div>
     <div class="card daily"><a href="radio_daily.html"><span>🎧</span> Podcast de la prensa escrita</a></div>
-    <div class="card elpais"><a href="radio_elpais.html"><span>📰</span> Portada de El País</a></div>
-    <div class="card map"><a href="radio_map.html"><span>🗺️</span> Mapa de emisoras de la SER</a></div>
+    <div class="card elpais"><a href="extra_elpais.html"><span>📰</span> Portada de El País</a></div>
+    <div class="card map"><a href="extra_mapaser.html"><span>🗺️</span> Mapa de emisoras de la SER</a></div>
     <div class="card about"><a href="https://manurs.github.io">Página desarrollada<br>utilizando vibe coding<br><br>Manuel Reyes, 2025 </a></div>
   </div>
 
+
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+    <span id="theme-label">Modo oscuro</span>
+    <span id="theme-icon" aria-hidden="true">🌙</span>
+  </button>
+
 </body>
+
+<script src="theme-scripts.js" defer></script>
   
 <script>
   if ('serviceWorker' in navigator) {
