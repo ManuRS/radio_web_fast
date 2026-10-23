@@ -5,14 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pódcast de diarios</title>
 
+  <script src="theme-fastload.js"></script>
+
+  <link rel="stylesheet" href="theme-colors.css">
   <link rel="stylesheet" href="theme-podcast.css">
   <link rel="stylesheet" href="theme-styles.css">
-  <link rel="stylesheet" href="theme-colors.css">
-
+  
 </head>
+
 <body>
+
   <h1>Pódcast de diarios<br><br></h1>
 
+  <!-- Control de volumen -->
   <div class="volume-control">
     <input type="range" id="volume-slider" min="0.001" max="1" step="any" value="1">
   </div>
@@ -21,25 +26,8 @@
 
   <div id="lista"></div>
 
-  <!-- Modal salir -->
-  <div id="exit-modal" class="modal">
-    <div class="modal-content">
-      <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
-      <div class="buttons">
-        <button id="stay-btn">Seguir en la página</button>
-      </div>
-    </div>
-  </div>
 
   <script>
-    // LÓGICA DEL VOLUMEN GLOBAL
-    const volumeSlider = document.getElementById("volume-slider");
-    volumeSlider.addEventListener("input", function() {
-      const audios = document.querySelectorAll("audio");
-      audios.forEach(audio => {
-        audio.volume = this.value;
-      });
-    });
 
     async function cargarRSS(feedUrl_arg) {
       try {
@@ -70,9 +58,8 @@
                 <div class="podcast-texto">
                   <p class="titulo-principal">${titulo}</p>
                   <br>
-                  <audio controls style="background-color: #f1f3f4;" src="${audioUrl}"></audio>
+                  <audio controls style="background-color: var(--audio-background, #f1f3f4);" src="${audioUrl}"></audio>
                   <div class="controles">
-                    <br>
                     <div class="botones-reproduccion">
                     <button onclick="
                         let a=this.closest('.podcast-texto').querySelector('audio');
@@ -95,7 +82,7 @@
           // AL CARGAR UN NUEVO AUDIO, LE ASIGNAMOS EL VOLUMEN ACTUAL DEL SLIDER GLOBAL
           const nuevoAudio = contenedor.querySelector("audio");
           if (nuevoAudio) {
-            nuevoAudio.volume = volumeSlider.value;
+            nuevoAudio.volume = document.getElementById("volume-slider").value;;
           }
 
           listaDiv.appendChild(contenedor);
@@ -121,29 +108,25 @@
             cargarRSS("https://test.cors.workers.dev/?https://feeds.acast.com/public/shows/69e1e5256e5b90839adefeaf");
     },1000);
 
-    // Referencias al modal y botones
-    const exitModal = document.getElementById("exit-modal");
-    const stayBtn = document.getElementById("stay-btn");
-
-    // Interceptar botón atrás
-    window.addEventListener("load", () => {
-      history.pushState(null, "", location.href);
-
-      window.addEventListener("popstate", () => {
-        // Mostrar modal en vez de cerrar
-        exitModal.style.display = "flex";
-        history.pushState(null, "", location.href); // volvemos a bloquear
-      });
-    });
-
-    // Botón "Seguir escuchando"
-    stayBtn.addEventListener("click", () => {
-      exitModal.style.display = "none";
-    });
-
   </script>
 
-  <script src="radio_scripts.js"></script>
+  <!-- Botón modo oscuro -->
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+    <span id="theme-label">Modo oscuro</span>
+    <span id="theme-icon" aria-hidden="true">🌙</span>
+  </button>
+
+  <!-- Modal salir -->
+  <div id="exit-modal" class="modal">
+    <div class="modal-content">
+      <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
+      <div class="buttons">
+        <button id="stay-btn">Seguir en la página</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="theme-scripts.js"></script>
 
 </body>
 </html>

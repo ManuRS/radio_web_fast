@@ -1,25 +1,106 @@
-/* Tema claro/oscuro reutilizable para las páginas de radio */
+
+/******************************
+ * MAIN
+ * ***************************/
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: var(--page-background);
+  color: var(--page-text);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+h1 {
+  margin: 40px 16px 0;
+  font-size: 2rem;
+  color: var(--heading-color);
+  text-align: center;
+  transition: color 0.25s ease;
+}
+
+/******************************
+ * COLORES 
+ * ***************************/
+
 :root {
   color-scheme: light;
-  --page-background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
+
+  --page-background: #fff;
   --page-text: #333;
-  --heading-color: #1a237e;
-  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  --heading-color: #2D3748;
+
+  --card-background: #fff;
+  --card-shadow: 0 0px 14px rgba(0, 0, 0, 0.35);
+
+  --secondary-text: gray;
+  --control-background: #f0f0f0;
+  --control-hover: #ddd;
+  --control-text: #333;
+  --control-border: #ccc;
+
+  --slider-track: #ddd;
+  --slider-thumb: darkblue;
+
   --toggle-background: rgba(255, 255, 255, 0.92);
   --toggle-text: #1a237e;
   --toggle-border: rgba(26, 35, 126, 0.2);
+
+  --modal-background: #fff;
+  --modal-text: #333;
+  --modal-overlay: rgba(0, 0, 0, 0.6);
+  --modal-button-background: #1a237e;
+  --modal-button-text: #fff;
+
+  --theme-color: #1a237e;
+}
+
+/* Index fondo */
+:root[data-page="index"] {
+  --page-background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
+  --heading-color: #1a237e;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+
   --page-background: linear-gradient(135deg, #111827, #1b263b);
   --page-text: #e5e7eb;
-  --heading-color: #c7d2fe;
-  --card-shadow: 0 5px 16px rgba(0, 0, 0, 0.35);
+  --heading-color: #E2E8F0;
+
+  --card-background: rgba(35, 47, 69, 0.55);
+  --card-shadow: 0 0px 14px rgba(0, 0, 0, 0.35);
+
+  --secondary-text: #b0b8c5;
+  --control-background: #293548;
+  --control-hover: #3b4b66;
+  --control-text: #e5e7eb;
+  --control-border: #293548;
+
+  --slider-track: #39465c;
+  --slider-thumb: #a5b4fc;
+
   --toggle-background: rgba(35, 47, 69, 0.96);
   --toggle-text: #f3f4f6;
   --toggle-border: rgba(199, 210, 254, 0.25);
+
+  --modal-background: #1f2937;
+  --modal-text: #e5e7eb;
+  --modal-overlay: rgba(0, 0, 0, 0.75);
+  --modal-button-background: #3949ab;
+  --modal-button-text: #fff;
+
+  --theme-color: #111827;
+
 }
+
+
+/******************************
+ * COLORES TOGGLE
+ * ***************************/
 
 .theme-toggle {
   position: fixed;
@@ -41,7 +122,8 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+  transition: background 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease, transform 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -56,10 +138,23 @@
     min-height: 42px;
     padding: 0 14px;
     font-size: 0.92rem;
+
+    display: flex;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
   }
-  .theme-toggle:hover { transform: translateY(-2px); }
 }
+
+/******************************
+ * OTROS
+ * ***************************/
 
 @media (prefers-reduced-motion: reduce) {
   .theme-toggle { transition: none; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

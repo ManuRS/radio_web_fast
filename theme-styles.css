@@ -1,5 +1,4 @@
 
-
 /*************
 SLIDER SUPERIOR VOLUMEN
 *************/
@@ -13,13 +12,14 @@ SLIDER SUPERIOR VOLUMEN
 
 #volume-slider {
   -webkit-appearance: none;
-  width: 280px;
+  appearance: none;
+  width: min(280px, 100%); /* ANTES width: 280px; */
   height: 14px;
-  background: #ddd;
+  background: var(--slider-track);
   border-radius: 30px;
   outline: none;
   transition: background 0.3s;
-  accent-color: darkblue;
+  accent-color: var(--slider-thumb);
   cursor: pointer;
 }
 
@@ -30,7 +30,7 @@ SLIDER SUPERIOR VOLUMEN
   width: 24px; /* Ancho del punto */
   height: 24px; /* Alto del punto */
   border-radius: 50%; /* Lo hace redondo */
-  background: darkblue; /* Color del punto */
+  background: var(--slider-thumb); /* Color del punto */
   cursor: pointer;
 }
 
@@ -40,41 +40,64 @@ SLIDER SUPERIOR VOLUMEN
   height: 24px;
   border: none; /* Quita el borde por defecto */
   border-radius: 50%;
-  background: darkblue;
+  background: var(--slider-thumb);
   cursor: pointer;
 }
 
-/*************
-BOTONES BAJO EL PLAYER
-*************/
+/******************************
+ * MODAL
+ * ***************************/
 
-/* 💻 ESCRITORIO (Reglas por defecto) */
-.botones-reproduccion {
+/* Modal oculto por defecto */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* Caja del modal */
+.modal-content {
+  background: var(--modal-background);
+  color: var(--modal-text);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  width: 80%;
+  max-width: 300px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content p {
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.buttons {
   display: flex;
+  justify-content: space-around;
   gap: 10px;
-  margin-bottom: 10px;
-  width: auto; /* Evita que ocupen toda la pantalla */
 }
 
-.botones-reproduccion button {
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  background: #f0f0f0;
+.modal-content button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
 }
 
-/* 📱 MÓVIL (Solo se activa en pantallas pequeñas) */
-@media (max-width: 600px) {
-  .botones-reproduccion {
-    width: 100%;
-    justify-content: space-between;
-    gap: 5px;
-  }
-  
-  .botones-reproduccion button {
-    flex: 1; /* Aquí es donde forzamos que se estiren por igual */
-    padding: 10px 0;
-    box-sizing: border-box;
-  }
+#stay-btn {
+  background: var(--modal-button-background);
+  color: var(--modal-button-text);
+}
+
+#exit-btn {
+  background: #ff1744;
+  color: #fff;
 }

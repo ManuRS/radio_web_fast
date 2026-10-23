@@ -1,5 +1,4 @@
   
-
 /*********
   VOLUMEN
 **********/
@@ -9,13 +8,37 @@ const volumeSlider = document.getElementById('volume-slider');
 
 // Event listener para cambiar el volumen en tiempo real
 if (volumeSlider) {
-  volumeSlider.addEventListener('input', (e) => {
-    if (currentAudio) {
-      currentAudio.volume = e.target.value;
-    }
+  volumeSlider.addEventListener("input", function() {
+    const audios = document.querySelectorAll("audio");
+    audios.forEach(audio => {
+      audio.volume = this.value;
+    });
   });
 }
 
+/*********
+  LOGICA DEL MODAL
+**********/
+
+// Referencias al modal y botones
+const exitModal = document.getElementById("exit-modal");
+const stayBtn = document.getElementById("stay-btn");
+
+// Interceptar botón atrás
+window.addEventListener("load", () => {
+  history.pushState(null, "", location.href);
+
+  window.addEventListener("popstate", () => {
+    // Mostrar modal en vez de cerrar
+    exitModal.style.display = "flex";
+    history.pushState(null, "", location.href); // volvemos a bloquear
+  });
+});
+
+// Botón "Seguir escuchando"
+stayBtn.addEventListener("click", () => {
+  exitModal.style.display = "none";
+});
 
 /*********
   MODO OSCURO
