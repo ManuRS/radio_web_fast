@@ -31,14 +31,10 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg) {
               <audio controls style="background-color: var(--audio-background, #f1f3f4);" src="${audioUrl}"></audio>
               <div class="controles">
                 <div class="botones-reproduccion">
-                <button onclick="
-                    let a=this.closest('.podcast-texto').querySelector('audio');
-                    if(a.paused){ a.play(); this.textContent='🔴 Pausa'; }
-                    else { a.pause(); this.textContent='🟢 Play'; }
-                ">🟢 Play</button>
-              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
-              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
-              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏩ x1':'⏩ x2'">⏩ x2</button>
+                <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); if(a.paused){ a.play(); this.textContent='🔴 Pausa'; } else { a.pause(); this.textContent='🟢 Play'; } ">🟢 Play</button>
+                <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
+                <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
+                <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏩ x1':'⏩ x2'">⏩ x2</button>
               </div>
               </div>
             </div>

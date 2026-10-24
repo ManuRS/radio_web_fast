@@ -65,6 +65,17 @@ audio {
   --audio-background: #e5e7b;
 }
 
+@media (max-width: 42em) {
+
+  audio::-webkit-media-controls-play-button,
+  audio::-webkit-media-controls-current-time-display,
+  audio::-webkit-media-controls-time-remaining-display {
+    display: none !important;
+  }
+
+}
+
+
 /* **************************
  * BOTONES
  * **************************/
