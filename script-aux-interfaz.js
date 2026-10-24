@@ -1,7 +1,7 @@
   
-/*********
-  VOLUMEN
-**********/
+/******************************
+  SLIDER SUPERIOR VOLUMEN
+*******************************/
 
 // Referencia al slider de volumen
 const volumeSlider = document.getElementById('volume-slider');
@@ -16,9 +16,9 @@ if (volumeSlider) {
   });
 }
 
-/*********
-  LOGICA DEL MODAL
-**********/
+/******************************
+  MODAL DE SALIDA
+*******************************/
 
 // Referencias al modal y botones
 const exitModal = document.getElementById("exit-modal");
@@ -42,9 +42,9 @@ if (exitModal && stayBtn) {
   });
 }
 
-/*********
-  MODO OSCURO
-**********/
+/******************************
+  TOGGLE MODO OSCURO
+*******************************/
 
 /* Selector de tema reutilizable. Requiere el botón #theme-toggle,
  #theme-label y #theme-icon, además de la pequeña inicialización en el head. */
@@ -53,6 +53,12 @@ const toggle = document.getElementById('theme-toggle');
 const icon = document.getElementById('theme-icon');
 const label = document.getElementById('theme-label');
 const themeColorMeta = document.getElementById('theme-color-meta');
+
+/* Esto lo coloca al final en el movil */
+const lista = document.getElementById("lista");
+if (toggle && lista) {
+  lista.after(themeToggle);
+}
 
 if (toggle && icon && label){
 

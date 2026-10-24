@@ -1,7 +1,7 @@
 
 /******************************
- * MAIN
- * ***************************/
+ * ESTILOS BÁSICOS
+******************************/
 
 * {
   box-sizing: border-box;
@@ -24,7 +24,7 @@ h1 {
 
 /******************************
  * COLORES 
- * ***************************/
+******************************/
 
 :root {
   color-scheme: light;
@@ -34,7 +34,7 @@ h1 {
   --heading-color: #2D3748;
 
   --card-background: #fff;
-  --card-shadow: 0 0px 14px rgba(0, 0, 0, 0.35);
+  --card-shadow: 0 0 12px rgba(0, 0, 0, 0.30);
 
   --secondary-text: gray;
   --control-background: #f0f0f0;
@@ -95,66 +95,4 @@ h1 {
 
   --theme-color: #111827;
 
-}
-
-
-/******************************
- * COLORES TOGGLE
- * ***************************/
-
-.theme-toggle {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 1000;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 15px;
-  border: 1px solid var(--toggle-border);
-  border-radius: 999px;
-  background: var(--toggle-background);
-  color: var(--toggle-text);
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
-  transition: background 0.25s ease, color 0.25s ease,
-    border-color 0.25s ease, transform 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.theme-toggle:hover { transform: translateY(-2px); }
-.theme-toggle:focus-visible { outline: 3px solid #7986cb; outline-offset: 3px; }
-
-@media (max-width: 42em) {
-  .theme-toggle {
-    position: static;
-    align-self: center;
-    margin: 40px auto max(40px, env(safe-area-inset-bottom));
-    min-height: 42px;
-    padding: 0 14px;
-    font-size: 0.92rem;
-
-    display: flex;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
-/******************************
- * OTROS
- * ***************************/
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-toggle { transition: none; }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }

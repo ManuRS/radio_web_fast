@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pódcast de diarios</title>
 
-  <script src="theme-fastload.js"></script>
+  <script src="script-fastload.js"></script>
 
   <link rel="stylesheet" href="theme-colors.css">
   <link rel="stylesheet" href="theme-podcast.css">
-  <link rel="stylesheet" href="theme-styles.css">
+  <link rel="stylesheet" href="theme-aux.css">
   
 </head>
 
@@ -17,14 +17,33 @@
 
   <h1>Pódcast de diarios<br><br></h1>
 
-  <!-- Control de volumen -->
+  <!-- Control de volumen, define su posición -->
   <div class="volume-control">
     <input type="range" id="volume-slider" min="0.001" max="1" step="any" value="1">
+  </div>
+
+  <!-- Botón modo oscuro, la posición no se define aquí -->
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+    <span id="theme-label">Modo oscuro</span>
+    <span id="theme-icon" aria-hidden="true">🌙</span>
+  </button>
+
+  <!-- Modal salir, la posición no se define aquí -->
+  <div id="exit-modal" class="modal">
+    <div class="modal-content">
+      <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
+      <div class="buttons">
+        <button id="stay-btn">Seguir en la página</button>
+      </div>
+    </div>
   </div>
 
   <br><br>
 
   <div id="lista"></div>
+
+  <script src="script-aux-logica.js"></script>
+  <script src="script-aux-interfaz.js"></script>
 
   <script>
 
@@ -108,24 +127,6 @@
     },1000);
 
   </script>
-
-  <!-- Botón modo oscuro -->
-  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
-    <span id="theme-label">Modo oscuro</span>
-    <span id="theme-icon" aria-hidden="true">🌙</span>
-  </button>
-
-  <!-- Modal salir -->
-  <div id="exit-modal" class="modal">
-    <div class="modal-content">
-      <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
-      <div class="buttons">
-        <button id="stay-btn">Seguir en la página</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="theme-scripts.js"></script>
 
 </body>
 </html>

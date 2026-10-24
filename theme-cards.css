@@ -1,5 +1,10 @@
-/* Estilos base */
+
+/* Estilos base propio de las páginas con tarjetas */
+/* Este .css debe importarse el último cuando sea necesario*/
+/* Es un complemento sobre theme-colors */
+
 body {
+  /* Cambios y añadidos al body por defecto del proyecto */
   font-family: "Segoe UI", Roboto, sans-serif;
   margin: 0;
   padding: 0;
@@ -62,8 +67,6 @@ body {
 .card:hover::after {
   background: rgba(0,0,0,0.2);
 }
-
-.card:hover::after { background: rgba(0, 0, 0, 0.2); }
 
 /* Texto centrado */
 .card a {
