@@ -57,7 +57,7 @@ const themeColorMeta = document.getElementById('theme-color-meta');
 /* Esto lo coloca al final en el movil */
 const lista = document.getElementById("lista");
 if (toggle && lista) {
-  lista.after(themeToggle);
+  lista.after(toggle);
 }
 
 if (toggle && icon && label){
