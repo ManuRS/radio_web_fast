@@ -1,5 +1,5 @@
 
-async function cargarRSS_nlast(feedUrl_arg, numElems_arg) {
+async function cargaRSS_nlast(feedUrl_arg, numElems_arg) {
   try {
     const res = await fetch(feedUrl_arg);
     const texto = await res.text();
