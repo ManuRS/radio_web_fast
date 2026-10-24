@@ -5,23 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pódcast en línea</title>
 
-  <link rel="stylesheet" href="theme-podcast.css">
-  <link rel="stylesheet" href="theme-styles.css">
+  <script src="script-fastload.js"></script>
+
   <link rel="stylesheet" href="theme-colors.css">
+  <link rel="stylesheet" href="theme-podcast.css">
+  <link rel="stylesheet" href="theme-aux.css">
 
 </head>
+
 <body>
+
   <h1>Pódcast en línea<br><br></h1>
 
+  <!-- Control de volumen, define su posición -->
   <div class="volume-control">
     <input type="range" id="volume-slider" min="0.001" max="1" step="any" value="1">
   </div>
 
-  <br><br>
+  <!-- Botón modo oscuro, la posición no se define aquí -->
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+    <span id="theme-label">Modo oscuro</span>
+    <span id="theme-icon" aria-hidden="true">🌙</span>
+  </button>
 
-  <div id="lista"></div>
-
-  <!-- Modal salir -->
+  <!-- Modal salir, la posición no se define aquí -->
   <div id="exit-modal" class="modal">
     <div class="modal-content">
       <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
@@ -31,15 +38,14 @@
     </div>
   </div>
 
+  <br><br>
+
+  <div id="lista"></div>
+
+  <script src="script-logica.js"></script>
+  <script src="script-interfaz.js"></script>
+
   <script>
-    // LÓGICA DEL VOLUMEN GLOBAL
-    const volumeSlider = document.getElementById("volume-slider");
-    volumeSlider.addEventListener("input", function() {
-      const audios = document.querySelectorAll("audio");
-      audios.forEach(audio => {
-        audio.volume = this.value;
-      });
-    });
 
     const podcasts = [
       
@@ -58,30 +64,8 @@
       { nombre: "Hora 20", url: "https://fapi-top.prisasd.com/podcast/playser/hora_25/itunestfp/podcast.xml", capitulo: ["Las ocho de Hora 25"] },
       { nombre: "La mesa de H25", url: "https://fapi-top.prisasd.com/podcast/playser/hora_25/itunestfp/podcast.xml", capitulo: ["La mesa de Hora 25 | "] }, 
       { nombre: "Hora 25 completo", url: "https://fapi-top.prisasd.com/podcast/playser/hora_25/itunestfp/podcast.xml", capitulo: ["Programa completo"] },
+      
     ];
-
-    function tiempoDesde(publicacion) {
-      const ahora = new Date();
-      const pubDate = new Date(publicacion);
-      const diffMs = ahora - pubDate;
-      const diffSeg = Math.floor(diffMs / 1000);
-
-      if (diffSeg < 60) return `Antiguedad ${diffSeg} segundos`;
-      const diffMin = Math.floor(diffSeg / 60);
-      if (diffMin < 60) return `Antiguedad ${diffMin} minutos`;
-      const diffHoras = Math.floor(diffMin / 60);
-      if (diffHoras < 24) return `Antiguedad ${diffHoras} horas`;
-      const diffDias = Math.floor(diffHoras / 24);
-      return `Antiguedad ${diffDias} días`;
-    }
-
-    function formatearFecha(fechaStr) {
-      const date = new Date(fechaStr);
-      const dia = String(date.getDate()).padStart(2, '0');
-      const mes = String(date.getMonth() + 1).padStart(2, '0');
-      const anio = date.getFullYear();
-      return `${dia}/${mes}/${anio}`;
-    }
 
     const listaDiv = document.getElementById("lista");
     const contenedores = podcasts.map(() => {
@@ -143,18 +127,17 @@
                 <p class="titulo-principal">${p.nombre} / ${tiempo}</p>
                 <!--<p class="titulo-secundario">${tituloEncontrado}</p>-->
                 <br>
-                <audio controls style="background-color: #f1f3f4;" src="${audioUrl}"></audio>
+                <audio controls style="background-color: var(--audio-background, #f1f3f4);" src="${audioUrl}"></audio>
                 <div class="controles">
-                  <br>
                   <div class="botones-reproduccion">
                   <button onclick="
                       let a=this.closest('.podcast-texto').querySelector('audio');
-                      if(a.paused){ a.play(); this.textContent='⏸ Pausa'; }
-                      else { a.pause(); this.textContent='▶ Play'; }
-                  ">▶ Play</button>
+                      if(a.paused){ a.play(); this.textContent='🔴 Pausa'; }
+                      else { a.pause(); this.textContent='🟢 Play'; }
+                  ">🟢 Play</button>
                   <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
                   <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
-                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏸ x1':'⏩ x2'">⏩ x2</button>
+                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏩ x1':'⏩ x2'">⏩ x2</button>
                   </div>
                 </div>
               </div>
@@ -167,40 +150,12 @@
           contenedor.innerHTML = `<p class="titulo-principal">${p.nombre} (No se encontró el capítulo "${p.capitulo}")</p>`;
         }
 
-        // AL CARGAR UN NUEVO AUDIO, LE ASIGNAMOS EL VOLUMEN ACTUAL DEL SLIDER GLOBAL
-        const nuevoAudio = contenedor.querySelector("audio");
-        if (nuevoAudio) {
-          nuevoAudio.volume = volumeSlider.value;
-        }
-
       } catch (e) {
         console.error("Error cargando RSS:", e);
       }
     }
 
-    // Referencias al modal y botones
-    const exitModal = document.getElementById("exit-modal");
-    const stayBtn = document.getElementById("stay-btn");
-
-    // Interceptar botón atrás
-    window.addEventListener("load", () => {
-      history.pushState(null, "", location.href);
-
-      window.addEventListener("popstate", () => {
-        // Mostrar modal en vez de cerrar
-        exitModal.style.display = "flex";
-        history.pushState(null, "", location.href); // volvemos a bloquear
-      });
-    });
-
-    // Botón "Seguir escuchando"
-    stayBtn.addEventListener("click", () => {
-      exitModal.style.display = "none";
-    });
-
   </script>
-
-  <script src="theme-scripts.js"></script>
 
 </body>
 </html>
