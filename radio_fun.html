@@ -44,6 +44,7 @@
 
   <script src="script-logica.js"></script>
   <script src="script-interfaz.js"></script>
+  <script src="script-cargarss.js"></script>
 
   <script>
 
@@ -65,99 +66,7 @@
       { nombre: "Del 40 al 1 - 14H", url: "https://fapi-top.prisasd.com/podcast/los40/del_40_al_1_completo/itunestfp/podcast.xml", capitulo: ["14-14"] },
     ];
 
-    const listaDiv = document.getElementById("lista");
-    const contenedores = podcasts.map(() => {
-      const div = document.createElement("div");
-      div.className = "podcast";
-      listaDiv.appendChild(div);
-      return div;
-    });
-
-    podcasts.forEach((p, index) => cargarRSS(p, contenedores[index]));
-
-    async function cargarRSS(p, contenedor) {
-      try {
-        const res = await fetch(p.url);
-        const texto = await res.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(texto, "application/xml");
-
-        const items = xml.querySelectorAll("item");
-        let audioUrl = null;
-        let tituloEncontrado = null;
-        let pubDateEncontrado = null;
-
-        imageUrlElement = null;
-        imageUrl = null;
-        htmlImagen = null;
-
-        for (const item of items) {
-          const titulo = item.querySelector("title")?.textContent || "";
-          if (p.capitulo.some(c => titulo.includes(c))) {
-            tituloEncontrado = titulo;
-            pubDateEncontrado = item.querySelector("pubDate")?.textContent || null;
-            const enclosure = item.querySelector("enclosure");
-            if (enclosure) audioUrl = enclosure.getAttribute("url");
-
-            if (!tituloEncontrado.includes("Del 40 al 1")){
-              imageUrlElement = item.getElementsByTagName('itunes:image')[0];
-              imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
-              htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
-            }else{
-              imageUrlElement = xml.getElementsByTagName('itunes:image')[0];
-              imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
-              htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
-            }
-
-            break;
-          }
-        }
-
-        //imageUrl = xml.querySelector("image > url")?.textContent || null;
-        //htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
-
-        //imageUrlElement = xml.getElementsByTagName('itunes:image')[0];
-        //imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
-        //htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${p.nombre}">` : "";
-
-        if (audioUrl) {
-          const tiempo = pubDateEncontrado ? tiempoDesde(pubDateEncontrado) : "";
-          const fechaFormateada = pubDateEncontrado ? formatearFecha(pubDateEncontrado) : "";
-
-          contenedor.innerHTML = `
-            <div class="podcast-contenido">
-              ${htmlImagen}
-              <div class="podcast-texto">
-                <p class="titulo-principal" style="display:inline">${p.nombre} / ${tiempo}</p><br><br>
-                <p class="titulo-secundario" style="display:inline">${tituloEncontrado}</p>
-                <br><br>
-                <audio controls style="background-color: var(--audio-background, #f1f3f4);" src="${audioUrl}"></audio>
-                <div class="controles">
-                  <div class="botones-reproduccion">
-                  <button onclick="
-                      let a=this.closest('.podcast-texto').querySelector('audio');
-                      if(a.paused){ a.play(); this.textContent='🔴 Pausa'; }
-                      else { a.pause(); this.textContent='🟢 Play'; }
-                  ">🟢 Play</button>
-                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
-                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
-                  <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏩ x1':'⏩ x2'">⏩ x2</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
-
-          contenedor.innerHTML = contenedor.innerHTML + '<br>'
-
-        } else {
-          contenedor.innerHTML = `<p class="titulo-principal">${p.nombre} (No se encontró el capítulo "${p.capitulo}")</p>`;
-        }
-
-      } catch (e) {
-        console.error("Error cargando RSS:", e);
-      }
-    }
+    cargarRSS_bycaps(podcasts, "personalizado_antiguedad_titulo");
 
   </script>
 
