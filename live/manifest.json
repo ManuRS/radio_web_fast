@@ -6,7 +6,7 @@
 
   "start_url": "/radio_web_fast/live/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#111827",
   "theme_color": "#1a237e",
   "icons": [
     {
