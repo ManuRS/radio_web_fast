@@ -75,19 +75,20 @@
     }).addTo(map);
 
     // Descargar el json eliminando los comentarios
-    const textoLimpio = fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
-    .then(r => r.text())
-    .then(texto => texto.replace(/\/\/.*$/gm, '')); 
+    fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
+      .then(r => r.text())
+      .then(texto => {
+        const textoLimpio = texto.replace(/\/\/.*$/gm, '');
+        const emisoras = JSON.parse(textoLimpio);
 
-    // Parsear el json
-    const emisoras = JSON.parse(textoLimpio);
-
-    // Añadir marcadores de emisoras
-    emisoras.forEach(function(emisora) {
-      L.marker([emisora.lat, emisora.lon])
-        .addTo(map)
-        .bindPopup('<b>' + emisora.nombre + '</b><br>' + emisora.ciudad + '<br>Frecuencia: ' + emisora.frecuencia);
-    });
+        // Añadir marcadores de emisoras
+        emisoras.forEach(function(emisora) {
+          L.marker([emisora.lat, emisora.lon])
+            .addTo(map)
+            .bindPopup('<b>' + emisora.nombre + '</b><br>' + emisora.ciudad + '<br>Frecuencia: ' + emisora.frecuencia);
+        });
+      })
+    .catch(error => console.error('Error al cargar las emisoras:', error));
 
   </script>
 
