@@ -28,7 +28,7 @@ const FILES_TO_CACHE = [
   "./theme-podcast.css",
 
   "./live/index.html",
-  "./live_boleto/index.html"
+  "./live_boleto/index.html",
   "./live_ser/index.html",
 
   "./manifest.json",
