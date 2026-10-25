@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Mapa de emisoras de la SER</title>
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" />
+
   <style>
     body { margin: 0; padding: 0; }
     #map { height: 100vh; width: 100%; background: #111827;}
@@ -74,7 +77,18 @@
       }
     }
   </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "leaflet": "https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js",
+        "maplibre-gl": "https://unpkg.com/maplibre-gl@6.3.0/dist/maplibre-gl.mjs"
+      }
+    }
+  </script>
+
 </head>
+
 <body>
 
   <!-- Panel lateral flotante -->
@@ -85,29 +99,18 @@
   <!-- Mapa -->
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script type="module">
 
-  <script>
+    import * as L from 'leaflet';
+    import * as maplibregl from 'maplibre-gl';
 
-    // Centrar el mapa en España
-    var map = L.map('map', {
-      minZoom: 4,   // Zoom mínimo
-      maxZoom: 14,   // Zoom máximo
-      zoomControl: false // Desactivamos zoom por defecto
-    }).setView([40.0, -3.8], 7);
+    import { maplibreGL } from 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.4/dist/leaflet-maplibre-gl.mjs';
 
-    // Colocar control de zoom en la esquina superior derecha
-    L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Capa modo claro
-    var mapaClaro = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map &copy; OpenStreetMap contributors', subdomains: 'abc',
-    });
-
-    // Capa modo oscuro
-    var mapaOscuro = L.tileLayer('https://openfreemap.org{z}/{x}/{y}.png', {
-      attribution: 'Map data &copy; OpenStreetMap contributors, Tiles &copy; OpenFreeMap',  
-    });
+    const ESTILOS = {
+      light: 'https://tiles.openfreemap.org/styles/positron',
+      dark:  'https://tiles.openfreemap.org/styles/dark'
+    };
 
     // Tema guardado por el resto de la web.
     function obtenerTemaGuardado() {
@@ -118,36 +121,53 @@
       }
     }
 
-    var capaActual = null;
+    let temaActual = obtenerTemaGuardado();
+    document.documentElement.dataset.theme = temaActual;
 
+    // Crear mapa Leaflet.
+    const map = L.map('map', {
+      minZoom: 4,
+      maxZoom: 14,
+      zoomControl: false
+    }).setView([40.0, -3.8], 7);
+
+    L.control.zoom({
+      position: 'topright'
+    }).addTo(map);
+
+    // Añadir el mapa vectorial como una capa de Leaflet.
+    const capaMapa = maplibreGL({
+      style: ESTILOS[temaActual],
+      attribution:
+        '&copy; <a href="https://openfreemap.org/">OpenFreeMap</a> ' +
+        '&copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> ' +
+        'Datos de <a href="https://www.openstreetmap.org/copyright">' +
+        'OpenStreetMap</a>'
+    }).addTo(map);
+
+    // Cambiar el estilo sin recrear el mapa ni sus marcadores.
     function aplicarTemaMapa(tema) {
-      document.documentElement.dataset.theme = tema;
+      temaActual = tema === 'dark' ? 'dark' : 'light';
 
-      var nuevaCapa = tema === 'dark' ? mapaOscuro : mapaClaro;
+      document.documentElement.dataset.theme = temaActual;
 
-      if (capaActual && map.hasLayer(capaActual)) {
-        map.removeLayer(capaActual);
+      const mapaGL = capaMapa.getMaplibreMap();
+
+      if (mapaGL) {
+        mapaGL.setStyle(ESTILOS[temaActual]);
       }
-
-      nuevaCapa.addTo(map);
-      capaActual = nuevaCapa;
     }
 
-    // Aplicar el tema guardado al cargar.
-    aplicarTemaMapa(obtenerTemaGuardado());
-
-    // Escuchar cambios de tema realizados en otras pestañas.
-    window.addEventListener('storage', function (event) {
+    // Detectar cambios del tema desde otras pestañas.
+    window.addEventListener('storage', function(event) {
       if (event.key === 'radio-page-theme') {
         aplicarTemaMapa(event.newValue === 'dark' ? 'dark' : 'light');
       }
     });
 
-  </script>
 
-  <script>
-    // Datos de emisoras
-    var emisoras = [
+  // Datos de emisoras
+  var emisoras = [
 
   // ANDALUCIA
   { "nombre": "Cancionero Radio", "ciudad": "Baena", "lat": 37.615, "lon": -4.326, "frecuencia": "104.5 FM" },
@@ -379,13 +399,25 @@
 
     ];
 
-    // Añadir marcadores de emisoras
+  // Añadir marcadores y ventanas emergentes.
     emisoras.forEach(function(emisora) {
+      const contenido = document.createElement('div');
+      const nombre = document.createElement('b');
+
+      nombre.textContent = emisora.nombre;
+      contenido.appendChild(nombre);
+      contenido.appendChild(document.createElement('br'));
+      contenido.appendChild(document.createTextNode(emisora.ciudad));
+      contenido.appendChild(document.createElement('br'));
+      contenido.appendChild(
+        document.createTextNode('Frecuencia: ' + emisora.frecuencia)
+      );
+
       L.marker([emisora.lat, emisora.lon])
         .addTo(map)
-        .bindPopup('<b>' + emisora.nombre + '</b><br>' + emisora.ciudad + '<br>Frecuencia: ' + emisora.frecuencia);
+        .bindPopup(contenido);
     });
-    
+
   </script>
 
 </body>
