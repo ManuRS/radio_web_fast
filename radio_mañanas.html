@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f0f4ff" id="theme-color-meta">
   <title>Pódcast en línea</title>
 
   <script src="script-fastload.js"></script>
@@ -50,9 +51,9 @@
 
     const podcasts = [
       
-      { nombre: "Federico a las 6", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 6"] },
-      { nombre: "Federico a las 7", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 7"] },
-      { nombre: "Federico a las 8", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 8"] }, 
+      { nombre: "Federico a las 6", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 6"], imagen_type: "resources/federico.webp" },
+      { nombre: "Federico a las 7", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 7"], imagen_type: "resources/federico.webp" },
+      { nombre: "Federico a las 8", url: "https://esradio.libertaddigital.com/es-la-manana-de-federico/podcast.xml", capitulo: ["Federico a las 8"], imagen_type: "resources/federico.webp" }, 
 
       { nombre: "La España que madruga", url: "https://www.ondacero.es/rss/podcast/triton/mount/ATRESMEDIA_MAS_DE_UNO_AOD_P/origin/fastly", capitulo: ["La España que madruga"] },
       { nombre: "El sueño de Alsina", url: "https://www.ondacero.es/rss/podcast/triton/mount/ATRESMEDIA_MAS_DE_UNO_AOD_P/origin/fastly", capitulo: ["El sueño de Alsina"] },
@@ -70,7 +71,7 @@
 
     ];
 
-    cargarRSS_bycaps(podcasts, "personalizado_antiguedad", imagen_capitulo=false);
+    cargarRSS_bycaps(podcasts, "personalizado_antiguedad", imagen_type="general");
 
   </script>
 

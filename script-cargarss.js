@@ -4,23 +4,22 @@
  * CARGAR ULTIMOS N AUDIOS DE UN FEED
  * 
  * ****************************************/
-async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_capitulo=true) {
+async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo") {
   try {
 
     // Conseguir datos y extraer las N primeras entradas
     const feed = await descargarFeedRss(feedUrl_arg);
     const items = Array.from(feed.items).slice(0, numElems_arg);
 
-    // Conseguir la imagen del podcast
-    const imageUrl = feed.imageUrl;
-    htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="Podcast">` : "";
+    // Definir image si queremos la portada
+    imagen_select = defineImagenPodcast (feed, imagen_type);
 
     // Crear cascaron HTML
     const listaDiv = document.getElementById("lista");
     const contenedores = crearContenedoresPodcasts(items, listaDiv);
 
     // Rellenar cada contenedor con su audio
-    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_capitulo) );
+    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select) );
 
   } catch(e) {
     console.error("Error cargando RSS:", e);
@@ -32,27 +31,45 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_capi
  * CARGAR AUDIOS POR NOMBRE DE CAPITULOS
  * 
  * ****************************************/
-async function cargarRSS_bycaps(podcasts, titulo_antiguedad, imagen_capitulo=true) {
+async function cargarRSS_bycaps(podcasts, visualizacion, imagen_type="capitulo") {
 
   // Crear cascaron HTML
   const listaDiv = document.getElementById("lista");
   const contenedores = crearContenedoresPodcasts(podcasts, listaDiv);
 
-  /* Para cada podcasts, se llama a la funcion (se envía el podcast, su nombre, su capitulo y su contenedor)*/
-  podcasts.forEach( (pod, index) => cargarRSS_onecap(pod.url, pod.nombre, pod.capitulo, contenedores[index], titulo_antiguedad, imagen_capitulo) );
+  // Índice del primer contenedor disponible
+  let index = 0;
 
+  // Recorremos cada uno de los podcast en la lista que nos ha llegado
+  for (const pod of podcasts) {
+
+    // Cuantos episodios se buscan del podcast pod
+    const ncaps = pod.ncaps ?? 1;
+
+    // Obtener los contenedores que corresponden a este podcast
+    const contenedores_pod = contenedores.slice(index, index + ncaps);
+
+    // Cargar los capítulos
+    cargarRSS_onecap(pod.url, pod.nombre, pod.capitulo, contenedores_pod, visualizacion, pod.imagen_type, imagen_type, ncaps);
+
+    // Avanzar al siguiente bloque de contenedores
+    index += ncaps;
+
+  }
 }
 
-/* Esta es la que busca 1 capitulo en 1 podcast*/
-async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedor_arg, visual_arg, imagen_capitulo) {
+/* Esta funcion busca los capitulos con el titulo deseado en cada entrada pod*/
+async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedores_arg, visual_arg, imagen_type, imagen_type_global, ncaps=1) {
   try {
     // Conseguir datos
     const feed = await descargarFeedRss(feedUrl_arg);
     const items = feed.items;
 
-    // Conseguir la imagen del podcast
-    const imageUrl = feed.imageUrl;
-    htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="Podcast">` : "";
+    // Definir image si queremos la portada
+    imagen_select = defineImagenPodcast (feed, imagen_type, imagen_type_global);
+
+    // Contador
+    let ncaps_encontrados=0;
 
     // Recorremos cada elemento del feed
     for (const item of items) {
@@ -64,8 +81,13 @@ async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedor_
       if (capitulo_arg.some(c => titulo.includes(c))) {
 
         // Han cantado Bingo!
-        construirUnCapitulo(item, contenedor_arg, visual_arg, personalizado=name_arg, imagen_capitulo);
-        break;
+        construirUnCapitulo(item, contenedores_arg[ncaps_encontrados], visual_arg, name_arg, imagen_select);
+
+        // Comprobar si hemos acabado
+        if (++ncaps_encontrados == ncaps){
+          break;
+        }
+        
       }
     }
 
@@ -79,7 +101,7 @@ async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedor_
  * CONSTRUIR CAPITULO
  * 
  * ****************************************/
-function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_capitulo){
+function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select){
 
   const titulo = item.querySelector("title")?.textContent || "Sin título";
 
@@ -88,7 +110,8 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_cap
   const fecha = pubDate ? formatearFecha(pubDate) : "";
 
   const audioUrl = item.querySelector("enclosure")?.getAttribute("url") || null;
-  if (imagen_capitulo) { defineImagenCapitulo(item); };
+  imagen_select = defineImagenCapitulo(item, imagen_select);
+
 
   let text_p;
 
@@ -123,7 +146,7 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_cap
     /*************************************************************/
     contenedor.innerHTML = `
       <div class="podcast-contenido">
-        ${htmlImagen}
+        ${imagen_select}
         <div class="podcast-texto">
           ${text_p}
           <audio controls style="background-color: var(--audio-background, #f1f3f4);" src="${audioUrl}"></audio>
@@ -154,10 +177,49 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_cap
  * IMAGEN DEL CAPITULO
  * 
  * ****************************************/
-function defineImagenCapitulo(item) {
-  imageUrlElement = item.getElementsByTagName('itunes:image')[0];
-  imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
-  htmlImagen = imageUrl ? `<img src="${imageUrl}" alt="${item.nombre}">` : "";
+function defineImagenPodcast (feed, imagen_type, imagen_type_global=null) {
+
+  // La img src html a devolver
+  let imagen_select;
+
+  // Preferencia global si no hay especifica
+  if (imagen_type == null) {imagen_type = imagen_type_global};
+
+  // Caso queremos usar la portada del podcast
+  if (imagen_type == "general") {
+    const imageUrl = feed.imageUrl;
+    portada_podcast = imageUrl ? `<img src="${imageUrl}" alt="Podcast">` : "";
+    imagen_select = portada_podcast;
+  }
+
+  // Caso queremos usar la portada del capitulo
+  else if (imagen_type == "capitulo" || imagen_type == null){
+    imagen_select = null;
+  }
+
+  // Caso nos han dado una URL personalizada
+  else{
+    imagen_select = `<img src="${imagen_type}" alt="Podcast">`
+  }
+
+  return imagen_select;
+
+}
+
+
+function defineImagenCapitulo(item, imagen_select) {
+
+  // Un null es que quieren que rellenemos con la imagen del capitulo (item)
+  if (imagen_select==null) {
+
+    // El item es un capitulo, por lo tanto sacamos su imagen y a correr
+    const imageUrlElement = item.getElementsByTagName('itunes:image')[0];
+    const imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
+    return imageUrl ? `<img src="${imageUrl}" alt="${item.nombre}">` : "";
+
+  }
+
+  return imagen_select;
 }
 
 /******************************************
@@ -167,12 +229,16 @@ function defineImagenCapitulo(item) {
  * ****************************************/
 function crearContenedoresPodcasts(podcasts, listaDiv) {
 
-  const contenedores = podcasts.map(() => {
-    const div = document.createElement("div");
-    div.className = "podcast";
-    listaDiv.appendChild(div);
-    return div;
-  });
+  const contenedores = podcasts.flatMap(pod => {
+    const n = pod.ncaps ?? 1;
+
+    return Array.from({ length: n }, () => {
+      const div = document.createElement("div");
+      div.className = "podcast";
+      listaDiv.appendChild(div);
+      return div;
+      });
+    });
 
   return contenedores;
 }

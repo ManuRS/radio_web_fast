@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f0f4ff" id="theme-color-meta">
   <title>Pódcast en línea</title>
 
   <script src="script-fastload.js"></script>
@@ -56,18 +57,39 @@
 
       { nombre: "Punto de Fuga", url: "https://fapi-top.prisasd.com/podcast/playser/punto_de_fuga/itunestfp/podcast.xml", capitulo: ["Punto de Fuga"] },
       { nombre: "Nadie Sabe Nada", url: "https://fapi-top.prisasd.com/podcast/playser/nadie_sabe_nada/itunestfp/podcast.xml", capitulo: ["Nadie Sabe Nada"] },
-      { nombre: "Las Noches de Ortega", url: "https://fapi-top.prisasd.com/api/v2/feed-rss/playser/las-noches-de-ortega/itunestfp", capitulo: ["Las Noches de Ortega"] },
+      { nombre: "Las Noches de Ortega", url: "https://fapi-top.prisasd.com/podcast/playser/las_noches_de_ortega/itunestfp/podcast.xml", capitulo: ["Las Noches de Ortega"] },
 
-      { nombre: "Las edades de Millás (A Vivir)", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["Las edades de Millás"] },
-      { nombre: "La Tertulia de Cómicos (A Vivir)", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["La Tertulia de Cómicos"] },
-      { nombre: "El Mundo Today (A Vivir)", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["El Mundo Today"] },
-
-      { nombre: "Corresponsales (A Vivir)", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["Corresponsales"] },
-      { nombre: "Prosa Ibérica (A Vivir)", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["Prosa Ibérica"] },
-      { nombre: "A vista de Lobo (A Vivir)", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["A vista de Lobo"] },
     ];
 
-    cargarRSS_bycaps(podcasts, "personalizado_antiguedad");
+    const podcasts2 = [
+
+      { nombre: "Las edades de Millás", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["Las edades de Millás"] },
+      { nombre: "La Tertulia de Cómicos", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["La Tertulia de Cómicos"] },
+      { nombre: "El Mundo Today", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["El Mundo Today"] },
+
+      { nombre: "Corresponsales", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["Corresponsales"] },
+      { nombre: "Prosa Ibérica", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["Prosa Ibérica"] },
+      { nombre: "A vista de Lobo", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["A vista de Lobo"] },
+
+    ];
+
+    const podcasts3 = [
+
+      { nombre: "Las promo sketches del A Vivir", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["sketches"], ncaps: 4 },
+
+    ]
+
+    cargarRSS_bycaps(podcasts , "personalizado_antiguedad");
+
+    const subtitulo2 = document.createElement("h2");
+    subtitulo2.textContent = "A vivir que son dos días";
+    document.getElementById("lista").appendChild(subtitulo2);
+    cargarRSS_bycaps(podcasts2, "personalizado_antiguedad");
+
+    const subtitulo3 = document.createElement("h2");
+    subtitulo3.textContent = "Sketches";
+    document.getElementById("lista").appendChild(subtitulo3);
+    cargarRSS_bycaps(podcasts3, "titulo_antiguedad");
 
   </script>
 

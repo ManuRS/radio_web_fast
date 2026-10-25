@@ -69,7 +69,7 @@ if (toggle && icon && label){
     label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
     toggle.setAttribute('aria-label', dark ? 'Activar modo claro' : 'Activar modo oscuro');
     toggle.setAttribute('aria-pressed', String(dark));
-    if (themeColorMeta) themeColorMeta.setAttribute('content', dark ? '#111827' : '#1a237e');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', dark ? '#111827' : '#f0f4ff');
   }
 
   applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
