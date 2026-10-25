@@ -135,10 +135,10 @@
     }).addTo(map);
 
     // Añadir el mapa vectorial como una capa de Leaflet.
-    const capaMapa = maplibreGL({
-      style: ESTILOS[temaActual],
-      attribution:'OpenFreeMap &copy; OpenMapTiles &copy; Datos de OpenStreetMap &copy;'
-    }).addTo(map);
+    const capaMapa = maplibreGL(
+      { style: ESTILOS[temaActual] },
+      { attribution: 'OpenFreeMap &copy; OpenMapTiles &copy; Datos de OpenStreetMap &copy;' }
+    ).addTo(map);
 
     // Cambiar el estilo sin recrear el mapa ni sus marcadores.
     function aplicarTemaMapa(tema) {
