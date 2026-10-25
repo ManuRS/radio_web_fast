@@ -17,7 +17,7 @@ const FILES_TO_CACHE = [
   "./extra_mapaser.html",
   
   "./script-cargarss.js",
-  "./script-fastlaod.js",
+  "./script-fastload.js",
   "./script-interfaz.js",
   "./script-logica.js",
   "./script-serviceworker.js",
@@ -97,6 +97,7 @@ const FILES_TO_CACHE = [
   "./resources/cadena100b.png",
   "./resources/dial.webp",
   "./resources/kissfm.webp",
+  "./resources/los40.webp",
   "./resources/los40c.webp",
   "./resources/los40_dance.webp",
   "./resources/los40_urban.webp",
@@ -110,7 +111,7 @@ const FILES_TO_CACHE = [
 
   "./resources/live/classic.png",
   "./resources/live/hitfm.png",
-  "./resources/live/los40.webp",
+  "./resources/live/los40.png",
   "./resources/live/megastar.png",
   "./resources/live/null.png",
   "./resources/live/off.png",
