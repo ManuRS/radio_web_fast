@@ -40,10 +40,15 @@ Reproductor de radio *vibecodeado* con...
 ### Aportaciones
 
 - Abierto a solicitudes para añadir streams de emisoras. Mensajes a través de LinkedIn o mediante Issues / Pull Request de GitHub
-- Normas: se añaden streams oficiales y siempre intentando usar los enlaces canónicos pre-balanceo de servidores
+- Normas: se añaden solo streams oficiales y siempre intentando usar los enlaces canónicos pre-balanceo de servidores
 
 ## Libre de rastreos
 
 - El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica con los servidores de emisión de audio y con los feeds de podcast
-- La web descarga una sola vez 6MB que se guardan como cache del sitio. Son las imágenes que se usan en el menú y para seleccionar emisoras
+- La web descarga una sola menos de 7MB que se guardan como cache del sitio. Son las imágenes que se usan en el menú y para seleccionar emisoras
 - Los anuncios al escuchar están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o el podcast
+
+### Librería de terceros
+
+- La radio en directo usa HLS.js cuando es necesario. Es una libreria que permite reproducir ciertos formatos de emisión no soportados por defecto por los navegadores
+- El mapa se produce utilizando la libreria leaflet.js así como su hoja de estilos estilos leaflet.css.

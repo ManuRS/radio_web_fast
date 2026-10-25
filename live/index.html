@@ -810,7 +810,7 @@
           console.error("Este navegador no soporta HLS");
         }
       } else {
-        // Caso MP3 / AAC
+        // Caso MP3 / AAC clásico (Icecast / Shoutcast)
         if (!audio.src) audio.src = originalSrc;
         audio.play().catch(err => console.error("Error al reproducir:", err));
 
@@ -822,9 +822,12 @@
 
             console.log(`Margen con el directo: ${margenSegundos.toFixed(2)} segundos`);
 
-            // Si el retraso acumulado supera los 4 segundos, saltamos al borde actual
-            if (livePosition - audio.currentTime > 4) {
-              audio.currentTime = livePosition;
+            // Si el retraso acumulado supera los 6 segundos, saltamos al borde actual
+            if (livePosition - audio.currentTime > 6) {
+              console.warn("Retraso crítico detectado. Reiniciando stream para conectar al directo...");
+              audio.src = originalSrc; // Esto limpia el búfer acumulado
+              audio.load();
+              audio.play().catch(err => console.error("Error al reconectar stream:", err));
             }
           }
         }, 10000);

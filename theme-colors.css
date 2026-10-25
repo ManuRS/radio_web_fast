@@ -35,9 +35,9 @@ h2 {
 :root {
   color-scheme: light;
 
-  --page-background: #fff;
+  --page-background: #f8f8ff;
   --page-text: #333;
-  --heading-color: #2D3748;
+  --heading-color: #2d3748;
 
   --card-background: #fff;
   --card-shadow: 0 0 12px rgba(0, 0, 0, 0.30);
@@ -66,7 +66,6 @@ h2 {
 
 /* Index fondo */
 :root[data-page="index"] {
-  --page-background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
   --heading-color: #1a237e;
 }
 
@@ -75,7 +74,7 @@ h2 {
 
   --page-background: linear-gradient(135deg, #111827, #1b263b);
   --page-text: #e5e7eb;
-  --heading-color: #E2E8F0;
+  --heading-color: #e2e8F0;
 
   --card-background: rgba(35, 47, 69, 0.55);
   --card-shadow: 0 0px 14px rgba(0, 0, 0, 0.35);
