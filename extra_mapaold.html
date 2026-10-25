@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa de emisoras de la SER</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 100%; }
+
+    /* Panel lateral flotante */
+    #panel {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 250px;
+      max-width: 80%;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      z-index: 1000;
+      font-family: Arial, sans-serif;
+    }
+
+    #panel h1 {
+      margin: 0;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    /* Ajustes para móviles */
+    @media (max-width: 600px) {
+      #panel {
+        width: 200px;
+        padding: 10px;
+      }
+
+      #panel h1 {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Panel lateral flotante -->
+  <div id="panel">
+    <h1>MAPA DE LA RED DE EMISORAS DE LA SER</h1>
+  </div>
+
+  <!-- Mapa -->
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Centrar el mapa en España
+    var map = L.map('map', {
+      minZoom: 4,   // Zoom mínimo
+      maxZoom: 12,   // Zoom máximo
+      zoomControl: false // Desactivamos zoom por defecto
+    }).setView([40.0, -3.8], 7);
+
+    // Colocar control de zoom en la esquina superior derecha
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Capa base
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      subdomains: 'abc',
+    }).addTo(map);
+
+    // Datos de emisoras
+    const emisoras = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json').then(r => r.json());
+
+    // Añadir marcadores de emisoras
+    emisoras.forEach(function(emisora) {
+      L.marker([emisora.lat, emisora.lon])
+        .addTo(map)
+        .bindPopup('<b>' + emisora.nombre + '</b><br>' + emisora.ciudad + '<br>Frecuencia: ' + emisora.frecuencia);
+    });
+  </script>
+</body>
+</html>
