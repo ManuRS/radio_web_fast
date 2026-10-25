@@ -71,7 +71,7 @@
     }).addTo(map);
 
     // Datos de emisoras
-    const emisoras = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json').then(r => r.json());
+    const emisoras = fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json').then(r => r.json());
 
     // Añadir marcadores de emisoras
     emisoras.forEach(function(emisora) {
