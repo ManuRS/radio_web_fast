@@ -48,7 +48,7 @@ const FILES_TO_CACHE = [
   "./resources/spain.jpg",
   "./resources/mn.jpeg",
   "./resources/radio_classic.webp"
-  "./resources/federico.webp"
+  "./resources/federico.webp",
 
   "./resources/favicon.ico",
   "./resources/favicon2.ico",
