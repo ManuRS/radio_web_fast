@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Mapa de emisoras de la SER</title>
@@ -42,6 +43,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- Panel lateral flotante -->
@@ -53,7 +55,9 @@
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
   <script>
+
     // Centrar el mapa en España
     var map = L.map('map', {
       minZoom: 4,   // Zoom mínimo
@@ -70,8 +74,13 @@
       subdomains: 'abc',
     }).addTo(map);
 
-    // Datos de emisoras
-    const emisoras = fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json').then(r => r.json());
+    // Descargar el json eliminando los comentarios
+    const textoLimpio = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
+    .then(r => r.text())
+    .then(texto => texto.replace(/\/\/.*$/gm, '')); 
+
+    // Parsear el json
+    const emisoras = JSON.parse(textoLimpio);
 
     // Añadir marcadores de emisoras
     emisoras.forEach(function(emisora) {
@@ -79,6 +88,9 @@
         .addTo(map)
         .bindPopup('<b>' + emisora.nombre + '</b><br>' + emisora.ciudad + '<br>Frecuencia: ' + emisora.frecuencia);
     });
+
   </script>
+
 </body>
+
 </html>

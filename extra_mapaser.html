@@ -157,8 +157,13 @@
       }
     });
 
-  // Datos de emisoras
-  const emisoras = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json').then(r => r.json());
+  // Descargar el json eliminando los comentarios
+  const textoLimpio = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
+  .then(r => r.text())
+  .then(texto => texto.replace(/\/\/.*$/gm, '')); 
+
+  // Parsear el json
+  const emisoras = JSON.parse(textoLimpio);
 
   // Añadir marcadores y ventanas emergentes.
   emisoras.forEach(function(emisora) {
