@@ -1,24 +1,34 @@
 
-const CACHE_NAME = "radio-full-cache-v53";
+const CACHE_NAME = "radio-full-cache-v54";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
-  "./radio_bol.html",
+
   "./radio_boletos.html",
   "./radio_daily.html",
-  "./radio_elpais.html",
   "./radio_extra.html",
   "./radio_finde.html",
   "./radio_fun.html",
-  "./radio_map.html",
   "./radio_mañanas.html",
   "./radio_programas.html",
+
+  "./extra_elpais.html",
+  "./extra_mapaser.html",
   
-  "./radio_estilos.css",
-  "./radio_scripts.js",
+  "./script-cargarss.js",
+  "./script-fastlaod.js",
+  "./script-interfaz.js",
+  "./script-logica.js",
+  "./script-serviceworker.js",
+
+  "./theme-aux.css",
+  "./theme-cards.css",
+  "./theme-colors.css",
+  "./theme-podcast.css",
 
   "./live/index.html",
+  "./live_boleto/index.html"
   "./live_ser/index.html",
 
   "./manifest.json",
@@ -37,10 +47,18 @@ const FILES_TO_CACHE = [
   "./resources/elpais.jpg",
   "./resources/spain.jpg",
   "./resources/mn.jpeg",
+  "./resources/radio_classic.webp"
+  "./resources/federico.webp"
 
+  "./resources/favicon.ico",
   "./resources/favicon2.ico",
+  "./resources/favicon3.ico",
+  "./resources/icon-192.png",
+  "./resources/icon-512.png",
   "./resources/icon2-192.png",
   "./resources/icon2-512.png",
+  "./resources/icon3-192.png",
+  "./resources/icon3-512.png",
 
   "./resources/micro.jpg",
   "./resources/cope.jpg",
@@ -68,6 +86,7 @@ const FILES_TO_CACHE = [
 
   "./resources/los40_estudio.jpg",
   "./resources/los40c_micro.jpg",
+  "./resources/mega.png",
   "./resources/mega2.jpg",
   "./resources/hitfm.jpg",
   "./resources/rockfm.webp",
@@ -75,8 +94,10 @@ const FILES_TO_CACHE = [
 
   "./resources/europafm.webp",
   "./resources/cadena100.webp",
+  "./resources/cadena100b.png",
   "./resources/dial.webp",
   "./resources/kissfm.webp",
+  "./resources/los40c.webp"
   "./resources/los40_dance.webp",
   "./resources/los40_urban.webp",
 
@@ -89,7 +110,7 @@ const FILES_TO_CACHE = [
 
   "./resources/live/classic.png",
   "./resources/live/hitfm.png",
-  "./resources/live/los40.png",
+  "./resources/live/los40.webp",
   "./resources/live/megastar.png",
   "./resources/live/null.png",
   "./resources/live/off.png",
