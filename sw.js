@@ -47,7 +47,7 @@ const FILES_TO_CACHE = [
   "./resources/elpais.jpg",
   "./resources/spain.jpg",
   "./resources/mn.jpeg",
-  "./resources/radio_classic.webp"
+  "./resources/radio_classic.webp",
   "./resources/federico.webp",
 
   "./resources/favicon.ico",
@@ -97,7 +97,7 @@ const FILES_TO_CACHE = [
   "./resources/cadena100b.png",
   "./resources/dial.webp",
   "./resources/kissfm.webp",
-  "./resources/los40c.webp"
+  "./resources/los40c.webp",
   "./resources/los40_dance.webp",
   "./resources/los40_urban.webp",
 
