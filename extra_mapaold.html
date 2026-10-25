@@ -75,7 +75,7 @@
     }).addTo(map);
 
     // Descargar el json eliminando los comentarios
-    const textoLimpio = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
+    const textoLimpio = fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
     .then(r => r.text())
     .then(texto => texto.replace(/\/\/.*$/gm, '')); 
 
