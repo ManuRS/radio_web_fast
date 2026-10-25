@@ -6,7 +6,24 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body { margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
+    #map { height: 100vh; width: 100%; background: #111827;}
+
+    /* Colores */
+    :root {
+      color-scheme: light;
+      --panel-bg: rgba(255, 255, 255, 0.9);
+      --panel-text: #111;
+      --popup-bg: #fff;
+      --popup-text: #222;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --panel-bg: rgba(17, 24, 39, 0.94);
+      --panel-text: #f3f4f6;
+      --popup-bg: #1f2937;
+      --popup-text: #f3f4f6;
+    }
 
     /* Panel lateral flotante */
     #panel {
@@ -15,18 +32,34 @@
       left: 20px;
       width: 250px;
       max-width: 80%;
-      background: rgba(255, 255, 255, 0.9);
+      background: var(--panel-bg);
+      color: var(--panel-text);
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       z-index: 1000;
       font-family: Arial, sans-serif;
+      transition: background 0.2s, color 0.2s;
     }
 
     #panel h1 {
       margin: 0;
       font-size: 18px;
       text-align: center;
+    }
+
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-tip {
+      background: var(--popup-bg);
+      color: var(--popup-text);
+    }
+
+    .leaflet-popup-content {
+      color: var(--popup-text);
+    }
+
+    .leaflet-container {
+      font-family: Arial, sans-serif;
     }
 
     /* Ajustes para móviles */
@@ -53,25 +86,68 @@
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
   <script>
+
     // Centrar el mapa en España
     var map = L.map('map', {
       minZoom: 4,   // Zoom mínimo
-      maxZoom: 12,   // Zoom máximo
+      maxZoom: 14,   // Zoom máximo
       zoomControl: false // Desactivamos zoom por defecto
     }).setView([40.0, -3.8], 7);
 
     // Colocar control de zoom en la esquina superior derecha
     L.control.zoom({ position: 'topright' }).addTo(map);
 
-    // Capa base
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-      subdomains: 'abc',
-    }).addTo(map);
+    // Capa modo claro
+    var mapaClaro = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map &copy; OpenStreetMap contributors', subdomains: 'abc',
+    });
 
+    // Capa modo oscuro
+    var mapaOscuro = L.tileLayer('https://openfreemap.org{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; OpenStreetMap contributors, Tiles &copy; OpenFreeMap',  
+    });
+
+    // Tema guardado por el resto de la web.
+    function obtenerTemaGuardado() {
+      try {
+        return localStorage.getItem('radio-page-theme') === 'dark' ? 'dark' : 'light';
+      } catch (error) {
+        return 'light';
+      }
+    }
+
+    var capaActual = null;
+
+    function aplicarTemaMapa(tema) {
+      document.documentElement.dataset.theme = tema;
+
+      var nuevaCapa = tema === 'dark' ? mapaOscuro : mapaClaro;
+
+      if (capaActual && map.hasLayer(capaActual)) {
+        map.removeLayer(capaActual);
+      }
+
+      nuevaCapa.addTo(map);
+      capaActual = nuevaCapa;
+    }
+
+    // Aplicar el tema guardado al cargar.
+    aplicarTemaMapa(obtenerTemaGuardado());
+
+    // Escuchar cambios de tema realizados en otras pestañas.
+    window.addEventListener('storage', function (event) {
+      if (event.key === 'radio-page-theme') {
+        aplicarTemaMapa(event.newValue === 'dark' ? 'dark' : 'light');
+      }
+    });
+
+  </script>
+
+  <script>
     // Datos de emisoras
-var emisoras = [
+    var emisoras = [
 
   // ANDALUCIA
   { "nombre": "Cancionero Radio", "ciudad": "Baena", "lat": 37.615, "lon": -4.326, "frecuencia": "104.5 FM" },
@@ -301,7 +377,7 @@ var emisoras = [
   { "nombre": "Radio Murcia", "ciudad": "Murcia", "lat": 37.989, "lon": -1.130, "frecuencia": "100.3 FM / 1.260 OM" },
   { "nombre": "SER Arco Norte", "ciudad": "Yecla", "lat": 38.612, "lon": -1.109, "frecuencia": "88.0 / 97.2 FM" }
 
-];
+    ];
 
     // Añadir marcadores de emisoras
     emisoras.forEach(function(emisora) {
@@ -309,6 +385,8 @@ var emisoras = [
         .addTo(map)
         .bindPopup('<b>' + emisora.nombre + '</b><br>' + emisora.ciudad + '<br>Frecuencia: ' + emisora.frecuencia);
     });
+    
   </script>
+
 </body>
 </html>
