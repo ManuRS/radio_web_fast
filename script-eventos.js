@@ -14,15 +14,15 @@
       }
     ],
 
-    "13-02": [
+    "26-10": [
       {
         titulo: "¡Día Mundial de la Radio {año}!",
-        emojis: ["📻", "❤️", "🎙️", "🎧", "🟡"],
+        emojis: ["📻", "🎙️", "🎧", "🟡", "🔴", "🔵", "🟢"],
         efecto: "confeti"
       },
       {
         titulo: "¡Viva la radio siempre!",
-        emojis: ["📻", "❤️", "🎙️", "🎧", "🟡"],
+        emojis: ["📻", "💛", "🎙️", "🎧"],
         efecto: "explosion"
       }
     ],
@@ -31,7 +31,7 @@
       {
         titulo: "¡Feliz {años} cumpleaños Radio Madrid!",
         añoInicio: 1925,
-        emojis: ["📻", "🎂", "🎉", "🎙️", "🎊", "🥳", "🟡"],
+        emojis: ["📻", "🎂", "🎉", "🎙️", "🎊", "🥳", "💛"],
         efecto: "confeti"
       }
     ],
@@ -40,7 +40,7 @@
       {
         titulo: "¡Los 40 Principales, {años} años de éxitos!",
         añoInicio: 1966,
-        emojis: ["🎶", "🎧", "🎉", "📻", "🎵", "🥳"],
+        emojis: ["🔊", "🎧", "🎉", "✨", "🎵", "🥳", "❤️"],
         efecto: "explosion"
       }
     ],
@@ -49,7 +49,7 @@
       {
         titulo: "¡Radio Web Fast cumple {años} años!",
         añoInicio: 2025,
-        emojis: ["📻", "🎂", "🎉", "🎊", "🎧", "🥳"],
+        emojis: ["📻", "🎂", "🎉", "🎆", "🎧", "🥳"],
         efecto: "explosion"
       }
     ],
@@ -66,13 +66,13 @@
       {
         titulo: "¡Radio Barcelona, {años} años en el aire!",
         añoInicio: 1924,
-        emojis: ["📻", "🎂", "🎙️", "🎉", "🎊", "🥳", "🟡"],
+        emojis: ["📻", "🎂", "🎉", "🎊", "🥳", "💛"],
         efecto: "confeti"
       },
       {
         titulo: "¡Feliz {años} cumpleaños Cadena SER!",
         añoInicio: 1924,
-        emojis: ["📻", "🎂", "🎉", "🎙️", "🎊", "🥳", "🟡"],
+        emojis: ["📻", "🎂", "🎉", "🎊", "🥳", "💛"],
         efecto: "explosion"
       }
     ],
@@ -223,7 +223,7 @@
         tiempo: Math.random() * 3,
 
         // Variaciones naturales de aparición.
-        opacidad: 0.7 + Math.random() * 0.3
+        opacidad: 1
       });
     }
 
@@ -340,7 +340,7 @@
 
         // Cada emoji tiene su propia física.
         gravedad: alto * (0.75 + Math.random() * 0.45) / 8,
-        balanceo: 15 + Math.random() * 35,
+        balanceo: 3 + Math.random() * 4,
         frecuencia: 1.5 + Math.random() * 2,
         fase: Math.random() * Math.PI * 2,
         giro: (Math.random() - 0.5) * 220,
