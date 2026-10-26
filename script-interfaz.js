@@ -19,44 +19,59 @@ if (volumeSlider) {
 /******************************
   MODAL DE SALIDA
 *******************************/
-
-// Referencias al modal y botones
 const exitModal = document.getElementById("exit-modal");
 const stayBtn = document.getElementById("stay-btn");
 
 if (exitModal && stayBtn) {
-  // Mantener la posición de scroll al mostrar el modal
   let scrollPosition = 0;
+  let modalAbierto = false;
+  let audioIniciado = false;
 
-  // Interceptar botón atrás
-  window.addEventListener("load", () => {
+  // Detectar reproducciones, incluidos los audios creados dinámicamente
+  document.addEventListener("play", event => {
+    if (event.target instanceof HTMLAudioElement) {
+      audioIniciado = true;
+    }
+  }, true);
+
+  // Crear una entrada para interceptar el primer gesto atrás
+  history.pushState({ exitModal: true }, "", location.href);
+
+  window.addEventListener("popstate", () => {
+    // Sin audio previo: no interceptar la navegación
+    if (!audioIniciado) {
+      history.back();
+      return;
+    }
+
+    // Si el modal está abierto, el siguiente gesto permite salir
+    if (modalAbierto) {
+      exitModal.style.display = "none";
+      modalAbierto = false;
+      return;
+    }
+
+    // Mostrar el modal
+    scrollPosition = window.scrollY;
+    modalAbierto = true;
+    exitModal.style.display = "flex";
+
+    // Mantener una entrada para el siguiente gesto atrás
     history.pushState({ exitModal: true }, "", location.href);
 
-    window.addEventListener("popstate", () => {
-      scrollPosition = window.scrollY;
-
-      // Mostrar modal en vez de cerrar
-      exitModal.style.display = "flex";
-
-      // Reponer la entrada del historial
-      history.pushState({ exitModal: true }, "", location.href);
-
-      // Restaurar el scroll si el navegador lo modifica
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollPosition);
-      });
-
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollPosition);
     });
-
   });
 
-  // Botón "Seguir escuchando"
   stayBtn.addEventListener("click", () => {
     exitModal.style.display = "none";
+    modalAbierto = false;
     window.scrollTo(0, scrollPosition);
   });
-
 }
+  
+
 
 /******************************
   TOGGLE MODO OSCURO
