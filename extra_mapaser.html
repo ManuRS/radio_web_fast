@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mapa de emisoras de la SER</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -67,15 +68,55 @@
 
     /* Ajustes para móviles */
     @media (max-width: 600px) {
+
+      /* Cartel del título */
       #panel {
+        top: 12px;
+        left: 12px;
         width: 200px;
-        padding: 10px;
+        max-width: calc(100% - 48px);
+        padding: 16px;
+        border-radius: 12px;
       }
 
       #panel h1 {
         font-size: 16px;
+        line-height: 1.35;
+      }
+
+        /* Botones de zoom */
+      .leaflet-control-zoom a {
+        width: 44px;
+        height: 44px;
+        line-height: 44px;
+        font-size: 28px;
+      }
+      /* Ventana que aparece al pulsar una emisora */
+      .leaflet-popup-content {
+        font-size: 16px;
+        line-height: 1.6;
+        margin: 16px 20px;
+      }
+
+      .leaflet-popup-content-wrapper {
+        border-radius: 12px;
+      }
+
+      .leaflet-popup-content b {
+        font-size: 20px;
+      }
+
+      .leaflet-popup-close-button {
+        transform: scale(1.3);
+        transform-origin: top right;
+      }
+
+      /* Iconos de los marcadores de las emisoras */
+      .leaflet-marker-icon {
+        transform-origin: center bottom;
       }
     }
+    
   </style>
 
   <script type="importmap">
@@ -128,7 +169,10 @@
       minZoom: 4,
       maxZoom: 14,
       zoomControl: false
-    }).setView([40.0, -3.8], 7);
+    }).setView(
+      [40.0, -3.8],
+      window.matchMedia('(max-width: 600px)').matches ? 6 : 7
+    );
 
     L.control.zoom({
       position: 'topright'
@@ -157,16 +201,20 @@
       }
     });
 
-  // Descargar el json eliminando los comentarios
-  const textoLimpio = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
-  .then(r => r.text())
-  .then(texto => texto.replace(/\/\/.*$/gm, '')); 
+    // Descargar el json eliminando los comentarios
+    const textoLimpio = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
+    .then(r => r.text())
+    .then(texto => texto.replace(/\/\/.*$/gm, '')); 
 
-  // Parsear el json
-  const emisoras = JSON.parse(textoLimpio);
+    // Parsear el json
+    const emisoras = JSON.parse(textoLimpio);
 
-  // Añadir marcadores y ventanas emergentes.
-  emisoras.forEach(function(emisora) {
+    // Tamaño de los marcadores en móviles
+    const esMovil = window.matchMedia('(max-width: 600px)').matches;
+    const escalaMarcador = esMovil ? 1.5 : 1;
+
+    // Añadir marcadores y ventanas emergentes.
+    emisoras.forEach(function(emisora) {
     const contenido = document.createElement('div');
     const nombre = document.createElement('b');
 
@@ -179,9 +227,18 @@
       document.createTextNode('Frecuencia: ' + emisora.frecuencia)
     );
 
-    L.marker([emisora.lat, emisora.lon])
-      .addTo(map)
-      .bindPopup(contenido);
+    const marcador = L.marker([emisora.lat, emisora.lon]).addTo(map);
+
+    if (escalaMarcador > 1) {
+      marcador.on('add', function() {
+        const icono = marcador.getElement();
+        if (icono) {
+          icono.style.transform += ' scale(' + escalaMarcador + ')';
+        }
+      });
+    }
+
+    marcador.bindPopup(contenido);
   });
 
   </script>
