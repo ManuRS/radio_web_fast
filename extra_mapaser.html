@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" />
 
+  <link rel="stylesheet" href="theme-colors.css">
+  <link rel="stylesheet" href="theme-aux.css">
+
   <style>
     body { margin: 0; padding: 0; }
     #map { height: 100vh; width: 100%; background: #111827;}
@@ -15,7 +18,7 @@
     /* Colores */
     :root {
       color-scheme: light;
-      --panel-bg: rgba(255, 255, 255, 0.9);
+      --panel-bg: rgba(255, 255, 255, 0.8);
       --panel-text: #111;
       --popup-bg: #fff;
       --popup-text: #222;
@@ -23,7 +26,7 @@
 
     :root[data-theme="dark"] {
       color-scheme: dark;
-      --panel-bg: rgba(17, 24, 39, 0.94);
+      --panel-bg: rgba(17, 24, 39, 0.8);
       --panel-text: #f3f4f6;
       --popup-bg: #1f2937;
       --popup-text: #f3f4f6;
@@ -73,7 +76,7 @@
       #panel {
         top: 12px;
         left: 12px;
-        width: 200px;
+        width: 220px;
         max-width: calc(100% - 48px);
         padding: 16px;
         border-radius: 12px;
@@ -84,13 +87,14 @@
         line-height: 1.35;
       }
 
-        /* Botones de zoom */
+      /* Botones de zoom */
       .leaflet-control-zoom a {
         width: 44px;
         height: 44px;
         line-height: 44px;
         font-size: 28px;
       }
+
       /* Ventana que aparece al pulsar una emisora */
       .leaflet-popup-content {
         font-size: 16px;
@@ -115,6 +119,15 @@
       .leaflet-marker-icon {
         transform-origin: center bottom;
       }
+
+      /* Boton modo oscuro en moviles */
+      .theme-toggle {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        z-index: 2000;
+      }
+
     }
     
   </style>
@@ -140,6 +153,16 @@
   <!-- Mapa -->
   <div id="map"></div>
 
+  <!-- Botón modo oscuro, la posición no se define aquí -->
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+    <span id="theme-label">Modo oscuro</span>
+    <span id="theme-icon" aria-hidden="true">🌙</span>
+  </button>
+
+  <!-- Para el modo oscuro -->
+  <script src="script-interfaz.js"></script>
+
+  <!-- El mapa -->
   <script type="module">
 
     import * as L from 'leaflet';
@@ -195,10 +218,8 @@
     }
 
     // Detectar cambios del tema desde otras pestañas.
-    window.addEventListener('storage', function(event) {
-      if (event.key === 'radio-page-theme') {
-        aplicarTemaMapa(event.newValue === 'dark' ? 'dark' : 'light');
-      }
+    window.addEventListener('radio-theme-change', function(event) {
+      aplicarTemaMapa(event.detail.theme);
     });
 
     // Descargar el json eliminando los comentarios
@@ -239,6 +260,7 @@
     }
 
     marcador.bindPopup(contenido);
+
   });
 
   </script>

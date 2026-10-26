@@ -1,9 +1,10 @@
 
-const CACHE_NAME = "radio-full-cache-v57";
+const CACHE_NAME = "radio-full-cache-v58";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
+  "./script-eventos.js",
 
   "./radio_boletos.html",
   "./radio_daily.html",

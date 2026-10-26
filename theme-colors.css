@@ -62,6 +62,7 @@ h2 {
   --modal-button-text: #fff;
 
   --theme-color: #f6f6f6;
+  --rss-link-color: #0077cc;
 }
 
 /* Index fondo */
@@ -99,5 +100,5 @@ h2 {
   --modal-button-text: #fff;
 
   --theme-color: #111827;
-
+  --rss-link-color: #7dbaff;
 }

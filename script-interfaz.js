@@ -25,21 +25,37 @@ const exitModal = document.getElementById("exit-modal");
 const stayBtn = document.getElementById("stay-btn");
 
 if (exitModal && stayBtn) {
+  // Mantener la posición de scroll al mostrar el modal
+  let scrollPosition = 0;
+
   // Interceptar botón atrás
   window.addEventListener("load", () => {
-    history.pushState(null, "", location.href);
+    history.pushState({ exitModal: true }, "", location.href);
 
     window.addEventListener("popstate", () => {
+      scrollPosition = window.scrollY;
+
       // Mostrar modal en vez de cerrar
       exitModal.style.display = "flex";
-      history.pushState(null, "", location.href); // volvemos a bloquear
+
+      // Reponer la entrada del historial
+      history.pushState({ exitModal: true }, "", location.href);
+
+      // Restaurar el scroll si el navegador lo modifica
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPosition);
+      });
+
     });
+
   });
 
   // Botón "Seguir escuchando"
   stayBtn.addEventListener("click", () => {
     exitModal.style.display = "none";
+    window.scrollTo(0, scrollPosition);
   });
+
 }
 
 /******************************
@@ -60,28 +76,53 @@ if (toggle && lista) {
   lista.after(toggle);
 }
 
-if (toggle && icon && label){
+function applyTheme(theme) {
+  const dark = theme === 'dark';
 
-  function applyTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    const dark = theme === 'dark';
-    icon.textContent = dark ? '☀️' : '🌙';
-    label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
-    toggle.setAttribute('aria-label', dark ? 'Activar modo claro' : 'Activar modo oscuro');
-    toggle.setAttribute('aria-pressed', String(dark));
-    if (themeColorMeta) themeColorMeta.setAttribute('content', dark ? '#111827' : '#f6f6f6');
-  }
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
 
-  applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+    if (toggle && icon && label) {
+      icon.textContent = dark ? '☀️' : '🌙';
+      label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+      toggle.setAttribute('aria-label', dark ? 'Activar modo claro' : 'Activar modo oscuro');
+      toggle.setAttribute('aria-pressed', String(dark));
+    }
 
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', dark ? '#111827' : '#f6f6f6');
+    }
+
+    // Permite que páginas con componentes especiales, como el mapa,
+    // reaccionen al cambio sin duplicar la lógica común.
+    window.dispatchEvent(new CustomEvent('radio-theme-change', {
+      detail: { theme: dark ? 'dark' : 'light' }
+    }));
+}
+
+/* Aplicar el tema inicial */
+applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+
+/* Botón de cambio de tema */
+if (toggle) {
   toggle.addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+
     applyTheme(next);
+
     try {
       localStorage.setItem('radio-page-theme', next);
     } catch (error) {
       // El selector sigue funcionando si el almacenamiento no está disponible.
     }
   });
-
 }
+
+/* Sincronizar los cambios procedentes de otras pestañas */
+window.addEventListener('storage', event => {
+  if (event.key === 'radio-page-theme' && event.newValue !== null) {
+    applyTheme(event.newValue === 'dark' ? 'dark' : 'light');
+  }
+});
+
+
+
