@@ -7,11 +7,17 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+}
+
 body {
   font-family: Arial, sans-serif;
   background: var(--page-background);
   color: var(--page-text);
   transition: background 0.25s ease, color 0.25s ease;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 h1 {
