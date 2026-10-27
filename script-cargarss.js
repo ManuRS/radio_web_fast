@@ -206,7 +206,6 @@ function defineImagenPodcast (feed, imagen_type, imagen_type_global=null) {
 
 }
 
-
 function defineImagenCapitulo(item, imagen_select) {
 
   // Un null es que quieren que rellenemos con la imagen del capitulo (item)

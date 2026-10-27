@@ -1,4 +1,8 @@
 
+/********************************
+ * SERVICEWORKER
+ * *****************************/
+
 if ('serviceWorker' in navigator) {
   // Detectar la raíz de la aplicación
   let appBase = location.pathname.substring(

@@ -229,4 +229,3 @@ window.addEventListener("DOMContentLoaded", () => {
 
   filterStations(savedCategory, btn);
 });
-
