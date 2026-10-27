@@ -132,7 +132,10 @@ audio {
 
 /* 📱 Móviles */
 @media (max-width: 600px) {
-  body { padding: 10px; }
+  body {
+    padding: 10px;
+    padding-bottom: 0;
+  }
 
   .podcast-contenido {
     flex-direction: column; /* Imagen arriba, texto abajo */

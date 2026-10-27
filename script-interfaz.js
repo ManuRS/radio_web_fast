@@ -2,7 +2,6 @@
 /******************************
   SLIDER SUPERIOR VOLUMEN
 *******************************/
-
 // Referencia al slider de volumen
 const volumeSlider = document.getElementById('volume-slider');
 
@@ -71,8 +70,6 @@ if (exitModal && stayBtn) {
   });
 }
   
-
-
 /******************************
   TOGGLE MODO OSCURO
 *******************************/
@@ -87,6 +84,7 @@ const themeColorMeta = document.getElementById('theme-color-meta');
 
 /* Esto lo coloca al final en el movil */
 const lista = document.getElementById("lista");
+const links = document.getElementById("links");
 if (toggle && lista) {
   lista.after(toggle);
 }
@@ -139,5 +137,83 @@ window.addEventListener('storage', event => {
   }
 });
 
+/******************************
+  NOTIFICACION
+*******************************/
+// Android Media Session
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: 'Radio Web Fast',
+    artwork: [
+      { src: '../resources/radio_mini.jpeg', type: 'image/jpeg' },
+    ]
+  });
+}
 
+/******************************
+  OTROS
+*******************************/
+function actualizarEspacioInferior() {
+  // Ñapa para index y live
+  if (document.documentElement.dataset.page !== 'index') return;
+
+  const hayScroll =
+      document.documentElement.scrollHeight >
+      document.documentElement.clientHeight;
+
+  document.body.classList.toggle('hay-scroll', hayScroll);
+}
+
+window.addEventListener('load', actualizarEspacioInferior);
+window.addEventListener('resize', actualizarEspacioInferior);
+
+/********************************
+ * CATEGORIAS - Filtrar emisoras y separadores
+ * *****************************/
+function filterStations(category, btn) {
+  // Seleccionamos tanto las tarjetas como los separadores
+  const items = document.querySelectorAll('.card, .category-separator');
+  const buttons = document.querySelectorAll('.category-btn');
+
+  items.forEach(item => {
+    if (item.classList.contains(category)) {
+      // Mostrar elemento
+      item.classList.remove("hidden");
+      setTimeout(() => {
+        item.style.position = "relative";
+      }, 500);
+    } else {
+      // Ocultar elemento
+      item.classList.add("hidden");
+    }
+  });
+
+  // Marcar el botón activo
+  buttons.forEach(b => b.classList.remove('active'));
+
+  // Activar el botón si existe
+  if (btn) {
+    btn.classList.add('active');
+  }
+
+  // Guardar categoría en localStorage
+  localStorage.setItem('selectedCategory', category);
+}
+
+/********************************
+ * CATEGORIAS - Mostrar la categoría guardada (o "general" por defecto)
+ * *****************************/
+window.addEventListener("DOMContentLoaded", () => {
+  // Las páginas sin botones de categoría no necesitan inicialización.
+  const buttons = document.querySelectorAll('.category-btn');
+  if (!buttons.length) return;
+
+  const savedCategory = localStorage.getItem("selectedCategory") || "general";
+
+  const btn = [...buttons].find(b =>
+    b.getAttribute('onclick')?.includes(savedCategory)
+  );
+
+  filterStations(savedCategory, btn);
+});
 

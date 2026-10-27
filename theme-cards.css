@@ -3,9 +3,11 @@
 /* Este .css debe importarse el último cuando sea necesario*/
 /* Es un complemento sobre theme-colors */
 
+/******************************
+ * Extras sobre el body
+ * ***************************/
 body {
   /* Cambios y añadidos al body por defecto del proyecto */
-  font-family: "Segoe UI", Roboto, sans-serif;
   margin: 0;
   padding: 0;
   display: flex;
@@ -14,7 +16,29 @@ body {
   min-height: 100vh;
 }
 
-/* Contenedor de enlaces */
+
+/******************************
+ * Adaptaciones Responsive
+ * ***************************/
+@media (max-width: 42em) {
+  h1 { font-size: 1.5rem; }
+  .card { height: 200px; }
+
+  .links {
+    grid-template-columns: 1fr; /* solo una card por línea */
+    gap: 15px;
+  }
+}
+
+@media (min-width: 42em) {
+  html[data-page="index"] body.hay-scroll .links {
+    margin-bottom: 40px;
+  }
+}
+
+/******************************
+ * Disposicion
+ * ***************************/
 .links {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -24,29 +48,50 @@ body {
   margin: 40px auto 0 auto;
 }
 
-/* Estilo para cada tarjeta */
+/******************************
+ * Estilo base de la card
+ * ***************************/
 .card {
   position: relative;
   border-radius: 15px;
   overflow: hidden;
   height: 175px;
   box-shadow: var(--card-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s ease;
   text-align: center;
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 }
 
-/* Imagen de fondo */
+/* Hacemos el audio solo una tarjeta */
+.card audio {
+  display: none;
+}
+
+/* La linea roja */
+.card.playing::after {
+  border: none;
+  border-radius: inherit;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 0 4px var(--card-playing-border);
+  pointer-events: none;
+}
+
+/******************************
+ * Estilo de la imagen de
+ * la card y su filtro
+ * ***************************/
 .card::before {
   content: "";
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  filter: brightness(0.8) blur(1.5px);
-  transition: transform 0.3s ease;
+  filter: brightness(0.75) blur(2px);
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 /* Overlay oscuro */
@@ -59,16 +104,40 @@ body {
   transition: background 0.3s ease;
 }
 
-/* Hover: zoom + aclarar overlay */
-.card:hover::before {
-  transform: scale(1.1);
-  filter: brightness(0.9) blur(0.2px);
-}
-.card:hover::after {
-  background: rgba(0,0,0,0.2);
+/****************************************
+/* Hover solo en dispositivos con ratón:
+/* evita estados pegados en móviles
+ * **************************************/
+@media (hover: hover) and (pointer: fine) {
+  .card:hover::before {
+    transform: scale(1.1);
+    filter: brightness(1.0) blur(0.0px);
+  }
+
+  .card:hover .station-name {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
-/* Texto centrado */
+/****************************************
+/* En móviles, la emisora seleccionada
+/* adopta el aspecto del hover de escritorio
+ * **************************************/
+@media (hover: none), (pointer: coarse) {
+  .card.playing::before {
+    transform: scale(1.1);
+    filter: brightness(1.0) blur(0.0px);
+  }
+  .card.playing .station-name {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/******************************
+ * Texto y emoji de la card
+ * ***************************/
 .card a {
   position: absolute;   /* antes era relative */
   inset: 0;             /* top:0; right:0; bottom:0; left:0 */
@@ -78,7 +147,7 @@ body {
   justify-content: center; /* centra verticalmente */
   gap: 10px;
   text-decoration: none;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #fff;
   z-index: 2;
@@ -86,23 +155,109 @@ body {
 
 /* Icono */
 .card a span {
-  font-size: 2rem;
-  transition: transform 0.3s ease;
+  font-size: 2.5rem;
 }
 
-/* Hover en icono */
-.card:hover a span {
-  transform: scale(1.3);
+/******************************
+ * Interior de las tarjetas
+ * ***************************/
+.card-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center; /* centro horizontal */
+  justify-content: center; /* centro horizontal del contenido principal */
+  height: 100%; /* para que ocupe toda la tarjeta */
 }
 
-/* Responsive */
-@media (max-width: 42em) {
-  h1 { font-size: 1.5rem; }
-  .card { height: 200px; }
-  .card-content { font-size: 1rem; }
-
-  .links {
-    grid-template-columns: 1fr; /* solo una card por línea */
-    gap: 15px;
-  }
+/* Separar el nombre de la emisora del indicador */
+.station-name {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #fff;
+  /* Sombra suave para mejorar ligeramente el contraste */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.65);
 }
+
+/******************************
+ * Reproduciendo
+ * ***************************/
+@keyframes blink {
+  /* Animación de parpadeo */
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+
+/* Texto "Escuchando" animado */
+.live-indicator {
+  position: absolute;
+  bottom: 10%; /* o donde quieras */
+  font-size: 0.9rem;
+  color: #ff1744;
+  font-weight: bold;
+  background: rgba(255,255,255,0.9);
+  padding: 4px 8px;
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.card.playing .live-indicator {
+    opacity: 1; /* fade in cuando está activo */
+    animation: blink 5s infinite; /* parpadeo */
+}
+
+/******************************
+ * Categoría general / musical
+ * ***************************/
+#category-buttons {
+  margin: 20px;
+  text-align: center;
+}
+
+.category-btn {
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  background: var(--category-button-background);
+  color: var(--category-button-color);
+  transition: background 0.3s ease;
+}
+
+.category-btn:hover {
+  background: var(--category-button-hover-background);
+}
+
+.category-btn.active {
+  background: var(--category-button-active-background);
+  color: var(--category-button-active-color);
+}
+
+/* Ocultar lo que hay al cambiar categoría */
+.card.hidden {
+  display: none !important;
+}
+
+/******************************
+ * Separadores
+ * ***************************/
+.category-separator {
+  grid-column: 1 / -1; /* Ocupa todo el ancho de la rejilla */
+  text-align: center; /* Alineado a la izquierda */
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--category-separator-color);
+  margin: 20px 0 10px 0;
+  padding: 10px 0; /* Quitamos padding lateral y mantenemos vertical */
+  transition: opacity 0.5s ease;
+}
+
+/* Ocultar lo que hay al cambiar categoría */
+.category-separator.hidden {
+  display: none !important;
+}
+

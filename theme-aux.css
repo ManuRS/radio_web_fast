@@ -79,8 +79,8 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: scale(0.1); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .buttons {
@@ -137,8 +137,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.theme-toggle:hover { transform: translateY(-2px); }
-.theme-toggle:focus-visible { outline: 3px solid #7986cb; outline-offset: 3px; }
+.theme-toggle:hover {
+  transform: translateY(-2px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid #7986cb; outline-offset: 3px;
+}
 
 @media (max-width: 42em) {
   .theme-toggle {
@@ -158,4 +163,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .theme-toggle { transition: none; }
+}
+
+@media (max-width: 42em) {
+  body > .theme-toggle {
+    order: 999;
+  }
 }

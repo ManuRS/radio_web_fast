@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-page="index">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -8,199 +8,22 @@
   <link rel="shortcut icon" href="../resources/favicon.ico" type="image/x-icon">
 
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a237e">
+  <meta name="theme-color" content="#f6f6f6" id="theme-color-meta">
+
+  <title>Radio en directo</title>
+
+  <script src="../script-fastload.js"></script>
+
+  <link rel="stylesheet" href="../theme-colors.css">
+  <link rel="stylesheet" href="../theme-podcast.css">
+  <link rel="stylesheet" href="../theme-aux.css">
+
+  <link rel="stylesheet" href="../theme-cards.css">
 
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <title>Radio en directo</title>
   <style>
-    /* Estilos base */
-    body {
-      font-family: "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    h1 {
-      margin-top: 40px;
-      font-size: 2rem;
-      color: #1a237e;
-      text-align: center;
-    }
-
-    .links {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      max-width: 1000px;
-      width: 90%;
-      margin: 40px auto;
-    }
-
-    /* Separadores de sección dentro de la parrilla */
-    .category-separator {
-      grid-column: 1 / -1; /* Ocupa todo el ancho de la rejilla */
-      text-align: center; /* Alineado a la izquierda */
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #1a237e;
-      margin: 20px 0 10px 0;
-      padding: 10px 0; /* Quitamos padding lateral y mantenemos vertical */
-      /* border-bottom: 2px solid #1a237e; <- ELIMINADA la línea */
-      transition: opacity 0.5s ease;
-    }
-
-    /* Ocultar separadores cuando no correspondan a la categoría activa */
-    .category-separator.hidden {
-      display: none !important;
-    }
-
-    /* Borde rojo animado */
-    .card {
-      position: relative;
-      border-radius: 15px;
-      overflow: hidden;
-      height: 175px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.0);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      box-sizing: border-box;
-      transition: box-shadow 0.3s ease, opacity 0.5s ease;
-
-      opacity: 1;
-    }
-
-    /* clase usada tanto para fade-in (al quitarla) como fade-out (al añadirla) */
-    .card.fade {
-      opacity: 0;
-      transform: translateY(8px);
-      pointer-events: none;
-    }
-
-    /* al final de la transición la tarjeta pasará a hidden para colapsar el espacio */
-    .card.hidden {
-      display: none !important;
-    }
-
-    /* Tarjeta activa: el borde se dibuja en la capa superior, sin alterar el tamaño */
-    .card.playing::after {
-      border: 4px solid #ff1744;
-      border-radius: inherit;
-      box-sizing: border-box;
-    }
-
-    /* Imagen de fondo con blur */
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-size: cover;
-      background-position: center;
-      filter: brightness(0.75) blur(2px);
-      transition: transform 0.3s ease, filter 0.3s ease;
-    }
-
-    /* Overlay oscuro */
-    .card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.4);
-      z-index: 1;
-      transition: background 0.3s ease;
-    }
-
-    /* En móviles, la emisora seleccionada adopta el aspecto del hover de escritorio */
-    @media (hover: none), (pointer: coarse) {
-      .card.playing::before {
-        transform: scale(1.1);
-        filter: brightness(1.0) blur(0.0px);
-      }
-      .card.playing::after {
-        background: rgba(0,0,0,0.2);
-      }
-      .card.playing .station-name {
-        opacity: 0;
-        visibility: hidden;
-      }
-    }
-
-    /* Hover solo en dispositivos con ratón: evita estados pegados en móviles */
-    @media (hover: hover) and (pointer: fine) {
-      .card:hover::before {
-        transform: scale(1.1);
-        filter: brightness(1.0) blur(0.0px);
-      }
-      .card:hover::after {
-        background: rgba(0,0,0,0.2);
-      }
-
-      .card:hover .station-name {
-        opacity: 0;
-        visibility: hidden;
-      }
-    }
-
-    /* Texto centrado */
-    .card-content {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center; /* centro horizontal */
-      justify-content: center; /* centro horizontal del contenido principal */
-      height: 100%; /* para que ocupe toda la tarjeta */
-    }
-
-    /* Separar el nombre de la emisora del indicador */
-    .station-name {
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #fff;
-      /* Sombra suave para mejorar ligeramente el contraste */
-      text-shadow: 0 1px 2px rgba(0,0,0,0.65);
-    }
-
-    /* Animación de parpadeo */
-    @keyframes blink {
-      0%, 50%, 100% { opacity: 1; }
-      25%, 75% { opacity: 0; }
-    }
-
-    /* Texto "Escuchando" animado */
-    .live-indicator {
-      position: absolute;
-      bottom: 10%; /* o donde quieras */
-      font-size: 0.9rem;
-      color: #ff1744;
-      font-weight: bold;
-      background: rgba(255,255,255,0.9);
-      padding: 4px 8px;
-      border-radius: 8px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    .card.playing .live-indicator {
-        opacity: 1; /* fade in cuando está activo */
-        animation: blink 5s infinite; /* parpadeo */
-    }
-
-    /* Ocultar controles del audio */
-    .card audio {
-      display: none;
-    }
-
-    /* Fondos de ejemplo */
+    /* Fondos personalizados */
     .cadena-ser::before { background-image: url('../resources/micro.jpg'); }
     .cope::before { background-image: url('../resources/cope.jpg'); }
     .onda-cero::before { background-image: url('../resources/ondacero_b.webp'); }
@@ -243,141 +66,6 @@
     .rac105::before { background-image: url('../resources/rac105.png'); }
     .radiole::before { background-image: url('../resources/radiole.jpg'); }
     .fiestaradio::before { background-image: url('../resources/fiestaradio.webp'); }
-
-    @media (max-width: 42em) {
-      h1 { font-size: 1.5rem; }
-      .card { height: 200px; }
-      .card-content { font-size: 1rem; }
-
-      .links {
-        grid-template-columns: 1fr; /* solo una card por línea */
-        gap: 15px;
-      }
-    }
-
-    /* Modal oculto por defecto */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    /* Caja del modal */
-    .modal-content {
-      background: #fff;
-      color: #333;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      width: 80%;
-      max-width: 300px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      animation: fadeIn 0.3s ease;
-    }
-
-    .modal-content p {
-      margin-bottom: 15px;
-      font-size: 1rem;
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: space-around;
-      gap: 10px;
-    }
-
-    .modal-content button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    #stay-btn {
-      background: #1a237e;
-      color: #fff;
-    }
-
-    #exit-btn {
-      background: #ff1744;
-      color: #fff;
-    }
-
-    /* Animación */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    /* Categorías */
-    .category-btn {
-      padding: 10px 20px;
-      margin: 5px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      background: #e0e0e0;
-      color: #1a237e;
-      transition: background 0.3s ease;
-    }
-
-    .category-btn:hover {
-      background: #c5cae9;
-    }
-
-    .category-btn.active {
-      background: #1a237e;
-      color: #fff;
-      font-weight: bold;
-    }
-
-    /* Control de volumen */
-    .volume-control {
-      margin: 20px auto 20px;
-      text-align: center;
-      width: 100%;
-    }
-    
-    #volume-slider {
-      -webkit-appearance: none;
-      width: 280px;
-      height: 14px;
-      background: #ddd;
-      border-radius: 30px;
-      outline: none;
-      transition: background 0.3s;
-      accent-color: darkblue;
-      cursor: pointer;
-    }
-
-    /* Punto del slider para Chrome, Safari, Edge */
-    #volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 24px; /* Ancho del punto */
-      height: 24px; /* Alto del punto */
-      border-radius: 50%; /* Lo hace redondo */
-      background: darkblue; /* Color del punto */
-      cursor: pointer;
-    }
-
-    /* Punto del slider para Firefox */
-    #volume-slider::-moz-range-thumb {
-      width: 24px;
-      height: 24px;
-      border: none; /* Quita el borde por defecto */
-      border-radius: 50%;
-      background: darkblue;
-      cursor: pointer;
-    }
-
   </style>
 
 </head>
@@ -386,16 +74,33 @@
 <h1>Radio en directo</h1>
 
 <!-- Botones de categorías -->
-<div id="category-buttons" style="margin: 20px; text-align: center;">
+<div id="category-buttons">
   <button class="category-btn active" onclick="filterStations('general', this)">Generalistas</button>
   <button class="category-btn" onclick="filterStations('musical', this)">Musicales</button>
 </div>
 
+<!-- Control de volumen, define su posición -->
 <div class="volume-control">
   <input type="range" id="volume-slider" min="0.001" max="1" step="any" value="1">
 </div>
 
-<div class="links">
+<!-- Botón modo oscuro, la posición no se define aquí -->
+<button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false">
+  <span id="theme-label">Modo oscuro</span>
+  <span id="theme-icon" aria-hidden="true">🌙</span>
+</button>
+
+<!-- Modal salir, la posición no se define aquí -->
+<div id="exit-modal" class="modal">
+  <div class="modal-content">
+    <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
+    <div class="buttons">
+      <button id="stay-btn">Seguir en la página</button>
+    </div>
+  </div>
+</div>
+
+<div class="links" id="lista">
 
   <!-- Cadena SER -->
   <div class="card cadena-ser general" onclick="playPause(this)">
@@ -423,6 +128,8 @@
     </div>
     <audio data-src="https://atres-live.ondacero.es/live/ondacero/bitrate_1.m3u8"></audio>
   </div>
+
+  <!-- <div class="category-separator general">Test</div> -->
 
   <!-- RNE -->
   <div class="card rne general" onclick="playPause(this)">
@@ -558,8 +265,6 @@
     </div>
     <audio data-src="https://audiotvlive.atresmedia.com/h264/live/lasexta/audio_1.m3u8"></audio>
   </div>
-
-  <!-- <div class="category-separator general">Test</div> -->
 
   <!-- ------------------------------------------ -->
 
@@ -727,300 +432,11 @@
 
 </div>
 
-<!-- Modal salir -->
-<div id="exit-modal" class="modal">
-  <div class="modal-content">
-    <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
-    <div class="buttons">
-      <button id="stay-btn">Seguir escuchando</button>
-    </div>
-  </div>
-</div>
+<script src="../script-interfaz.js"></script>
+<script src="../script-eventos.js"></script>
+<script src="../script-serviceworker.js"></script>
 
-<script>
-  let currentAudio = null;
-  let currentCard = null;
-  let currentHls = null; // instancia de hls.js
-
-  // Referencia al slider de volumen
-  const volumeSlider = document.getElementById('volume-slider');
-  // Event listener para cambiar el volumen en tiempo real
-  volumeSlider.addEventListener('input', (e) => {
-    if (currentAudio) {
-      currentAudio.volume = e.target.value;
-    }
-  });
-
-  let latencyInterval = null;
-  let reconnectTimer = null;
-  let reconnecting = false;
-
-  function playPause(card) {
-    const audio = card.querySelector('audio');
-    const originalSrc = audio.getAttribute("data-src");
-
-    // Limpiar intervalo de latencia previo si existía
-    if (latencyInterval) {
-      clearInterval(latencyInterval);
-      latencyInterval = null;
-    }
-
-    // Si ya hay otro sonando, lo paro y limpio
-    if (currentAudio && currentAudio !== audio) {
-
-      if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
-        reconnectTimer = null;
-      }
-
-      reconnecting = false;
-
-      currentAudio.pause();
-      if (currentHls) {
-        currentHls.destroy();
-        currentHls = null;
-      }
-      currentAudio.removeAttribute("src");
-      currentAudio.load();
-      if (currentCard) currentCard.classList.remove("playing");
-    }
-
-    if (audio.paused) {
-      // Aplicar el volumen actual del slider al nuevo audio
-      audio.volume = volumeSlider.value;
-      
-      if (originalSrc.endsWith(".m3u8")) {
-        // Caso HLS
-        if (Hls.isSupported()) {
-          // Configuramos hls.js para priorizar baja latencia
-          currentHls = new Hls({
-            liveSyncDurationCount: 3, // Reduce el número de fragmentos antes del borde en directo
-            liveMaxLatencyDurationCount: 10,
-          });
-          currentHls.loadSource(originalSrc);
-          currentHls.attachMedia(audio);
-          currentHls.on(Hls.Events.MANIFEST_PARSED, () => {
-            audio.play().catch(err => console.error("Error al reproducir HLS:", err));
-          });
-        } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-          // Safari
-          audio.src = originalSrc;
-          audio.play();
-        } else {
-          console.error("Este navegador no soporta HLS");
-        }
-      } else {
-        // Caso MP3 / AAC clásico (Icecast / Shoutcast)
-        if (!audio.src) audio.src = originalSrc;
-        audio.play().catch(err => console.error("Error al reproducir:", err));
-
-        // Control para evitar que el streaming de audio clásico se quede retrasado
-        latencyInterval = setInterval(() => {
-          if (!audio.paused && audio.buffered.length > 0) {
-            const livePosition = audio.buffered.end(audio.buffered.length - 1);
-            const margenSegundos = livePosition - audio.currentTime;
-
-            console.log(`Margen con el directo: ${margenSegundos.toFixed(2)} segundos`);
-
-            // Si el retraso acumulado supera los 6 segundos, saltamos al borde actual
-            if (livePosition - audio.currentTime > 6) {
-              console.warn("Retraso crítico detectado. Reiniciando stream para conectar al directo...");
-              audio.src = originalSrc; // Esto limpia el búfer acumulado
-              audio.load();
-              audio.play().catch(err => console.error("Error al reconectar stream:", err));
-            }
-          }
-        }, 10000);
-
-      }
-
-      card.classList.add("playing");
-      currentAudio = audio;
-      currentCard = card;
-    } else {
-      audio.pause();
-
-      if (reconnectTimer) {
-        clearTimeout(reconnectTimer);
-        reconnectTimer = null;
-      }
-
-      reconnecting = false;
-
-      if (currentHls) {
-        currentHls.destroy();
-        currentHls = null;
-      }
-      audio.removeAttribute("src");
-      audio.load();
-
-      card.classList.remove("playing");
-      currentAudio = null;
-      currentCard = null;
-    }
-  }
-
-  // Reconexión automática ante problemas de conexión
-  document.querySelectorAll('.card audio').forEach(audio => {
-
-    audio.addEventListener('error', () => {
-      console.log("⚠️ Error en el stream");
-      reconnectAudio(audio);
-    });
-
-    audio.addEventListener('ended', () => {
-      console.log("⚠️ El stream ha terminado");
-      reconnectAudio(audio);
-    });
-
-    audio.addEventListener('stalled', () => {
-      console.log("⚠️ Stream detenido");
-      reconnectAudio(audio);
-    });
-
-  });
-
-  function reconnectAudio(audio) {
-    // Solo reconectar si sigue siendo la emisora activa
-    if (audio !== currentAudio || audio.paused || reconnecting) return;
-
-    reconnecting = true;
-
-    clearTimeout(reconnectTimer);
-
-    reconnectTimer = setTimeout(() => {
-      // Comprobar de nuevo que sigue siendo la emisora activa
-      if (audio !== currentAudio || audio.paused) {
-        reconnecting = false;
-        return;
-      }
-
-      const src = audio.getAttribute("data-src");
-      if (!src) {
-        reconnecting = false;
-        return;
-      }
-
-      console.log("🔄 Reconectando con la emisora...");
-
-      // HLS
-      if (src.endsWith(".m3u8")) {
-        if (currentHls) {
-          currentHls.destroy();
-          currentHls = null;
-        }
-
-        if (Hls.isSupported()) {
-          currentHls = new Hls({
-            liveSyncDurationCount: 6,
-            liveMaxLatencyDurationCount: 15
-          });
-
-          currentHls.loadSource(src);
-          currentHls.attachMedia(audio);
-
-          currentHls.on(Hls.Events.MANIFEST_PARSED, () => {
-            audio.play().catch(err => console.error("Error al reconectar HLS:", err));
-            reconnecting = false;
-          });
-
-        } else {
-          audio.src = src;
-          audio.load();
-          audio.play().catch(err => console.error("Error al reconectar:", err));
-          reconnecting = false;
-        }
-
-      // MP3 / AAC
-      } else {
-        audio.pause();
-        audio.removeAttribute("src");
-        audio.load();
-
-        audio.src = src;
-        audio.load();
-
-        audio.play().catch(err => console.error("Error al reconectar:", err));
-
-        reconnecting = false;
-      }
-
-    }, 6000); // Esperamos 6 segundos antes de reconectar
-  }
-
-// Filtrar emisoras y separadores con fade
-  function filterStations(category, btn) {
-    // Seleccionamos tanto las tarjetas como los separadores
-    const items = document.querySelectorAll('.card, .category-separator');
-
-    items.forEach(item => {
-      if (item.classList.contains(category)) {
-        // Mostrar elemento
-        item.classList.remove("hidden");
-        setTimeout(() => {
-          item.style.position = "relative";
-        }, 500);
-      } else {
-        // Ocultar elemento
-        item.classList.add("hidden");
-      }
-    });
-
-    // Marcar el botón activo
-    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    // Guardar categoría en localStorage
-    localStorage.setItem("selectedCategory", category);
-  }
-
-  // Mostrar la categoría guardada (o "general" por defecto)
-  window.addEventListener("DOMContentLoaded", () => {
-    const savedCategory = localStorage.getItem("selectedCategory") || "general";
-    const btn = document.querySelector(`.category-btn[onclick*="${savedCategory}"]`);
-    filterStations(savedCategory, btn);
-  });
-
-  // Android media
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Radio en directo',
-      artwork: [
-        { src: '../resources/radio_mini.jpeg', type: 'image/jpeg' },
-      ]
-    });
-  }
-
-  // Registrar el Service Worker
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register('../sw.js', { scope: './' })
-        .then(() => console.log("✅ Service Worker registrado"))
-        .catch(err => console.error("❌ Error al registrar SW:", err));
-    });
-  }
-
-  // Referencias al modal y botones
-  const exitModal = document.getElementById("exit-modal");
-  const stayBtn = document.getElementById("stay-btn");
-
-  // Interceptar botón atrás
-  window.addEventListener("load", () => {
-    history.pushState(null, "", location.href);
-
-    window.addEventListener("popstate", () => {
-      // Mostrar modal en vez de cerrar
-      exitModal.style.display = "flex";
-      history.pushState(null, "", location.href); // volvemos a bloquear
-    });
-  });
-
-  // Botón "Seguir escuchando"
-  stayBtn.addEventListener("click", () => {
-    exitModal.style.display = "none";
-  });
-
-  </script>
+<script src="../script-livesound.js"></script>
 
 </body>
 </html>
