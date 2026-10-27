@@ -141,21 +141,36 @@ self.addEventListener('install', (event) => {
 
       // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
       return Promise.allSettled(
-        FILES_TO_CACHE.map(url => {
-          return cache.add(url).catch(err => console.warn(`No se pudo cachear: ${url}`));
-        })
+        FILES_TO_CACHE.map(url => cache.add(url))
       ).then(resultados => {
-          const correctos = resultados.filter(ok => ok).length;
-          const fallidos = resultados.length - correctos;
 
-          if (fallidos === 0) {
-            console.log('✅ Caché completada: todos los archivos descargados.');
-          } else {
+        // Avisar de los archivos que han fallado
+        resultados.forEach((resultado, i) => {
+          if (resultado.status === 'rejected') {
             console.warn(
-              `⚠️ Caché finalizada: ${correctos}/${resultados.length} archivos descargados. Fallidos: ${fallidos}.`
+              `No se pudo cachear: ${FILES_TO_CACHE[i]}`,
+              resultado.reason
             );
           }
-  });
+        });
+
+        const correctos = resultados.filter(
+          resultado => resultado.status === 'fulfilled'
+        ).length;
+
+        const fallidos = resultados.length - correctos;
+
+        if (fallidos === 0) {
+          console.log('✅ Caché completada: todos los archivos descargados.');
+        } else {
+          console.warn(
+            `⚠️ Caché finalizada: ${correctos}/${resultados.length} archivos descargados. Fallidos: ${fallidos}.`
+          );
+        }
+      });
+    })
+  );
+
   self.skipWaiting();
 });
 
