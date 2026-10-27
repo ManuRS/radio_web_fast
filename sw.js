@@ -137,15 +137,25 @@ const FILES_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Descargando cache');
+      console.log('Descargando cache...');
+
       // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
       return Promise.allSettled(
         FILES_TO_CACHE.map(url => {
           return cache.add(url).catch(err => console.warn(`No se pudo cachear: ${url}`));
         })
-      );
-    })
-  );
+      ).then(resultados => {
+          const correctos = resultados.filter(ok => ok).length;
+          const fallidos = resultados.length - correctos;
+
+          if (fallidos === 0) {
+            console.log('✅ Caché completada: todos los archivos descargados.');
+          } else {
+            console.warn(
+              `⚠️ Caché finalizada: ${correctos}/${resultados.length} archivos descargados. Fallidos: ${fallidos}.`
+            );
+          }
+  });
   self.skipWaiting();
 });
 
