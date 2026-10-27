@@ -9,7 +9,7 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type
 
     // Crear cascaron HTML
     const listaDiv = document.getElementById("lista");
-    const contenedores = crearContenedoresPodcasts(items, listaDiv);
+    const contenedores = crearContenedoresPodcasts(numElems_arg , listaDiv);
 
     // Conseguir datos y extraer las N primeras entradas
     const feed = await descargarFeedRss(feedUrl_arg);
@@ -229,18 +229,18 @@ function defineImagenCapitulo(item, imagen_select) {
  * ****************************************/
 function crearContenedoresPodcasts(podcasts, listaDiv) {
 
-  const contenedores = podcasts.flatMap(pod => {
-    const n = pod.ncaps ?? 1;
+  // Calcular el número total de contenedores
+  const total = typeof podcasts === "number"
+    ? podcasts
+    : podcasts.reduce((suma, pod) => suma + (pod.ncaps ?? 1), 0);
 
-    return Array.from({ length: n }, () => {
-      const div = document.createElement("div");
-      div.className = "podcast";
-      listaDiv.appendChild(div);
-      return div;
-      });
-    });
-
-  return contenedores;
+  // Crear los contenedores
+  return Array.from({ length: total }, () => {
+    const div = document.createElement("div");
+    div.className = "podcast";
+    listaDiv.appendChild(div);
+    return div;
+  });
 }
 
 /******************************************
