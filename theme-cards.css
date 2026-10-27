@@ -22,7 +22,7 @@ body {
  * ***************************/
 @media (max-width: 42em) {
   h1 { font-size: 1.5rem; }
-  .card { height: 200px; }
+  .card { height: 175px; }
 
   .links {
     grid-template-columns: 1fr; /* solo una card por línea */
