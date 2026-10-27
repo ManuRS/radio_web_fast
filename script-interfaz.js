@@ -141,11 +141,24 @@ window.addEventListener('storage', event => {
   NOTIFICACION
 *******************************/
 // Android Media Session
-if ('mediaSession' in navigator) {
+if ('mediaSession' in navigator && 'MediaMetadata' in window) {
+
+  // Detectar la raíz de la aplicación
+  let appBase = location.pathname.substring(
+    0,
+    location.pathname.lastIndexOf('/') + 1
+  );
+
+  // Volver a la raíz desde las carpetas de reproducción
+  appBase = appBase.replace(/(?:live|live_boleto|live_ser)\/$/, '');
+
   navigator.mediaSession.metadata = new MediaMetadata({
     title: 'Radio Web Fast',
     artwork: [
-      { src: '/resources/radio_mini.jpeg', type: 'image/jpeg' },
+      {
+        src: `${appBase}resources/radio_mini.jpeg`,
+        type: 'image/jpeg'
+      }
     ]
   });
 }

@@ -1,10 +1,24 @@
 
 if ('serviceWorker' in navigator) {
-  // Registramos directamente sin esperar al 'load'
-  navigator.serviceWorker.register('/sw.js', { scope: './' })
+  // Detectar la raíz de la aplicación
+  let appBase = location.pathname.substring(
+    0,
+    location.pathname.lastIndexOf('/') + 1
+  );
+
+  // Las páginas dentro de estas carpetas vuelven a la raíz
+  appBase = appBase.replace(/(?:live|live_boleto|live_ser)\/$/, '');
+
+  const swPath = `${appBase}sw.js`;
+
+  navigator.serviceWorker.register(swPath, {
+    scope: appBase
+  })
     .then(reg => {
-      console.log('✅ Service Worker registrado');
-      reg.update();
+      console.log('✅ Service Worker registrado:', reg.scope);
+      return reg.update();
     })
-    .catch(err => console.log('❌ Service Worker error de registro'));
+    .catch(err => {
+      console.error('❌ Error al registrar el Service Worker:', err);
+    });
 }

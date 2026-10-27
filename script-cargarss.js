@@ -7,16 +7,16 @@
 async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo") {
   try {
 
+    // Crear cascaron HTML
+    const listaDiv = document.getElementById("lista");
+    const contenedores = crearContenedoresPodcasts(items, listaDiv);
+
     // Conseguir datos y extraer las N primeras entradas
     const feed = await descargarFeedRss(feedUrl_arg);
     const items = Array.from(feed.items).slice(0, numElems_arg);
 
     // Definir image si queremos la portada
     imagen_select = defineImagenPodcast (feed, imagen_type);
-
-    // Crear cascaron HTML
-    const listaDiv = document.getElementById("lista");
-    const contenedores = crearContenedoresPodcasts(items, listaDiv);
 
     // Rellenar cada contenedor con su audio
     items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select) );
@@ -289,4 +289,34 @@ async function descargarFeedRss(url, antiCache=true){
     //imageUrl = xml.querySelector("image > url")?.textContent || null;
   };
 
+}
+
+/**********************
+  FECHAS Y HORA
+**********************/
+
+function tiempoDesde(publicacion) {
+  const ahora = new Date();
+  const pubDate = new Date(publicacion);
+  const diffMs = ahora - pubDate;
+
+  const diffSeg = Math.floor(diffMs / 1000);
+  if (diffSeg < 60) return `Hace ${diffSeg} segundo${diffSeg === 1 ? "" : "s"}`;
+
+  const diffMin = Math.floor(diffSeg / 60);
+  if (diffMin < 60) return `Hace ${diffMin} minuto${diffMin === 1 ? "" : "s"}`;
+
+  const diffHoras = Math.floor(diffMin / 60);
+  if (diffHoras < 24) return `Hace ${diffHoras} hora${diffHoras === 1 ? "" : "s"}`;
+
+  const diffDias = Math.floor(diffHoras / 24);
+  return `Hace ${diffDias} día${diffDias === 1 ? "" : "s"}`;
+}
+
+function formatearFecha(fechaStr) {
+  const date = new Date(fechaStr);
+  const dia = String(date.getDate()).padStart(2, '0');
+  const mes = String(date.getMonth() + 1).padStart(2, '0');
+  const anio = date.getFullYear();
+  return `${dia}/${mes}/${anio}`;
 }
