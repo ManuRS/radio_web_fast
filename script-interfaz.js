@@ -145,7 +145,7 @@ if ('mediaSession' in navigator) {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: 'Radio Web Fast',
     artwork: [
-      { src: '../resources/radio_mini.jpeg', type: 'image/jpeg' },
+      { src: '/resources/radio_mini.jpeg', type: 'image/jpeg' },
     ]
   });
 }
