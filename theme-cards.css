@@ -22,7 +22,7 @@ body {
  * ***************************/
 @media (max-width: 42em) {
   h1 { font-size: 1.5rem; }
-  .card { height: 175px; }
+  .card { height: 200px; }
 
   .links {
     grid-template-columns: 1fr; /* solo una card por línea */
@@ -63,6 +63,13 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
+}
+
+/* Tarjetas de la página sin categorías: más altas en móvil */
+@media (max-width: 42em) {
+  body:not(:has(#category-buttons)) .card {
+    height: 200px;
+  }
 }
 
 /* Hacemos el audio solo una tarjeta */
