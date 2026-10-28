@@ -81,6 +81,10 @@ h2 {
 
   --card-playing-border: #ff1744;
   --category-separator-color: var(--heading-color);
+
+  /* ELEMENTO DE LIVE BOLETOS */
+  --live-extratext: green;
+  --live-fakewaves: #1a237e;
 }
 
 /* Index fondo */
@@ -126,4 +130,8 @@ h2 {
   --category-button-hover-background: var(--control-hover);
   --category-button-active-background: var(--modal-button-background);
   --category-button-active-color: var(--modal-button-text);
+
+  /* ELEMENTO DE LIVE BOLETOS */
+  --live-extratext: #e5e7eb;
+  --live-fakewaves: #e5e7eb;
 }

@@ -10,7 +10,8 @@
   width: 100%;
 }
 
-#volume-slider {
+#volume-slider,
+.volume-style {
   -webkit-appearance: none;
   appearance: none;
   width: min(280px, 100%); /* ANTES width: 280px; */
@@ -24,7 +25,8 @@
 }
 
 /* Punto del slider para Chrome, Safari, Edge */
-#volume-slider::-webkit-slider-thumb {
+#volume-slider::-webkit-slider-thumb,
+.volume-style::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 24px; /* Ancho del punto */
@@ -35,7 +37,8 @@
 }
 
 /* Punto del slider para Firefox */
-#volume-slider::-moz-range-thumb {
+#volume-slider::-moz-range-thumb,
+.volume-style,::-moz-range-thumb {
   width: 24px;
   height: 24px;
   border: none; /* Quita el borde por defecto */
@@ -169,4 +172,64 @@
   body > .theme-toggle {
     order: 999;
   }
+}
+
+/******************************
+  ESPECIFICOS MODO BOLETOS
+*******************************/
+
+.status {
+  margin-top: 5px;
+  font-size: 1.2em;
+  color: var(--live-extratext);
+  text-align: center;
+  white-space: pre-line; /* permite saltos de línea con \n */
+}
+
+/* Botón de reproducción */
+#playButton {
+  font-size: 16px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  background: red;
+  color: white;
+  margin-top: 30px;
+  margin-bottom: 15px;
+}
+
+/* Responsive */
+@media (max-width: 42em) {
+  #playButton {
+    font-size: 14px;
+    padding: 10px 20px;
+  }
+}
+
+.time {
+  color: lightgray;
+  margin-top: 6px;
+}
+
+/* Definimos la animación */
+@keyframes altavoz-beat {
+  0% { transform: scale(1); /* Tamaño original */ }
+  25% { transform: scale(var(--bounce-scale, 1.1));  /* Zoom in rápido */ }
+  100% { transform: scale(1); /* Vuelta lenta al origen */ }
+}
+
+/* Clase que aplicaremos al logo cuando esté sonando */
+.logo-sonando { /* El cubic-bezier le da ese toque de "rebote" mecánico de un altavoz */
+  animation: altavoz-beat 0.6s infinite cubic-bezier(0.17, 0.67, 0.83, 0.67);
+}
+
+/* Botones modo musica */
+.buttonExtraBol{
+  text-decoration:none;
+  color:white;
+  background:#1a237e;
+  padding:5px 10px;
+  border-radius:5px
 }

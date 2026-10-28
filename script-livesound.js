@@ -39,6 +39,12 @@ let lastPlayingAt = 0;           // momento del último evento "playing"
 let reconnectAttempts = 0;       // intentos fallidos seguidos (para la espera creciente)
 let attemptInFlight = false;     // hay un intento de reconexión en curso (ya lanzado)
 
+// Emisora en pausa por un motivo externo (notificación, sistema...).
+// Sigue cargada en su elemento <audio> para que la notificación permanezca,
+// pero ya no es la emisora activa: sin temporizadores ni reconexiones.
+let pausedAudio = null;
+let pausedCard = null;
+
 
 /********************************
  * Utilidades
@@ -83,6 +89,17 @@ function clearReconnectTimer() {
   }
 }
 
+// Estado de la notificación de Android (Media Session).
+function setMediaSessionState(state) {
+  if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+
+  try {
+    navigator.mediaSession.playbackState = state;
+  } catch (error) {
+    // Sin soporte: la reproducción no depende de esto.
+  }
+}
+
 function destroyCurrentHls() {
   if (!currentHls) return;
 
@@ -117,6 +134,11 @@ function stopCurrentPlayback() {
   const previousAudio = currentAudio;
   const previousCard = currentCard;
 
+  // Si había una emisora en pausa, también se libera.
+  const heldAudio = pausedAudio;
+  pausedAudio = null;
+  pausedCard = null;
+
   // Desactivamos primero la sesión para impedir
   // que un evento tardío inicie otra reconexión.
   currentAudio = null;
@@ -124,6 +146,8 @@ function stopCurrentPlayback() {
   reconnecting = false;
   attemptInFlight = false;
   reconnectAttempts = 0; 
+
+  setMediaSessionState("none");
 
   if (previousCard) {
     previousCard.classList.remove("playing");
@@ -136,8 +160,78 @@ function stopCurrentPlayback() {
     previousAudio.removeAttribute("src");
     previousAudio.load();
   }
+
+  if (heldAudio && heldAudio !== previousAudio) {
+    heldAudio.pause();
+    heldAudio.removeAttribute("src");
+    heldAudio.load();
+  }
 }
 
+/********************************
+ * NUEVO: pausa desde fuera y reanudación en directo
+ ********************************/
+
+// Pasa la emisora activa a "en pausa". A diferencia de stopCurrentPlayback(),
+// el elemento <audio> conserva su fuente (pausado), de modo que Android
+// mantiene la notificación con el botón de reproducir.
+// La sesión deja de estar activa: la tarjeta pierde "playing" y no queda
+// ningún temporizador ni reconexión en marcha.
+function enterPausedState(audio) {
+  if (!isPlaybackRequested(audio)) return;
+
+  clearBufferMonitor();
+  clearStallWatchdog();
+  clearReconnectTimer();
+
+  const card = currentCard;
+
+  pausedAudio = audio;
+  pausedCard = card;
+
+  currentAudio = null;
+  currentCard = null;
+  reconnecting = false;
+  attemptInFlight = false;
+  reconnectAttempts = 0;
+
+  card.classList.remove("playing");
+
+  // HLS: dejamos de descargar, pero mantenemos hls.js enlazado al audio
+  // para que la notificación siga ahí. Al reanudar se reconstruye entero.
+  if (currentHls) {
+    try {
+      currentHls.stopLoad();
+    } catch (error) {
+      // Sin consecuencias: se reconstruirá al reanudar.
+    }
+  }
+
+  setMediaSessionState("paused");
+}
+
+// Reanuda la emisora en pausa saltando al directo. No se continúa desde el
+// punto de la pausa (iría retrasado): reconnectNow() monta una conexión nueva.
+// Devuelve false si no había ninguna emisora en pausa.
+function resumeLive(reason) {
+  if (!pausedAudio || !pausedCard) return false;
+
+  const audio = pausedAudio;
+  const card = pausedCard;
+
+  pausedAudio = null;
+  pausedCard = null;
+
+  currentAudio = audio;
+  currentCard = card;
+
+  card.classList.add("playing");
+  applyCurrentVolume(audio);
+
+  reconnectNow(audio, reason, true);
+
+  return true;
+}
 
 /********************************
  * Botón de reproducción y pausa
@@ -619,6 +713,28 @@ if (!window.__livesoundNetworkBound) {
   });
 }
 
+// Botón de reproducir de la notificación de Android.
+// Este fichero solo se carga en las páginas de radio en directo, así que en
+// las páginas de podcast el navegador sigue con su play/pausa normal.
+if (!window.__livesoundMediaSessionBound) {
+  window.__livesoundMediaSessionBound = true;
+
+  if (typeof navigator !== "undefined" && "mediaSession" in navigator) {
+    try {
+      navigator.mediaSession.setActionHandler("play", () => {
+
+        // Emisora en pausa: se salta al directo.
+        if (resumeLive("botón de reproducir de la notificación")) return;
+
+        // Si no había ninguna en pausa pero el audio está parado o atascado,
+        // se recupera igual que al volver la red.
+        recoverIfStalled("botón de reproducir de la notificación");
+      });
+    } catch (error) {
+      // Sin soporte: el navegador mantiene su comportamiento por defecto.
+    }
+  }
+}
 
 /********************************
  * Eventos del audio
@@ -667,6 +783,49 @@ document.querySelectorAll(".card audio").forEach(audio => {
 
     // Vigilar que el audio realmente avanza.
     startStallWatchdog(audio);
+
+    // Estado de la notificación de Android.
+    setMediaSessionState("playing");
+
+  });
+
+  // Pausa que no hemos provocado nosotros (botón de la notificación de
+  // Android, el propio sistema, auriculares desconectados...). La emisora queda
+  // en pausa: la tarjeta deja de mostrar "Escuchando" y la notificación sigue
+  // con su botón de reproducir. Al reanudar se salta al directo (resumeLive).
+  audio.addEventListener("pause", () => {
+
+    // Sesión ya cerrada o en pausa (el usuario ha pulsado la tarjeta o ha cambiado de emisora).
+    if (!isPlaybackRequested(audio)) return;
+
+    // Pausa propia de startStream() durante una reconexión.
+    if (reconnecting) return;
+
+    // Fin del stream: el navegador pausa justo antes de lanzar "ended",
+    // y "ended" ya se encarga de reconectar.
+    if (audio.ended) return;
+
+    // Por si el sistema pausara el audio a causa de la caída de red:
+    // se trata como un corte, no como una parada del usuario.
+    if (navigator.onLine === false) {
+      reconnectAudio(audio, "pausa durante una caída de red");
+      return;
+    }
+
+    console.warn("Pausa externa (notificación o sistema). La emisora queda en pausa.");
+
+    // CAMBIO: antes stopCurrentPlayback(), que cerraba la sesión y hacía
+    // desaparecer la notificación.
+    enterPausedState(audio);
+  });
+
+  // Reanudación que no hemos provocado nosotros. Por ejemplo, Android
+  // reanuda solo el audio al terminar una llamada. El navegador continuaría
+  // desde el punto de la pausa (retrasado), así que se salta al directo.
+  audio.addEventListener("play", () => {
+    if (audio !== pausedAudio) return;
+
+    resumeLive("reanudación desde el sistema");
   });
 
 });

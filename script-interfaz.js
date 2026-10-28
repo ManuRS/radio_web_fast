@@ -15,6 +15,28 @@ if (volumeSlider) {
   });
 }
 
+
+/******************************
+  SLIDER DOBLE
+*******************************/
+const news_volume = document.getElementById('radio_news_volume');
+const music_volume = document.getElementById('radio_music_volume');
+
+if (news_volume) {
+  // Volumen de las noticias
+  news_volume.addEventListener("input", (e) => {
+    max_news_volume = e.target.value;
+    audio_news.volume = e.target.value;
+  });
+
+  // Volumen de la música
+  music_volume.addEventListener("input", (e) => {
+    max_music_volume = e.target.value;
+    audio_music.volume = e.target.value;
+  });
+}
+
+
 /******************************
   MODAL DE SALIDA
 *******************************/
@@ -152,15 +174,38 @@ if ('mediaSession' in navigator && 'MediaMetadata' in window) {
   // Volver a la raíz desde las carpetas de reproducción
   appBase = appBase.replace(/(?:live|live_boleto|live_ser)\/$/, '');
 
-  navigator.mediaSession.metadata = new MediaMetadata({
-    title: 'Radio Web Fast',
-    artwork: [
-      {
-        src: `${appBase}resources/radio_mini.jpeg`,
-        type: 'image/jpeg'
-      }
-    ]
-  });
+  const publishMediaMetadata = () => {
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'Radio Web Fast',
+      artwork: [
+        {
+          src: `${appBase}resources/radio_mini.jpeg`,
+          type: 'image/jpeg'
+        }
+      ]
+    });
+
+  };
+
+  publishMediaMetadata();
+
+  // Cada vez que el audio empieza o se recupera (por ejemplo, tras una
+  // reconexión) se vuelven a publicar los metadatos, para que Android reconstruya
+  // la notificación si la había retirado. El listener es de captura porque los
+  // eventos de audio no burbujean.
+  document.addEventListener('playing', event => {
+    if (!(event.target instanceof HTMLAudioElement)) return;
+
+    const current = navigator.mediaSession.metadata;
+
+    // Solo si los metadatos son los nuestros (o no hay ninguno), para no
+    // pisar los que pueda poner otra página, como las de podcast.
+    if (!current || current.title === 'Radio Web Fast') {
+      publishMediaMetadata();
+    }
+  }, true);
+
 }
 
 /******************************

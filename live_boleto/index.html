@@ -1,209 +1,34 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-page="index">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
   <link rel="icon" href="../resources/favicon2.ico" type="image/x-icon">
-  <title>Boletines Cadena SER</title>
-  <style>
-    html {
-      overflow: hidden;
-    }
-    body {
-      font-family: "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #f0f4ff, #e6ecf7);
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh; /* Viejo */
-      min-height: 100dvh; /* Para móviles */
-      overflow-y: auto;
-      overflow-x: hidden; /* Evita cualquier scroll horizontal */
-      width: 100%;
-      position: relative;
-    }
 
-    h1 {
-      margin-top: 40px;
-      font-size: 2rem;
-      color: #1a237e;
-      text-align: center;
-    }
+  <meta name="theme-color" content="#f6f6f6" id="theme-color-meta">
 
-    .status {
-      margin-top: 5px;
-      font-size: 1.2em;
-      color: green;
-      text-align: center;
-      white-space: pre-line; /* permite saltos de línea con \n */
-    }
+  <script src="../script-fastload.js"></script>
 
-    /* Botón de reproducción */
-    #playButton {
-      font-size: 16px;
-      padding: 12px 24px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      background: red;
-      color: white;
-      margin-top: 30px;
-      margin-bottom: 15px;
-    }
+  <link rel="stylesheet" href="../theme-colors.css">
+  <link rel="stylesheet" href="../theme-podcast.css">
+  <link rel="stylesheet" href="../theme-aux.css">
 
-    /* Responsive */
-    @media (max-width: 42em) {
-      h1 {
-        font-size: 1.5rem;
-      }
-      #playButton {
-        font-size: 14px;
-        padding: 10px 20px;
-      }
-    }
+  <link rel="stylesheet" href="../theme-cards.css">
 
-    /* Modal oculto por defecto */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    /* Caja del modal */
-    .modal-content {
-      background: #fff;
-      color: #333;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      width: 80%;
-      max-width: 300px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      animation: fadeIn 0.3s ease;
-    }
-
-    .modal-content p {
-      margin-bottom: 15px;
-      font-size: 1rem;
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: space-around;
-      gap: 10px;
-    }
-
-    .modal-content button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    #stay-btn {
-      background: #1a237e;
-      color: #fff;
-    }
-
-    #exit-btn {
-      background: #ff1744;
-      color: #fff;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 200px;
-      height: 12px;
-      background: #ddd;
-      border-radius: 10px;
-      outline: none;
-      transition: background 0.3s;
-      accent-color:darkblue;
-    }
-
-    .time {
-      color: lightgray;
-      margin-top: 6px;
-    }
-
-    /* Definimos la animación */
-    @keyframes altavoz-beat {
-      0% {
-        transform: scale(1); /* Tamaño original */
-      }
-      25% {
-        transform: scale(var(--bounce-scale, 1.1));  /* Zoom in rápido */
-      }
-      100% {
-        transform: scale(1); /* Vuelta lenta al origen */
-      }
-    }
-    
-    /* Clase que aplicaremos al logo cuando esté sonando */
-    .logo-sonando {
-      animation: altavoz-beat 0.6s infinite cubic-bezier(0.17, 0.67, 0.83, 0.67);
-      /* El cubic-bezier le da ese toque de "rebote" mecánico de un altavoz */
-    }
-
-  </style>
 </head>
 
 <body>
 
   <h1>Solo boletines en directo</h1>
 
-  <div style="width: 100%; text-align: center; margin-bottom: 20px; margin-top: 15px;">
-  <img id="logo-emisora" alt="Logo Emisora" style="height: 60px; object-fit: contain; transition: opacity 0.3s;">
-  </div>
-  
-  <canvas id="visualizer" style="height: 80px; margin-bottom: 25px; margin-top: 5px;"></canvas>
+  <!-- Botón modo oscuro, la posición no se define aquí -->
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false" style="margin-top: 0;">
+    <span id="theme-label">Modo oscuro</span>
+    <span id="theme-icon" aria-hidden="true">🌙</span>
+  </button>
 
-  <!-- Reproductor oculto -->
-  <audio id="radio_news" style="display:none;"></audio>
-  <audio id="radio_prep" style="display:none;"></audio>
-  <audio id="radio_music" style="display:none"></audio>
-
-  <!-- Sliders para el volumen -->
-  <div id="status_news" class="status">Volumen noticias</div><br>
-  <input type="range" id="radio_news_volume" min="0" max="1" step="0.01" value="1"><br>
-
-  <div id="status_music" class="status">Volumen música</div><br>
-  <input type="range" id="radio_music_volume" min="0" max="1" step="0.01" value="0.5"><br>
-
-  <!-- Botón de reproducción único -->
-  <button id="playButton">Algo ha salido mal</button>
-
-  <!-- Enlaces para la música -->
-  <br><div id="status_news" class="status">Cargar modo música</div><br>
-
-  <div style="display: inline-flex; gap: 10px; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 1rem;">
-    <a href="?music=2" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">LOS40</a>
-    <a href="?music=3" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">CLASSIC</a>
-    <a href="?music=4" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">MEGASTAR</a>
-  </div>
-  <br>
-  <div style="display: inline-flex; gap: 10px; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; font-size: 1rem;">
-    <a href="?music=5" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">ROCKFM</a>
-    <a href="?music=6" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">HITFM</a>
-    <a href="?music=1" style="text-decoration:none; color:white; background:#1a237e; padding:5px 10px; border-radius:5px">SOLO NOTICIAS</a>
-  </div>
-
-  <br>
-  <div class="time" id="officialTime"></div>
-  <div class="time" id="deviceTime"></div>
-  <div class="time" id="offsetTime"></div>
-
-  <!-- Modal salir -->
+  <!-- Modal salir, la posición no se define aquí -->
   <div id="exit-modal" class="modal">
     <div class="modal-content">
       <p><b>Pulsa atrás / desliza de nuevo para salir</b></p>
@@ -213,7 +38,54 @@
     </div>
   </div>
 
-</body>
+  <!-- Imagen emisora sonando -->
+  <div style="width: 100%; text-align: center; margin-bottom: 20px; margin-top: 25px;">
+    <img id="logo-emisora" alt="Logo Emisora" style="height: 60px; object-fit: contain; transition: opacity 0.3s;">
+  </div>
+  
+  <!-- Visualizador --> 
+  <canvas id="visualizer" style="height: 80px; margin-bottom: 25px; margin-top: 5px;"></canvas>
+
+  <!-- Reproductor oculto -->
+  <audio id="radio_news"  style="display:none;"></audio>
+  <audio id="radio_prep"  style="display:none;"></audio>
+  <audio id="radio_music" style="display:none"></audio>
+
+  <!-- Sliders para el volumen -->
+  <div id="status_news" class="status">Volumen noticias</div><br>
+  <input type="range" id="radio_news_volume" class="volume-style" min="0" max="1" step="0.01" value="1"><br>
+
+  <div id="status_music" class="status">Volumen música</div><br>
+  <input type="range" id="radio_music_volume" class="volume-style" min="0" max="1" step="0.01" value="0.5"><br>
+
+  <!-- Botón de reproducción único -->
+  <button id="playButton">Algo ha salido mal</button><br>
+
+  <!-- Enlaces para la música -->
+  <div id="status_news" class="status">Cargar modo música</div><br>
+
+  <!-- Botones para modo música -->
+
+  <div style="display: inline-flex; gap: 10px; align-items: center; font-size: 1rem;">
+    <a href="?music=2" class="buttonExtraBol">LOS40</a>
+    <a href="?music=3" class="buttonExtraBol">CLASSIC</a>
+    <a href="?music=4" class="buttonExtraBol">MEGASTAR</a>
+  </div><br>
+
+  <!-- Botones para modo música -->
+  <div style="display: inline-flex; gap: 10px; align-items: center; font-size: 1rem;">
+    <a href="?music=5" class="buttonExtraBol">ROCKFM</a>
+    <a href="?music=6" class="buttonExtraBol">HITFM</a>
+    <a href="?music=1" class="buttonExtraBol">SOLO NOTICIAS</a>
+  </div> <br>
+
+  <!-- Reloj -->
+  <div class="time" id="officialTime"></div>
+  <div class="time" id="deviceTime"></div>
+  <div class="time" id="offsetTime"></div>
+
+  <script src="../script-interfaz.js"></script>
+  <script src="../script-eventos.js"></script>
 
 <script>
 
@@ -223,9 +95,6 @@
   const audio_news = document.getElementById('radio_news');
   const audio_prep = document.getElementById('radio_prep');
   const audio_music = document.getElementById('radio_music');
-
-  const news_volume = document.getElementById('radio_news_volume');
-  const music_volume = document.getElementById('radio_music_volume');
 
   const btn = document.getElementById('playButton');
   const imgLogo = document.getElementById('logo-emisora');
@@ -303,17 +172,10 @@
 
   // Leer parámetros de la URL
   const params = new URLSearchParams(window.location.search);
-  const stream = params.get("stream");
   const music = params.get("music");
 
-  // Elegir stream noticias según parámetro, 
-  if (stream === "2") { // ?stream=2
-    streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER2.mp3";
-  } else if (stream === "3") { // ?stream=3
-    streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRID.mp3";
-  } else {
-    streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3";
-  }
+  // Stream noticias
+  streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3";
 
   imgLogo_news = "../resources/live/ser.png";
   imgLogo_pin = "../resources/live/pin.png";
@@ -338,10 +200,6 @@
   } else {
     musicURL = "none";
   }
-
-  // Variable a mano para pruebas
-  // musicURL = "https://emisoras.cadenaser.com/LOS40";
-
   /*=========================*/
   /*==   ASIGNAR LAS URL   ==*/
   /*=========================*/
@@ -551,7 +409,7 @@
               // Suavizado de seguridad
               dataArray[i] = dataArray[i] + (targetHeight - dataArray[i]) * 0.3;
             
-              canvasCtx.fillStyle = '#1a237e';
+              canvasCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--live-fakewaves').trim();
           } else {
               dataArray[i] *= 1.0;
               noiseHeights[i] *= 1.0;
@@ -800,17 +658,6 @@
   /*==  INTERACCIÓN USUARIO  ==*/
   /*===========================*/
   
-  // Volumen de las noticias
-  news_volume.addEventListener("input", (e) => {
-    max_news_volume = e.target.value;
-    audio_news.volume = e.target.value;
-  });
-
-  // Volumen de la música
-  music_volume.addEventListener("input", (e) => {
-    max_music_volume = e.target.value;
-    audio_music.volume = e.target.value;
-  });
 
   // Pulsar el botón para empezar
   btn.textContent = "Haz click aquí para otorgar permisos";
@@ -820,34 +667,6 @@
     setTimeout(() => { main_function(); }, 1200);
   },{once:true});
   
-  // Referencias al modal y boton salida
-  const exitModal = document.getElementById("exit-modal");
-  const stayBtn = document.getElementById("stay-btn");
-
-  // Interceptar botón atrás
-  window.addEventListener("load", () => {
-    history.pushState(null, "", location.href);
-    window.addEventListener("popstate", () => {
-      // Mostrar modal en vez de cerrar
-      exitModal.style.display = "flex";
-      history.pushState(null, "", location.href); // volvemos a bloquear
-    });
-  });
-
-  // Botón "Seguir escuchando"
-  stayBtn.addEventListener("click", () => {
-    exitModal.style.display = "none";
-  });
-
-  // Android media
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Radio en directo',
-      artwork: [
-        { src: '../resources/mesa_audio.webp', type: 'image/jpeg' },
-      ]
-    });
-  }
 
   /*===========================*/
   /*====    RELOJ DELAY    ====*/
@@ -891,7 +710,7 @@
 
       document.getElementById("officialTime").innerText = "Hora oficial " + formatTime(officialNow);
       const minus_time = new Date(officialNow.getTime() - 5000);
-      document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time);
+      document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time) + "\n\n\n";
     }
   }
 
@@ -899,10 +718,12 @@
   obtenerHoraOficial();
 
   // Actualizar cada segundo
-  //setInterval(actualizarRelojes, 1000);
+  setInterval(actualizarRelojes, 1000);
 
   // Refrescar hora oficial dos minuto
   setInterval(obtenerHoraOficial, 2*60000);
 
 </script>
+
+</body>
 </html>

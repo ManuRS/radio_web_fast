@@ -16,7 +16,6 @@ body {
   min-height: 100vh;
 }
 
-
 /******************************
  * Adaptaciones Responsive
  * ***************************/
@@ -63,6 +62,7 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Tarjetas de la página sin categorías: más altas en móvil */
@@ -111,35 +111,15 @@ body {
   transition: background 0.3s ease;
 }
 
-/****************************************
-/* Hover solo en dispositivos con ratón:
-/* evita estados pegados en móviles
- * **************************************/
-@media (hover: hover) and (pointer: fine) {
-  .card:hover::before {
-    transform: scale(1.1);
-    filter: brightness(1.0) blur(0.0px);
-  }
-
-  .card:hover .station-name {
-    opacity: 0;
-    visibility: hidden;
-  }
+/* Estado visual de la emisora seleccionada */
+.card.playing::before {
+  transform: scale(1.1);
+  filter: brightness(1) blur(0);
 }
 
-/****************************************
-/* En móviles, la emisora seleccionada
-/* adopta el aspecto del hover de escritorio
- * **************************************/
-@media (hover: none), (pointer: coarse) {
-  .card.playing::before {
-    transform: scale(1.1);
-    filter: brightness(1.0) blur(0.0px);
-  }
-  .card.playing .station-name {
-    opacity: 0;
-    visibility: hidden;
-  }
+.card.playing .station-name {
+  opacity: 0;
+  visibility: hidden;
 }
 
 /******************************
@@ -172,9 +152,9 @@ body {
   position: relative;
   z-index: 2;
   display: flex;
-  align-items: center; /* centro horizontal */
-  justify-content: center; /* centro horizontal del contenido principal */
-  height: 100%; /* para que ocupe toda la tarjeta */
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 /* Separar el nombre de la emisora del indicador */
@@ -254,7 +234,7 @@ body {
  * ***************************/
 .category-separator {
   grid-column: 1 / -1; /* Ocupa todo el ancho de la rejilla */
-  text-align: center; /* Alineado a la izquierda */
+  text-align: center; 
   font-size: 1.2rem;
   font-weight: bold;
   color: var(--category-separator-color);
