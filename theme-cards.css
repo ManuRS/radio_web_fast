@@ -122,6 +122,29 @@ body {
   visibility: hidden;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .card:hover::before {
+    transform: scale(1.1);
+    filter: brightness(1) blur(0);
+  }
+
+  /* Páginas de podcasts: ocultar el nombre */
+  .card:hover .station-name {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* Index: ocultar texto y emoji sin bloquear el enlace */
+  html[data-page="index"] .card:hover a {
+    color: transparent;
+  }
+
+  html[data-page="index"] .card:hover a span {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 /******************************
  * Texto y emoji de la card
  * ***************************/
@@ -152,9 +175,9 @@ body {
   position: relative;
   z-index: 2;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+  align-items: center; /* centro horizontal */
+  justify-content: center; /* centro horizontal del contenido principal */
+  height: 100%; /* para que ocupe toda la tarjeta */
 }
 
 /* Separar el nombre de la emisora del indicador */
@@ -234,7 +257,7 @@ body {
  * ***************************/
 .category-separator {
   grid-column: 1 / -1; /* Ocupa todo el ancho de la rejilla */
-  text-align: center; 
+  text-align: center; /* Alineado a la izquierda */
   font-size: 1.2rem;
   font-weight: bold;
   color: var(--category-separator-color);
