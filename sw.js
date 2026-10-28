@@ -137,7 +137,7 @@ const FILES_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Descargando cache...');
+      console.log('⌛ Descargando cache...');
 
       // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
       return Promise.allSettled(
@@ -148,7 +148,7 @@ self.addEventListener('install', (event) => {
         resultados.forEach((resultado, i) => {
           if (resultado.status === 'rejected') {
             console.warn(
-              `No se pudo cachear: ${FILES_TO_CACHE[i]}`,
+              `⚠️ No se pudo cachear: ${FILES_TO_CACHE[i]}`,
               resultado.reason
             );
           }
@@ -161,10 +161,10 @@ self.addEventListener('install', (event) => {
         const fallidos = resultados.length - correctos;
 
         if (fallidos === 0) {
-          console.log('✅ Caché completada: todos los archivos descargados.');
+          console.log('✅ Caché completada: todos los archivos descargados');
         } else {
           console.warn(
-            `⚠️ Caché finalizada: ${correctos}/${resultados.length} archivos descargados. Fallidos: ${fallidos}.`
+            `⚠️ Caché finalizada: ${correctos}/${resultados.length} archivos descargados. Fallidos: ${fallidos}`
           );
         }
       });
