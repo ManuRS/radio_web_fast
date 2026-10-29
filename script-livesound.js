@@ -24,7 +24,7 @@ const BUFFER_GRACE_PERIOD_MS = 30000;
 // Tras un traspaso, el elemento antiguo se silencia al momento pero se
 // libera pasado este tiempo, para que Android registre ya el reproductor nuevo
 // antes de que desaparezca el viejo.
-const HANDOVER_RELEASE_DELAY_MS = 1500;
+const HANDOVER_RELEASE_DELAY_MS = 600000;
 
 /********************************
  * Estado del reproductor
