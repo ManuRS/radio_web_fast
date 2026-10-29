@@ -21,6 +21,11 @@ const STALL_LIMIT_MS = 8000;
 // de lo normal y provocaría un segundo corte justo después de reconectar.
 const BUFFER_GRACE_PERIOD_MS = 30000;
 
+// Tras un traspaso, el elemento antiguo se silencia al momento pero se
+// libera pasado este tiempo, para que Android registre ya el reproductor nuevo
+// antes de que desaparezca el viejo.
+const HANDOVER_RELEASE_DELAY_MS = 1500;
+
 /********************************
  * Estado del reproductor
  ********************************/
@@ -45,6 +50,13 @@ let attemptInFlight = false;     // hay un intento de reconexión en curso (ya l
 let pausedAudio = null;
 let pausedCard = null;
 
+// Traspaso en marcha. Mientras el stream nuevo (currentAudio) no suena,
+// el elemento anterior queda aquí como "relevo saliente" sin tocarlo.
+let retiringAudio = null;
+let retiringHls = null;
+
+// Elementos ya silenciados que se liberarán tras HANDOVER_RELEASE_DELAY_MS.
+let pendingReleases = [];
 
 /********************************
  * Utilidades
@@ -121,6 +133,139 @@ function applyCurrentVolume(audio) {
   }
 }
 
+/********************************
+ * Traspaso entre dos elementos <audio>
+ ********************************/
+
+// Devuelve el audio de una tarjeta. Con dos elementos por tarjeta (el original
+// y el de relevo), el que importa es el activo o el que está en pausa.
+function getCardAudio(card) {
+  if (card === currentCard && currentAudio) return currentAudio;
+  if (card === pausedCard && pausedAudio) return pausedAudio;
+
+  return card.querySelector("audio");
+}
+
+// Libera un elemento: corta su conexión y lo deja vacío y reutilizable.
+function releaseAudioElement(audio, hls) {
+  if (hls) {
+    try {
+      hls.destroy();
+    } catch (error) {
+      // Sin consecuencias.
+    }
+  }
+
+  if (!audio) return;
+
+  audio.pause();
+  audio.removeAttribute("src");
+  audio.load();
+  audio.muted = false;
+}
+
+function isAudioInUse(audio) {
+  return (
+    audio === currentAudio ||
+    audio === retiringAudio ||
+    audio === pausedAudio
+  );
+}
+
+// Programa la liberación de un elemento ya silenciado.
+function scheduleRelease(audio, hls) {
+  const entry = { audio, hls, timer: null };
+
+  entry.timer = setTimeout(() => {
+    pendingReleases = pendingReleases.filter(item => item !== entry);
+
+    if (!isAudioInUse(audio)) {
+      releaseAudioElement(audio, hls);
+    }
+  }, HANDOVER_RELEASE_DELAY_MS);
+
+  pendingReleases.push(entry);
+}
+
+// Libera ya todo lo que estaba pendiente de liberar.
+function flushPendingReleases() {
+  const entries = pendingReleases;
+  pendingReleases = [];
+
+  entries.forEach(entry => {
+    clearTimeout(entry.timer);
+
+    if (!isAudioInUse(entry.audio)) {
+      releaseAudioElement(entry.audio, entry.hls);
+    }
+  });
+}
+
+// Devuelve el segundo elemento <audio> de la tarjeta, y lo crea la primera vez.
+// Los dos elementos se alternan: el que se libera se reutiliza en el siguiente
+// traspaso, así que nunca hay más de dos por tarjeta.
+function getReliefAudio(card, active) {
+  let relief = [...card.querySelectorAll("audio")].find(item => item !== active);
+
+  if (!relief) {
+    relief = document.createElement("audio");
+    relief.preload = "none";
+    card.appendChild(relief);
+
+    bindAudioEvents(relief);
+  }
+
+  relief.setAttribute("data-src", getStreamSrc(active));
+
+  return relief;
+}
+
+// Prepara el traspaso y devuelve el elemento que cargará el stream nuevo.
+// Si no hay nada que conservar, devuelve el mismo elemento (como antes).
+function beginHandover(audio) {
+
+  // Ya hay un traspaso en marcha: los reintentos reutilizan el mismo relevo.
+  if (retiringAudio) return audio;
+
+  // Sin reproductor cargado no hay notificación que mantener.
+  if (!audio.src && !currentHls) return audio;
+
+  flushPendingReleases();
+
+  const relief = getReliefAudio(currentCard, audio);
+
+  retiringAudio = audio;
+  retiringHls = currentHls;
+  currentHls = null;
+
+  // El nuevo carga en silencio hasta que ya esté sonando.
+  relief.muted = true;
+  relief.volume = audio.volume;
+
+  currentAudio = relief;
+
+  console.log("Traspaso: el stream nuevo se carga en un segundo elemento.");
+
+  return relief;
+}
+
+// El stream nuevo ya suena: se activa su sonido y se libera el anterior.
+// Primero suena el nuevo y después se retira el viejo, para que Android no se
+// quede ni un instante sin reproductor.
+function completeHandover(audio) {
+  const old = retiringAudio;
+  const oldHls = retiringHls;
+
+  retiringAudio = null;
+  retiringHls = null;
+
+  audio.muted = false;
+
+  if (old) {
+    old.muted = true;
+    scheduleRelease(old, oldHls);
+  }
+}
 
 /********************************
  * Parar y limpiar el reproductor
@@ -138,6 +283,13 @@ function stopCurrentPlayback() {
   const heldAudio = pausedAudio;
   pausedAudio = null;
   pausedCard = null;
+
+  // Lo mismo con un traspaso en marcha y con las liberaciones pendientes.
+  const retiring = retiringAudio;
+  const retiringHlsInstance = retiringHls;
+  retiringAudio = null;
+  retiringHls = null;
+  flushPendingReleases();
 
   // Desactivamos primero la sesión para impedir
   // que un evento tardío inicie otra reconexión.
@@ -159,6 +311,7 @@ function stopCurrentPlayback() {
     previousAudio.pause();
     previousAudio.removeAttribute("src");
     previousAudio.load();
+    previousAudio.muted = false;
   }
 
   if (heldAudio && heldAudio !== previousAudio) {
@@ -166,10 +319,15 @@ function stopCurrentPlayback() {
     heldAudio.removeAttribute("src");
     heldAudio.load();
   }
+
+  if (retiring && retiring !== previousAudio && retiring !== heldAudio) {
+    releaseAudioElement(retiring, retiringHlsInstance);
+  }
+
 }
 
 /********************************
- * NUEVO: pausa desde fuera y reanudación en directo
+ * Pausa desde fuera y reanudación en directo
  ********************************/
 
 // Pasa la emisora activa a "en pausa". A diferencia de stopCurrentPlayback(),
@@ -186,8 +344,25 @@ function enterPausedState(audio) {
 
   const card = currentCard;
 
-  pausedAudio = audio;
+  // Si la pausa llega en pleno traspaso, se queda en pausa el
+  // reproductor antiguo (el que tiene la notificación) y se descarta el nuevo.
+  let held = audio;
+  let heldHls = currentHls;
+  let discarded = null;
+  let discardedHls = null;
+
+  if (retiringAudio) {
+    discarded = audio;
+    discardedHls = currentHls;
+    held = retiringAudio;
+    heldHls = retiringHls;
+    retiringAudio = null;
+    retiringHls = null;
+  }
+
+  pausedAudio = held;
   pausedCard = card;
+  currentHls = heldHls;
 
   currentAudio = null;
   currentCard = null;
@@ -196,6 +371,14 @@ function enterPausedState(audio) {
   reconnectAttempts = 0;
 
   card.classList.remove("playing");
+
+  if (discarded) {
+    releaseAudioElement(discarded, discardedHls);
+  }
+
+  // Si la pausa solo había llegado a uno de los dos, se pausa el que queda.
+  held.pause();
+  held.muted = false;
 
   // HLS: dejamos de descargar, pero mantenemos hls.js enlazado al audio
   // para que la notificación siga ahí. Al reanudar se reconstruye entero.
@@ -238,7 +421,16 @@ function resumeLive(reason) {
  ********************************/
 
 function playPause(card) {
-  const audio = card.querySelector("audio");
+
+  // Pulsar la tarjeta de una emisora en pausa la reanuda en directo,
+  // con traspaso, igual que el botón de la notificación.
+  if (card === pausedCard && pausedAudio) {
+    resumeLive("tarjeta pulsada");
+    return;
+  }
+
+  // La tarjeta puede tener dos elementos, y vale el que esté en uso.
+  const audio = getCardAudio(card);
 
   if (!audio) {
     console.error("La tarjeta no contiene ningún elemento audio.");
@@ -269,6 +461,7 @@ function playPause(card) {
   currentCard = card;
 
   card.classList.add("playing");
+  audio.muted = false; 
   applyCurrentVolume(audio);
 
   startStream(audio, src);
@@ -600,6 +793,10 @@ function runReconnectAttempt(audio) {
     return;
   }
 
+  // El stream nuevo se carga en un segundo elemento mientras el actual
+  // sigue ahí. Los reintentos del mismo corte reutilizan ese segundo elemento.
+  audio = beginHandover(audio);
+
   console.log("Reconectando con la emisora...");
 
   attemptInFlight = true;
@@ -740,7 +937,7 @@ if (!window.__livesoundMediaSessionBound) {
  * Eventos del audio
  ********************************/
 
-document.querySelectorAll(".card audio").forEach(audio => {
+function bindAudioEvents(audio) {
 
   // Evitar duplicar los listeners si este bloque se ejecuta otra vez.
   if (audio.dataset.streamRecoveryBound === "true") return;
@@ -771,6 +968,8 @@ document.querySelectorAll(".card audio").forEach(audio => {
 
     if (!isPlaybackRequested(audio)) return;
 
+    if (retiringAudio) completeHandover(audio);
+
     // Una reproducción recuperada cancela cualquier reintento pendiente.
     clearReconnectTimer();
     reconnecting = false;
@@ -794,6 +993,16 @@ document.querySelectorAll(".card audio").forEach(audio => {
   // en pausa: la tarjeta deja de mostrar "Escuchando" y la notificación sigue
   // con su botón de reproducir. Al reanudar se salta al directo (resumeLive).
   audio.addEventListener("pause", () => {
+
+    // Pausa externa sobre el reproductor antiguo en pleno traspaso (la
+    // notificación está ligada a él). Se pasa la emisora a pausa igualmente.
+    if (audio === retiringAudio) {
+      if (currentAudio && isPlaybackRequested(currentAudio) && navigator.onLine !== false) {
+        console.warn("Pausa externa durante un traspaso. La emisora queda en pausa.");
+        enterPausedState(currentAudio);
+      }
+      return;
+    }
 
     // Sesión ya cerrada o en pausa (el usuario ha pulsado la tarjeta o ha cambiado de emisora).
     if (!isPlaybackRequested(audio)) return;
@@ -828,4 +1037,6 @@ document.querySelectorAll(".card audio").forEach(audio => {
     resumeLive("reanudación desde el sistema");
   });
 
-});
+}
+
+document.querySelectorAll(".card audio").forEach(bindAudioEvents);
