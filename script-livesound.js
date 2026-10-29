@@ -239,7 +239,7 @@ function beginHandover(audio) {
   currentHls = null;
 
   // El nuevo carga en silencio hasta que ya esté sonando.
-  relief.muted = true;
+  //relief.muted = true;
   relief.volume = audio.volume;
 
   currentAudio = relief;
@@ -579,7 +579,7 @@ function requestAudioPlay(audio, context) {
     if (!isPlaybackRequested(audio)) return;
 
     // Un play() pendiente se rechaza con AbortError cuando nuestro
-    // El propio load() / pause() lo interrumpe al reconectar. No es un fallo de red
+    // propio load() / pause() lo interrumpe al reconectar. No es un fallo de red.
     if (error?.name === "AbortError") return;
 
     console.error(`Error en ${context}:`, error);
@@ -783,7 +783,7 @@ function reconnectNow(audio, reason = "problema de conexión", resetBackoff = fa
   runReconnectAttempt(audio);
 }
 
-// Parte común de reconectar (antes estaba dentro del setTimeoutmde reconnectAudio).
+// Parte común de reconectar (antes estaba dentro del setTimeout de reconnectAudio).
 function runReconnectAttempt(audio) {
   const src = getStreamSrc(audio);
 
