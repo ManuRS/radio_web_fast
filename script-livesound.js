@@ -24,7 +24,7 @@ const BUFFER_GRACE_PERIOD_MS = 30000;
 // Tras un traspaso, el elemento antiguo se silencia al momento pero se
 // libera pasado este tiempo, para que Android registre ya el reproductor nuevo
 // antes de que desaparezca el viejo.
-const HANDOVER_RELEASE_DELAY_MS = 600000;
+const HANDOVER_RELEASE_DELAY_MS = 1500;
 
 /********************************
  * Estado del reproductor
@@ -57,6 +57,8 @@ let retiringHls = null;
 
 // Elementos ya silenciados que se liberarán tras HANDOVER_RELEASE_DELAY_MS.
 let pendingReleases = [];
+
+let ignoreRetiringPauseUntil = 0;
 
 /********************************
  * Utilidades
@@ -238,8 +240,13 @@ function beginHandover(audio) {
   retiringHls = currentHls;
   currentHls = null;
 
+  if (!audio.paused && audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
+    ignoreRetiringPauseUntil = Date.now() + 1000;
+    audio.pause();
+  }
+
   // El nuevo carga en silencio hasta que ya esté sonando.
-  //relief.muted = true;
+  // relief.muted = true;
   relief.volume = audio.volume;
 
   currentAudio = relief;
@@ -997,6 +1004,8 @@ function bindAudioEvents(audio) {
     // Pausa externa sobre el reproductor antiguo en pleno traspaso (la
     // notificación está ligada a él). Se pasa la emisora a pausa igualmente.
     if (audio === retiringAudio) {
+      if (Date.now() < ignoreRetiringPauseUntil) return;
+      
       if (currentAudio && isPlaybackRequested(currentAudio) && navigator.onLine !== false) {
         console.warn("Pausa externa durante un traspaso. La emisora queda en pausa.");
         enterPausedState(currentAudio);
