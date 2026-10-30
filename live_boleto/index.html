@@ -16,6 +16,16 @@
 
   <link rel="stylesheet" href="../theme-cards.css">
 
+  <style>
+
+    html, body { **overflow: hidden; **touch-action: none; }
+
+    /* Emisora de música seleccionada: su texto en negrita */
+    .buttonExtraBol[data-music] { font-weight: 400; }
+    .buttonExtraBol[data-music][aria-pressed="true"] { font-weight: 700; }
+
+  </style>
+
 </head>
 
 <body>
@@ -47,9 +57,9 @@
   <canvas id="visualizer" style="height: 80px; margin-bottom: 25px; margin-top: 5px;"></canvas>
 
   <!-- Reproductor oculto -->
-  <audio id="radio_news"  style="display:none;"></audio>
-  <audio id="radio_prep"  style="display:none;"></audio>
-  <audio id="radio_music" style="display:none"></audio>
+  <div id="live_news" hidden><audio id="radio_news" style="display:none;"></audio></div>
+  <audio id="radio_prep" style="display:none;"></audio>
+  <div id="live_music" hidden><audio id="radio_music" style="display:none"></audio></div>
 
   <!-- Sliders para el volumen -->
   <div id="status_news" class="status">Volumen noticias</div><br>
@@ -62,21 +72,21 @@
   <button id="playButton">Algo ha salido mal</button><br>
 
   <!-- Enlaces para la música -->
-  <div id="status_news" class="status">Cargar modo música</div><br>
+  <div id="status_modo_musica" class="status">Cargar modo música</div><br>
 
   <!-- Botones para modo música -->
 
   <div style="display: inline-flex; gap: 10px; align-items: center; font-size: 1rem;">
-    <a href="?music=2" class="buttonExtraBol">LOS40</a>
-    <a href="?music=3" class="buttonExtraBol">CLASSIC</a>
-    <a href="?music=4" class="buttonExtraBol">MEGASTAR</a>
+    <a href="?music=2" class="buttonExtraBol" data-music="2">LOS40</a>
+    <a href="?music=3" class="buttonExtraBol" data-music="3">CLASSIC</a>
+    <a href="?music=4" class="buttonExtraBol" data-music="4">MEGASTAR</a>
   </div><br>
 
   <!-- Botones para modo música -->
   <div style="display: inline-flex; gap: 10px; align-items: center; font-size: 1rem;">
-    <a href="?music=5" class="buttonExtraBol">ROCKFM</a>
-    <a href="?music=6" class="buttonExtraBol">HITFM</a>
-    <a href="?music=1" class="buttonExtraBol">SOLO NOTICIAS</a>
+    <a href="?music=5" class="buttonExtraBol" data-music="5">ROCKFM</a>
+    <a href="?music=6" class="buttonExtraBol" data-music="6">HITFM</a>
+    <a href="?music=1" class="buttonExtraBol" data-music="1">SOLO NOTICIAS</a>
   </div> <br>
 
   <!-- Reloj -->
@@ -86,14 +96,47 @@
 
   <script src="../script-interfaz.js"></script>
   <script src="../script-eventos.js"></script>
-
-<script src="script-extrabol.js"></script>
+  <script src="../script-livesound.js"></script>
+  <script src="script-extrabol.js"></script>
 
 <script>
 
   /*====================*/
   /*==   JAVASCRIPT   ==*/
   /*====================*/
+
+  /*====================================================================*/
+  /*==  AJUSTES DE TIEMPO  (lo que hay que tocar para afinar)          ==*/
+  /*====================================================================*/
+
+  // >>> RETRASO DEL STREAM DE INTERNET RESPECTO A LA EMISIÓN REAL (segundos) <<<
+  // Lo que se oye por internet sale esta cantidad de segundos más tarde que en
+  // una emisión FM o en el estudio. Los horarios de horariosPermitidos son horas
+  // REALES de emisión; las noticias entran en este stream cuando esa hora ya
+  // "está sonando" aquí, es decir, a (hora + RETRASO_STREAM_S).
+  const RETRASO_STREAM_S = 32;
+
+  // Las noticias se conectan en silencio (volumen mínimo) esto ANTES de que entren.
+  // Mantiene despierta la pestaña: Chrome, si no suena nada, solo llama a la página
+  // una vez por minuto (en un segundo cualquiera). Para asegurar que esa llamada cae
+  // dentro del margen hace falta 60 s más el tiempo que necesita la secuencia
+  // (conectar, fade out de música, pin). Con 90 s, en el peor caso quedan 30 s.
+  const conexion_previa_s = 90;
+
+  // Antelación respecto al momento en que entran las noticias
+  const antelacion_pin_s = 3.0;           // pin de entrada a noticias (desco_ini)
+  const antelacion_fade_musica_s = 4.0;   // empieza el fade out de la música
+
+  // Al volver a la música: cuántos segundos ANTES del instante que fija
+  // select_random_desco_fin() empieza a entrar. 0 = justo en ese instante.
+  const musica_adelanto_s = 0.0;
+
+  // Volumen de las transiciones = volumen del destino, por un factor
+  const ganancia_pin_a_noticias = 1.0;    // música -> noticias (sobre el volumen de noticias)
+  const ganancia_pin_a_musica = 1.0;      // noticias -> música (sobre el volumen de música)
+
+  /*====================================================================*/
+
   const audio_news = document.getElementById('radio_news');
   const audio_prep = document.getElementById('radio_prep');
   const audio_music = document.getElementById('radio_music');
@@ -102,148 +145,104 @@
   const imgLogo = document.getElementById('logo-emisora');
 
   let semaforo, interval;
+  let noticiasEnCurso = false;   // desde que la música empieza a cortarse hasta que acaban las noticias
   let fadeAudio_ID, fadeMusic_ID;
-
-  let reconnectTimers = new Map();
-  let reconnecting = new Set();
 
   let max_news_volume = 1.0;
   let max_music_volume = 0.5;
 
-  let latencyInterval = null;
+  // Cada stream tiene su propia instancia de script-livesound.js: reconexión,
+  // watchdog, traspaso entre dos <audio> y pausa/play de la notificación.
+  // La lógica de cuándo suena cada uno sigue siendo la de esta página.
+  const card_news  = document.getElementById('live_news');
+  const card_music = document.getElementById('live_music');
 
-  function reconnectAudio(audio) {
+  // La notificación solo puede reanudar el stream que toca ahora
+  const liveNews  = createLiveSound({ shouldResume: () => semaforo === true });
+  const liveMusic = createLiveSound({ shouldResume: () => !noticiasEnCurso && musicURL != "none" });
 
-    // Solo reconectar streams de radio
-    if (audio !== audio_news && audio !== audio_music) return;
-
-    // Si está pausado, probablemente lo hemos parado nosotros
-    if (audio.paused) return;
-
-    // Evitar varios intentos simultáneos
-    if (reconnecting.has(audio)) return;
-
-    reconnecting.add(audio);
-
-    if (reconnectTimers.has(audio)) {
-      clearTimeout(reconnectTimers.get(audio));
-    }
-
-    const timer = setTimeout(() => {
-
-      // Puede haber sido detenido durante la espera
-      if (audio.paused) {
-        reconnecting.delete(audio);
-        return;
-      }
-
-      const src = audio === audio_news ? streamURL : musicURL;
-
-      if (!src || src === "none") {
-        reconnecting.delete(audio);
-        return;
-      }
-
-      console.log("🔄 Reconectando stream:", src);
-
-      audio.pause();
-      audio.removeAttribute("src");
-      audio.load();
-
-      audio.src = src;
-      audio.load();
-
-      audio.play().catch(err => {
-        console.error("❌ Error al reconectar:", err);
-      });
-
-      reconnecting.delete(audio);
-
-    }, 6000);
-
-    reconnectTimers.set(audio, timer);
-  }
+  liveNews.bindAudioEvents(audio_news);
+  liveMusic.bindAudioEvents(audio_music);
 
   /*============================*/
-  /*==  PARAMETROS DE LA URL  ==*/
+  /*==  STREAMS Y EMISORAS    ==*/
   /*============================*/
-
-  // URL por defecto
-  let streamURL = "none";
-  let musicURL = "none";
-
-  // Leer parámetros de la URL
-  const params = new URLSearchParams(window.location.search);
-  const music = params.get("music");
 
   // Stream noticias
-  streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3";
+  let streamURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3";
 
-  imgLogo_news = "../resources/live/ser.png";
-  imgLogo_pin = "../resources/live/pin.png";
-  imgLogo.src = "../resources/live/off.png";
-  
-  // Elegir stream música según parámetro
-  if (music === "2") { // ?music=2
-    musicURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3";
-    imgLogo_music = "../resources/live/los40.png";
-  } else if (music === "3") { // ?music=3
-    musicURL = "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3";
-    imgLogo_music = "../resources/live/classic.png";
-  } else if (music === "4") { // ?music=4
-    musicURL = "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3";
-    imgLogo_music = "../resources/live/megastar.png";
-  } else if (music === "5") { // ?music=5
-    musicURL = "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3";
-    imgLogo_music = "../resources/live/rockfm.png";
-  } else if (music === "6") { // ?music=6
-    musicURL = "https://hitfm.kissfmradio.cires21.com/hitfm.mp3";
-    imgLogo_music = "../resources/live/hitfm.png";
-  } else {
-    musicURL = "none";
+  const imgLogo_news = "../resources/live/ser.png";
+  const imgLogo_pin = "../resources/live/pin.png";
+  const imgLogo_off = "../resources/live/off.png";
+  imgLogo.src = imgLogo_off;
+
+  // Emisoras de música seleccionables desde los botones ("1" = modo sin música)
+  const EMISORAS_MUSICA = {
+    "1": { url: "none" },
+    "2": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3", logo: "../resources/live/los40.png" },
+    "3": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3", logo: "../resources/live/classic.png" },
+    "4": { url: "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3", logo: "../resources/live/megastar.png" },
+    "5": { url: "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3", logo: "../resources/live/rockfm.png" },
+    "6": { url: "https://hitfm.kissfmradio.cires21.com/hitfm.mp3", logo: "../resources/live/hitfm.png" }
+  };
+
+  let musicId = "1";        // emisora aplicada
+  let musicIdPedido = "1";  // última emisora pedida (puede estar a media transición)
+  let musicURL = "none";
+  let imgLogo_music;
+
+  // Aplica una emisora: variables, URL en los <audio>, slider, textos y botones.
+  // No toca el sonido (de eso se encarga cambiarMusica).
+  function seleccionarMusica(id) {
+    const emisora = EMISORAS_MUSICA[id];
+    musicId = id;
+    musicURL = emisora.url;
+    imgLogo_music = emisora.logo;
+
+    // La librería lee la URL del data-src del <audio> que tenga en ese momento
+    // (el original o el de relevo), así que se pone en todos los de la tarjeta.
+    card_music.querySelectorAll('audio').forEach(a => {
+      if (musicURL != "none") a.setAttribute('data-src', musicURL);
+      else a.removeAttribute('data-src');
+    });
+
+    document.getElementById('radio_music_volume').disabled = (musicURL == "none");
+    document.getElementById('status_music').textContent = (musicURL == "none") ? "Modo sin música" : "Volumen música";
+
+    document.querySelectorAll('[data-music]').forEach(b => {
+      b.setAttribute('aria-pressed', String(b.dataset.music === id));
+    });
   }
-  /*=========================*/
-  /*==   ASIGNAR LAS URL   ==*/
-  /*=========================*/
 
-  /* URL de las noticias*/
+  /* URL de las noticias */
   console.log(streamURL);
-  audio_news.src = streamURL;
+  audio_news.setAttribute('data-src', streamURL);
 
-  /* URL de la música */ 
-  if (musicURL != "none"){
-      console.log(musicURL);
-      audio_music.src = musicURL;
-  } else {
-    // No hay música
-    var slider = document.getElementById('radio_music_volume');
-    slider.disabled = true;
-    var st = document.getElementById('status_music');
-    st.textContent = "Modo sin música";
-  }
+  // Selección inicial: la del parámetro ?music= si viene (accesos directos antiguos), si no, sin música
+  const musicInicial = new URLSearchParams(window.location.search).get("music");
+  seleccionarMusica(EMISORAS_MUSICA[musicInicial] ? musicInicial : "1");
+  musicIdPedido = musicId;
 
   /*================*/
   /*==  HORARIOS  ==*/
   /*================*/
 
+  // Horas REALES de emisión (como en el estudio o en una FM). Empiezan antes de las XX:00
+  // para captar la aproximación y los pitos. Aquí NO se suma el retraso del stream.
   const horariosPermitidos = [
-    { inicio: "07:58:30", fin: "08:20:18" },
-    { inicio: "08:58:30", fin: "09:04:26" },
-    { inicio: "09:58:30", fin: "10:05:54" },
-    { inicio: "10:58:30", fin: "11:05:54" },
-    { inicio: "11:58:30", fin: "12:20:18" },
-    { inicio: "12:58:30", fin: "13:06:30" },
-    { inicio: "13:58:30", fin: "14:06:26" },
-    { inicio: "15:58:30", fin: "16:05:24" },
-    { inicio: "16:58:30", fin: "17:05:24" },
-    { inicio: "17:58:30", fin: "18:05:24" },
-    { inicio: "18:58:30", fin: "19:04:32" },
-    { inicio: "19:58:30", fin: "20:25:18" },
+    { inicio: "07:59:44", fin: "08:20:18" },
+    { inicio: "08:59:44", fin: "09:04:26" },
+    { inicio: "09:59:44", fin: "10:05:55" },
+    { inicio: "10:59:44", fin: "11:05:55" },
+    { inicio: "11:59:44", fin: "12:20:18" },
+    { inicio: "12:59:44", fin: "13:06:30" },
+    { inicio: "13:59:44", fin: "14:06:26" },
+    { inicio: "15:59:44", fin: "16:05:25" },
+    { inicio: "16:59:44", fin: "17:05:25" },
+    { inicio: "17:59:44", fin: "18:05:25" },
+    { inicio: "18:59:44", fin: "19:04:32" },
+    { inicio: "19:59:44", fin: "20:25:18" },
   ];
-
-  const minuto_hardcode = 59; // 59
-  const segundos_hardcode = 44; // 44
-  const timetext = true; // Time console log
 
   /*=================================*/
   /*== FUNCIONES AUXILIARES SONIDO ==*/
@@ -262,22 +261,23 @@
   }
 
   // Fade out
-  function fadeOutVol(audioToFade, interval_ID) {
+  function fadeOutVol(audioToFade, interval_ID, alTerminar) {
     let resta = 0.06
     if (audioToFade.volume-resta > 0.0){
       audioToFade.volume -= resta;
     }else{
       /*Hemos terminado*/
       audioToFade.volume = 0.0;
-      audioToFade.pause();
+      audioToFade.hold();
       clearInterval(interval_ID);
+      if (alTerminar) alTerminar();
     }
   }
 
   // Pin de inicio de desconexión
   function desco_ini(){
     imgLogo.src = imgLogo_pin;
-    audio_prep.volume = 1.0*max_news_volume;
+    audio_prep.volume = ganancia_pin_a_noticias*max_news_volume;
     audio_prep.src = "../sounds/desco_ini_gen.mp3";
     audio_prep.play();
   }
@@ -285,7 +285,8 @@
   // Pin de fin de desconexión
   function desco_fin(){
     imgLogo.src = imgLogo_pin;
-    audio_prep.volume = 0.7*max_news_volume;
+    // Destino música; si no hay música, queda el nivel de siempre sobre las noticias
+    audio_prep.volume = (musicURL != "none") ? ganancia_pin_a_musica*max_music_volume : 0.7*max_news_volume;
     audio_prep.play();
   }
 
@@ -294,13 +295,13 @@
     let num_random_1 = Math.floor(Math.random() * 3);
     let num_random_2 = Math.floor(Math.random() * 4);
 
-    if (music === "2" && num_random_1 == 0) {
+    if (musicId === "2" && num_random_1 == 0) {
       audio_prep.src = "../sounds/los40_a.mp3";
       return 32;
-    } else if (music === "2" && num_random_1 == 1) {
+    } else if (musicId === "2" && num_random_1 == 1) {
       audio_prep.src = "../sounds/los40_b.mp3";
       return 28;
-    } else if (music === "3" && num_random_1 !== 0) {
+    } else if (musicId === "3" && num_random_1 !== 0) {
       audio_prep.src = "../sounds/los40c_a.mp3";
       return 10;
     } else if (num_random_2 == 0) {
@@ -324,14 +325,13 @@
     audio_prep.play();
   }
 
-  
-
   /*=======================*/
   /*== FUNCION DIRECTORA ==*/
   /*=======================*/ 
   function actualizarReproduccion(safeMode=false) {
 
-    const enHorario = estaEnHorario();
+    const ventana = ventanaNoticias(ahoraOficialMs());
+    const enHorario = ventana !== null;
 
     if (enHorario && !semaforo && safeMode) {
       /** CARGA - PERIODO DE REPRODUCCIÓN **/
@@ -346,19 +346,16 @@
     } else if (enHorario && !semaforo) {
       /** PERIODO DE REPRODUCCIÓN **/
 
-      // Calculo delay
-      hora = new Date();
-      actual = hora.getMinutes()*60 + hora.getSeconds();
-      objetivo = minuto_hardcode*60 + segundos_hardcode;
-      delaysecs = objetivo - actual;
+      // Segundos que faltan para que entren las noticias (negativo: ya deberían estar sonando)
+      const delaysecs = (ventana.entradaMs - ahoraOficialMs()) / 1000;
 
       // Noticias play
       play_news(delaysecs * 1000);
 
-      if (delaysecs-3.0 > 0) {
+      if (delaysecs - antelacion_pin_s > 0) {
         /// Fade out música + pin
-        stop_music( (delaysecs-4.0) * 1000 );
-        setTimeout( () => { desco_ini(); }, (delaysecs-3.0) * 1000 );
+        stop_music( (delaysecs - antelacion_fade_musica_s) * 1000 );
+        setTimeout( () => { desco_ini(); }, (delaysecs - antelacion_pin_s) * 1000 );
       } else {
         // No da tiempo, paro musica
         stop_music();
@@ -390,10 +387,11 @@
       // Noticias stop
       stop_news();
 
-      // Pin desco (incluye llamada a play music)
+      // Pin desco. La música conecta ya (en silencio) y entra sobre la cortinilla:
+      // select_random_desco_fin() devuelve el instante de entrada; musica_adelanto_s lo adelanta
       let t_desco_ini_aux = select_random_desco_fin();
       setTimeout(() => { desco_fin();}, 2.0 * 1000);
-      setTimeout(() => { play_music(); }, t_desco_ini_aux * 1000);
+      play_music( Math.max(0, t_desco_ini_aux - musica_adelanto_s) * 1000 );
 
       // Otros          
       semaforo = false;
@@ -412,29 +410,38 @@
   /*==   PLAY / STOP AUDIO   ==*/
   /*===========================*/
 
+  /* Esperar a que un stream suene de verdad */
+  function cuandoSuene(live, accion) {
+    const audio = live.currentAudio;
+    if (audio && !audio.paused && audio.readyState >= 3) {
+      accion();
+      return () => {};
+    }
+    const escucha = (e) => {
+      if (e.target !== live.currentAudio) return;
+      document.removeEventListener('playing', escucha, true);
+      accion();
+    };
+    document.addEventListener('playing', escucha, true);   // los eventos de audio no burbujean
+    return () => document.removeEventListener('playing', escucha, true);
+  }
+
+  // Programa una entrada con fade in: espera "delay" ms y luego, si el stream aún no suena, a que suene.
+  function programarEntrada(live, delay, alEntrar, alSonar) {
+    let cancelaEspera = () => {};
+    const t = setTimeout(() => {
+      alEntrar();
+      cancelaEspera = cuandoSuene(live, alSonar);
+    }, delay);
+    return () => { clearTimeout(t); cancelaEspera(); };
+  }
+
   /* Reproducir noticias */
+  let cancelaEntradaNoticias = () => {};
   function play_news(delay=0) {
 
-    audio_news.volume = 0.01;
-    audio_news.load();
-    audio_news.play().catch(err => console.error("Error al reproducir:", err));
-
-    clearInterval(latencyInterval);
-
-    // Control para evitar que el streaming de audio clásico se quede retrasado
-    latencyInterval = setInterval(() => {
-      if (!audio_news.paused && audio_news.buffered.length > 0) {
-        const livePosition = audio_news.buffered.end(audio_news.buffered.length - 1);
-        const margenSegundos = livePosition - audio_news.currentTime;
-
-        console.log(`Margen con el directo: ${margenSegundos.toFixed(2)} segundos`);
-
-        // Si el retraso acumulado supera los 4 segundos, saltamos al borde actual
-        if (livePosition - audio_news.currentTime > 4) {
-          audio_news.currentTime = livePosition;
-        }
-      }
-    }, 10000);
+    liveNews.volume = 0.01;
+    liveNews.startLive(card_news);
 
     semaforo = true;
 
@@ -445,51 +452,59 @@
       console.log("Transmisión preparada");
     } 
  
-    setTimeout(() => {
-      // El fade in lleva retraso
-      fadeAudio_ID = setInterval(() => {fadeInVol(audio_news, fadeAudio_ID, max_news_volume);}, 100);
-
-      // Otros definitivo
-      imgLogo.src = imgLogo_news;
-      btn.style.background = 'green';
-      btn.textContent = "Trasmitiendo noticias en directo";
-      console.log("Transmisión activada");
-    }, delay);
+    cancelaEntradaNoticias();
+    cancelaEntradaNoticias = programarEntrada(liveNews, delay,
+      () => {
+        // Llega la hora
+        noticiasEnCurso = true;
+        imgLogo.src = imgLogo_news;
+        btn.style.background = 'green';
+        btn.textContent = "Trasmitiendo noticias en directo";
+        console.log("Transmisión activada");
+      },
+      () => {
+        // Ya suena: fade in
+        clearInterval(fadeAudio_ID);
+        fadeAudio_ID = setInterval(() => {fadeInVol(liveNews, fadeAudio_ID, max_news_volume);}, 100);
+      }
+    );
 
   }
 
   /* Parar noticias */
   function stop_news(){
-    fadeAudio_ID = setInterval(() => {fadeOutVol(audio_news, fadeAudio_ID);}, 150);
+    cancelaEntradaNoticias();
+    noticiasEnCurso = false;
+    clearInterval(fadeAudio_ID);
+    fadeAudio_ID = setInterval(() => {fadeOutVol(liveNews, fadeAudio_ID);}, 150);
   }
 
-  /* Reproducir música */
-  function play_music() {
-    if (musicURL != "none"){
-      // Reiniciar con fade in
+  /* Logo de lo que suena en el turno de la música */
+  function mostrarLogoMusica() {
+    if (musicURL != "none") {
       imgLogo.src = imgLogo_music;
       imgLogo.classList.add('logo-sonando');
-      audio_music.volume = 0.01;
-      audio_music.load();
-      audio_music.play().catch(err => console.error("Error al reproducir:", err));
-      fadeMusic_ID = setInterval(() => {fadeInVol(audio_music, fadeMusic_ID, max_music_volume);}, 300);
+    } else {
+      imgLogo.src = imgLogo_off;
+      imgLogo.classList.remove('logo-sonando');
+    }
+  }
 
-      clearInterval(latencyInterval);
+  /* Reproducir música: conecta ya, en silencio, y entra con fade in pasado "delay" ms */
+  let cancelaEntradaMusica = () => {};
+  function play_music(delay=0) {
+    if (musicURL != "none"){
+      liveMusic.volume = 0.01;
+      liveMusic.startLive(card_music);
 
-      // Control para evitar que el streaming de audio clásico se quede retrasado
-      latencyInterval = setInterval(() => {
-        if (!audio_music.paused && audio_music.buffered.length > 0) {
-          const livePosition = audio_music.buffered.end(audio_music.buffered.length - 1);
-          const margenSegundos = livePosition - audio_music.currentTime;
-
-          console.log(`Margen con el directo: ${margenSegundos.toFixed(2)} segundos`);
-
-          // Si el retraso acumulado supera los 4 segundos, saltamos al borde actual
-          if (livePosition - audio_music.currentTime > 4) {
-            audio_music.currentTime = livePosition;
-          }
+      cancelaEntradaMusica();
+      cancelaEntradaMusica = programarEntrada(liveMusic, delay,
+        mostrarLogoMusica,
+        () => {
+          clearInterval(fadeMusic_ID);
+          fadeMusic_ID = setInterval(() => {fadeInVol(liveMusic, fadeMusic_ID, max_music_volume);}, 300);
         }
-      }, 10000);
+      );
     }
   }
 
@@ -498,87 +513,91 @@
     if (musicURL != "none"){
       // Para con delay opcional
       setTimeout(() => {
+        noticiasEnCurso = true;
+        cancelaEntradaMusica();
         imgLogo.classList.remove('logo-sonando');
-        fadeMusic_ID = setInterval(() => {fadeOutVol(audio_music, fadeMusic_ID);}, 100);
+        clearInterval(fadeMusic_ID);
+        fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID);}, 100);
       }, delay);
     }
   }
-  
+
+  /* Cambiar de emisora de música sin recargar: fade out, cambio de stream y fade in */
+  function cambiarMusica(id) {
+    if (!EMISORAS_MUSICA[id] || id === musicIdPedido) return;
+    musicIdPedido = id;
+
+    // Resalta ya el botón pulsado
+    document.querySelectorAll('[data-music]').forEach(b => {
+      b.setAttribute('aria-pressed', String(b.dataset.music === id));
+    });
+
+    const habia_musica = !!liveMusic.currentAudio;
+    cancelaEntradaMusica();
+
+    const aplicar = () => {
+      seleccionarMusica(id);
+      if (semaforo !== undefined && !noticiasEnCurso) {
+        // Es el turno de la música: el logo cambia ya y entra la nueva (o silencio)
+        mostrarLogoMusica();
+        if (musicURL != "none") play_music();
+      }
+      // Si van noticias (o aún no se ha pulsado el botón), solo queda elegida
+      // para cuando vuelva la música.
+    };
+
+    if (habia_musica) {
+      imgLogo.classList.remove('logo-sonando');
+      clearInterval(fadeMusic_ID);
+      fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, aplicar);}, 100);
+    } else {
+      aplicar();
+    }
+  }
+
+  document.querySelectorAll('[data-music]').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      cambiarMusica(b.dataset.music);
+    });
+  });
+
   /*===========================*/
   /*==    MAIN FUNCTION      ==*/
   /*===========================*/
-
-  // La llamada está en el listerner del botón "btn"
   function main_function () {
     console.log("== 1. Definiendo semaforo ==");
-    semaforo = estaEnHorario() ? false : true;
+    semaforo = ventanaNoticias(ahoraOficialMs()) ? false : true;
     console.log("Semaforo " + semaforo);
 
     console.log("== 2. Comprobación inicial ==");
     actualizarReproduccion(true);  
   }
 
-  /*================================*/
-  /*== RECONEXIÓN DE LOS STREAMS ==*/
-  /*================================*/
-
-  [audio_news, audio_music].forEach(audio => {
-
-    audio.addEventListener("error", () => {
-      console.log("⚠️ Error en stream");
-      reconnectAudio(audio);
-    });
-
-    audio.addEventListener("ended", () => {
-      console.log("⚠️ Stream terminado");
-      reconnectAudio(audio);
-    });
-
-    audio.addEventListener("stalled", () => {
-      console.log("⚠️ Stream detenido");
-      reconnectAudio(audio);
-    });
-
-  });
-
   /*===========================*/
   /*==  INTERACCIÓN USUARIO  ==*/
   /*===========================*/
-  
-
-  // Pulsar el botón para empezar
   btn.textContent = "Haz click aquí para otorgar permisos";
   btn.addEventListener('click', () => {
-    setupVisualizer();
-    pin();
-    setTimeout(() => { main_function(); }, 1200);
+    setTimeout(() => { setupVisualizer(); }, 0);
+    setTimeout(() => { pin(); }, 0);
+    setTimeout(() => { main_function(); }, 0);
   },{once:true});
   
-
-
-
-  // Iniciar
-  obtenerHoraOficial();
-
-  // Actualizar cada segundo
-  setInterval(actualizarRelojes, 1000);
-
-  // Refrescar hora oficial dos minuto
-  setInterval(obtenerHoraOficial, 2*60000);
-
-</script>
-
-
-<script>
-
-  /*********************
-   * LISTENERS EVENTOS *
-   * *******************/
-
+  /*===========================*/
+  /*==     BOUNCE EFFECT     ==*/
+  /*===========================*/
   imgLogo.addEventListener('animationiteration', () => {
       const randomScale = (Math.random() * (1.5 - 1.15) + 1.15).toFixed(2);
       imgLogo.style.setProperty('--bounce-scale', randomScale);
   });
+
+  // Iniciar
+  obtenerHoraOficial();
+  // Actualizar cada segundo
+  setInterval(actualizarRelojes, 1000);
+  // Refrescar hora oficial dos minuto
+  setInterval(obtenerHoraOficial, 2*60000);
 
 </script>
 

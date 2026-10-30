@@ -1,32 +1,5 @@
-
-/*================*/
-/*==   FECHAS   ==*/
-/*================*/
-
-function convertirAHoraDecimal(horaStr) {
-    const [h, m, s = 0] = horaStr.split(":").map(Number);
-    return h + m / 60 + s / 3600;
-}
-  
-function horaActualDecimal() {
-    const ahora = new Date();
-    if(timetext){
-    console.log(ahora.getHours()+':'+ahora.getMinutes()+':'+ahora.getSeconds());
-    }
-    return ahora.getHours() + ahora.getMinutes() / 60 + ahora.getSeconds() / 3600;
-}
-
-function estaEnHorario() {
-    const actual = horaActualDecimal();
-    return horariosPermitidos.some(rango => {
-        const inicio = convertirAHoraDecimal(rango.inicio);
-        const fin = convertirAHoraDecimal(rango.fin);
-        return actual >= inicio && actual < fin;
-    });
-}
-
 /*===========================*/
-/*====    RELOJ DELAY    ====*/
+/*====    RELOJ OFICIAL    ====*/
 /*===========================*/
 
 let officialBaseTime = null;
@@ -47,6 +20,51 @@ async function obtenerHoraOficial() {
     }
 }
 
+// Desfase (ms) del reloj del dispositivo respecto al reloj oficial:
+// oficial = dispositivo + desfase. Si obtenerHoraOficial() aún no ha respondido,
+// o no hay conexión con el servicio de hora, se usa el reloj del dispositivo tal cual.
+function desfaseRelojMs() {
+    if (officialBaseTime && localBaseTime) {
+        return officialBaseTime.getTime() - localBaseTime.getTime();
+    }
+    return 0;
+}
+
+function ahoraOficialMs() {
+    return Date.now() + desfaseRelojMs();
+}
+
+/*===========================*/
+/*==  VENTANAS DE NOTICIAS ==*/
+/*===========================*/
+
+// "HH:MM:SS" -> milisegundos de esa hora en el mismo día que "ref"
+function hmsAMs(hms, ref) {
+    const [h, m, s = 0] = hms.split(":").map(Number);
+    const d = new Date(ref);
+    d.setHours(h, m, s, 0);
+    return d.getTime();
+}
+
+// Ventana de noticias activa a la hora indicada (ms), o null.
+// horariosPermitidos son horas reales de emisión: en el stream de internet las noticias
+// entran en inicio + RETRASO_STREAM_S y salen en fin + RETRASO_STREAM_S. La conexión en
+// silencio empieza conexion_previa_s antes de la entrada. (Ajustes en el script de la página.)
+function ventanaNoticias(ahoraMs) {
+    for (const h of horariosPermitidos) {
+        const entradaMs = hmsAMs(h.inicio, ahoraMs) + RETRASO_STREAM_S * 1000;
+        const salidaMs  = hmsAMs(h.fin, ahoraMs)    + RETRASO_STREAM_S * 1000;
+        if (ahoraMs >= entradaMs - conexion_previa_s * 1000 && ahoraMs < salidaMs) {
+            return { entradaMs, salidaMs };
+        }
+    }
+    return null;
+}
+
+/*===========================*/
+/*==  RELOJES EN PANTALLA  ==*/
+/*===========================*/
+
 // Formatear hora HH:MM:SS
 function formatTime(date) {
     return date.toLocaleTimeString('es-ES', {
@@ -66,7 +84,7 @@ function actualizarRelojes() {
         const officialNow = new Date(officialBaseTime.getTime() + elapsed);
 
         document.getElementById("officialTime").innerText = "Hora oficial " + formatTime(officialNow);
-        const minus_time = new Date(officialNow.getTime() - 5000);
+        const minus_time = new Date(officialNow.getTime() - RETRASO_STREAM_S * 1000);
         document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time) + "\n\n\n";
     }
 
@@ -87,7 +105,9 @@ function setupVisualizer() {
 }
 
 function isSomethingPlaying() {
-  return !audio_news.paused || !audio_music.paused || !audio_prep.paused;
+  // El sonido de cada stream puede estar en su <audio> original o en el de relevo
+  // (traspaso de script-livesound.js), así que se pregunta a cada instancia.
+  return liveNews.playing || liveMusic.playing || !audio_prep.paused;
 }
 
 /*==================================*/
@@ -154,5 +174,3 @@ function roundRect(ctx, x, y, width, height, radius) {
     ctx.roundRect(x, y, width, height, radius);
     ctx.fill();
 }
-
-

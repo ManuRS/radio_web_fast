@@ -26,13 +26,13 @@ if (news_volume) {
   // Volumen de las noticias
   news_volume.addEventListener("input", (e) => {
     max_news_volume = e.target.value;
-    audio_news.volume = e.target.value;
+    liveNews.volume = Number(e.target.value);
   });
 
   // Volumen de la música
   music_volume.addEventListener("input", (e) => {
     max_music_volume = e.target.value;
-    audio_music.volume = e.target.value;
+    liveMusic.volume = Number(e.target.value);
   });
 }
 
