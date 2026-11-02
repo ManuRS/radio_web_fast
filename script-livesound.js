@@ -179,7 +179,7 @@ function createLiveSound(options = {}) {
     hls.destroy();
   }
 
-  // Volumen fijado desde fuera con setVolume(). Si es null, se usa el slider #volumeSlider.
+  // Volumen fijado desde fuera con setVolume(). Si es null, se usa el slider #volume-slider.
   let volumeOverride = null;
 
   function applyCurrentVolume(audio) {
@@ -188,7 +188,7 @@ function createLiveSound(options = {}) {
       return;
     }
 
-    const slider = document.getElementById("volumeSlider");
+    const slider = document.getElementById("volume-slider");
 
     if (!slider) return;
 
@@ -309,7 +309,7 @@ function createLiveSound(options = {}) {
       audio.pause();
     }
 
-    // El nuevo carga en silencio hasta que ya esté sonando.
+    // Antes se cargaba en silencio hasta que ya esté sonando.
     // relief.muted = true;
     relief.volume = audio.volume;
 
@@ -378,22 +378,10 @@ function createLiveSound(options = {}) {
 
     destroyCurrentHls();
 
-    if (previousAudio) {
-      previousAudio.pause();
-      previousAudio.removeAttribute("src");
-      previousAudio.load();
-      previousAudio.muted = false;
-    }
-
-    if (heldAudio && heldAudio !== previousAudio) {
-      heldAudio.pause();
-      heldAudio.removeAttribute("src");
-      heldAudio.load();
-    }
-
-    if (retiring && retiring !== previousAudio && retiring !== heldAudio) {
-      releaseAudioElement(retiring, retiringHlsInstance);
-    }
+    // Cada elemento se libera una sola vez (pueden coincidir)
+    new Set([previousAudio, heldAudio, retiring]).forEach(audio => {
+      if (audio) releaseAudioElement(audio, audio === retiring ? retiringHlsInstance : null);
+    });
 
   }
 
@@ -1095,7 +1083,7 @@ function createLiveSound(options = {}) {
 
       console.warn("Pausa externa (notificación o sistema). La emisora queda en pausa.");
 
-      // CAMBIO: antes stopCurrentPlayback(), que cerraba la sesión y hacía
+      // Cambio, antes stopCurrentPlayback(), que cerraba la sesión y hacía
       // desaparecer la notificación.
       enterPausedState(audio);
     });
@@ -1213,24 +1201,5 @@ const __defaultLive = createLiveSound();
 // Las páginas de tarjetas: se vinculan al cargar los <audio> que ya hay en el HTML.
 document.querySelectorAll(".card audio").forEach(__defaultLive.bindAudioEvents);
 
-// Mismos nombres globales que tenía el fichero antes de ser una fábrica.
-Object.assign(window, {
-  playPause: __defaultLive.playPause,
-  stopCurrentPlayback: __defaultLive.stopCurrentPlayback,
-  bindAudioEvents: __defaultLive.bindAudioEvents,
-  getCardAudio: __defaultLive.getCardAudio,
-  applyCurrentVolume: __defaultLive.applyCurrentVolume,
-  resumeLive: __defaultLive.resumeLive,
-  enterPausedState: __defaultLive.enterPausedState,
-  recoverIfStalled: __defaultLive.recoverIfStalled,
-  reconnectNow: __defaultLive.reconnectNow,
-  reconnectAudio: __defaultLive.reconnectAudio,
-  startStream: __defaultLive.startStream,
-  isPlaybackRequested: __defaultLive.isPlaybackRequested,
-  getStreamSrc: __defaultLive.getStreamSrc,
-  isHlsSource: __defaultLive.isHlsSource
-});
-
-["currentAudio", "currentCard", "pausedAudio", "pausedCard"].forEach(name => {
-  Object.defineProperty(window, name, { get: () => __defaultLive[name], configurable: true });
-});
+// Único nombre que usa el HTML (onclick="playPause(this)")
+window.playPause = __defaultLive.playPause;

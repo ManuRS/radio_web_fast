@@ -85,7 +85,7 @@ function actualizarRelojes() {
 
         document.getElementById("officialTime").innerText = "Hora oficial " + formatTime(officialNow);
         const minus_time = new Date(officialNow.getTime() - RETRASO_STREAM_S * 1000);
-        document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time) + "\n\n\n";
+        document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time);
     }
 
 }
@@ -100,7 +100,25 @@ const canvasCtx = canvas.getContext('2d');
 const bufferLength = 10; // Número de barras
 let dataArray = new Array(bufferLength).fill(0);
 
+// El tamaño del lienzo y el color de las barras no cambian en cada frame:
+// se calculan una vez y solo se repiten cuando de verdad cambian.
+let colorOnda = '';
+
+function ajustarLienzo() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+}
+
+function leerColorOnda() {
+  colorOnda = getComputedStyle(document.documentElement).getPropertyValue('--live-fakewaves').trim();
+}
+
+window.addEventListener('resize', ajustarLienzo);
+window.addEventListener('radio-theme-change', leerColorOnda);   // lo lanza applyTheme() en script-interfaz.js
+
 function setupVisualizer() {
+  ajustarLienzo();
+  leerColorOnda();
   draw();
 }
 
@@ -122,9 +140,6 @@ let noiseHeights = Array.from({ length: bufferLength }, () => Math.random() * 10
 function draw() {
     requestAnimationFrame(draw);
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
     const playing = isSomethingPlaying();
     const time = Date.now();
 
@@ -144,17 +159,15 @@ function draw() {
 
             // Suavizado de seguridad
             dataArray[i] = dataArray[i] + (targetHeight - dataArray[i]) * 0.3;
-          
-            canvasCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--live-fakewaves').trim();
+    
         } else {
-            dataArray[i] *= 1.0;
-            noiseHeights[i] *= 1.0;
-            canvasCtx.fillStyle = '#e64c3c';
-            imgLogo.src = "../resources/live/off.png";
+            // Sin sonido las barras quedan quietas y en rojo, y el logo pasa a "off"
+            imgLogo.src = imgLogo_off;
         }
     }
 
     // Renderizado
+    canvasCtx.fillStyle = playing ? colorOnda : '#e64c3c';
     canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
     const barWidth = (canvas.width / bufferLength) * 0.6;
     const spacing = (canvas.width / bufferLength) * 0.4;

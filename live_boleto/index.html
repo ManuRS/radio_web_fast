@@ -18,7 +18,7 @@
 
   <style>
 
-    html, body { **overflow: hidden; **touch-action: none; }
+    html, body { overflow: hidden; touch-action: none; }
 
     /* Emisora de música seleccionada: su texto en negrita */
     .buttonExtraBol[data-music] { font-weight: 400; }
@@ -33,7 +33,7 @@
   <h1>Solo boletines en directo</h1>
 
   <!-- Botón modo oscuro, la posición no se define aquí -->
-  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false" style="margin: 0;">
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false" style="margin-top: 0;">
     <span id="theme-label">Modo oscuro</span>
     <span id="theme-icon" aria-hidden="true">🌙</span>
   </button>
@@ -49,12 +49,12 @@
   </div>
 
   <!-- Imagen emisora sonando -->
-  <div style="width: 100%; text-align: center; margin-bottom: 20px; margin-top: 25px;">
+  <div style="width: 100%; text-align: center; margin-bottom: 15px; margin-top: 30px;">
     <img id="logo-emisora" alt="Logo Emisora" style="height: 60px; object-fit: contain; transition: opacity 0.3s;">
   </div>
   
   <!-- Visualizador --> 
-  <canvas id="visualizer" style="height: 80px; margin-bottom: 25px; margin-top: 5px;"></canvas>
+  <canvas id="visualizer" style="height: 80px; margin-bottom: 15px; margin-top: 10px;"></canvas>
 
   <!-- Reproductor oculto -->
   <div id="live_news" hidden><audio id="radio_news" style="display:none;"></audio></div>
@@ -62,20 +62,19 @@
   <div id="live_music" hidden><audio id="radio_music" style="display:none"></audio></div>
 
   <!-- Sliders para el volumen -->
-  <div id="status_news" class="status">Volumen noticias</div><br>
-  <input type="range" id="radio_news_volume" class="volume-style" min="0.001" max="1" step="0.01" value="1"><br>
+  <div id="status_news" class="status">Volumen noticias</div>
+  <input type="range" id="radio_news_volume" class="volume-style" min="0.001" max="1" step="0.01" value="1" style="margin-top: 15px;">
 
-  <div id="status_music" class="status">Volumen música</div><br>
-  <input type="range" id="radio_music_volume" class="volume-style" min="0.001" max="1" step="0.01" value="0.5"><br>
+  <div id="status_music" class="status" style="margin-top: 20px;">Volumen música</div>
+  <input type="range" id="radio_music_volume" class="volume-style" min="0.001" max="1" step="0.01" value="0.5" style="margin-top: 15px;">
 
   <!-- Botón de reproducción único -->
-  <button id="playButton">Algo ha salido mal</button><br>
+  <button id="playButton" style="margin-top: 40px; margin-bottom: 25px;">Algo ha salido mal</button>
 
   <!-- Enlaces para la música -->
   <div id="status_modo_musica" class="status">Cargar modo música</div><br>
 
   <!-- Botones para modo música -->
-
   <div style="display: inline-flex; gap: 10px; align-items: center; font-size: 1rem;">
     <a href="?music=2" class="buttonExtraBol" data-music="2">LOS40</a>
     <a href="?music=3" class="buttonExtraBol" data-music="3">CLASSIC</a>
@@ -87,12 +86,12 @@
     <a href="?music=5" class="buttonExtraBol" data-music="5">ROCKFM</a>
     <a href="?music=6" class="buttonExtraBol" data-music="6">HITFM</a>
     <a href="?music=1" class="buttonExtraBol" data-music="1">SOLO NOTICIAS</a>
-  </div> <br>
+  </div>
 
   <!-- Reloj -->
-  <div class="time" id="officialTime"></div>
+  <div class="time" id="officialTime" style="margin-top: 20px;"></div>
   <div class="time" id="deviceTime"></div>
-  <div class="time" id="offsetTime"></div>
+  <div class="time" id="offsetTime" style="margin-bottom: 20px;"></div>
 
   <script src="../script-interfaz.js"></script>
   <script src="../script-eventos.js"></script>
@@ -230,18 +229,19 @@
   // Horas REALES de emisión (como en el estudio o en una FM). Empiezan antes de las XX:00
   // para captar la aproximación y los pitos. Aquí NO se suma el retraso del stream.
   const horariosPermitidos = [
-    { inicio: "07:59:44", fin: "08:20:18" },
-    { inicio: "08:59:44", fin: "09:04:26" },
-    { inicio: "09:59:44", fin: "10:05:55" },
-    { inicio: "10:59:44", fin: "11:05:55" },
-    { inicio: "11:59:44", fin: "12:20:18" },
-    { inicio: "12:59:44", fin: "13:06:30" },
-    { inicio: "13:59:44", fin: "14:06:26" },
-    { inicio: "15:59:44", fin: "16:05:25" },
-    { inicio: "16:59:44", fin: "17:05:25" },
-    { inicio: "17:59:44", fin: "18:05:25" },
-    { inicio: "18:59:44", fin: "19:04:32" },
-    { inicio: "19:59:44", fin: "20:25:18" },
+    { inicio: "07:59:55", fin: "08:20:10" },
+    { inicio: "08:59:55", fin: "09:04:00" },
+    { inicio: "09:59:55", fin: "10:05:50" },
+    { inicio: "10:59:38", fin: "11:05:50" },
+    { inicio: "11:59:38", fin: "12:05:50" },
+    { inicio: "12:59:38", fin: "13:06:40" },
+    { inicio: "13:59:38", fin: "14:06:10" },
+    { inicio: "15:59:38", fin: "16:05:20" },
+    { inicio: "16:59:38", fin: "17:05:20" },
+    { inicio: "17:59:38", fin: "18:05:20" },
+    { inicio: "18:59:38", fin: "19:05:00" },
+    { inicio: "19:59:38", fin: "20:25:10" },
+    //{ inicio: "21:26:30", fin: "21:26:50" },
   ];
 
   /*=================================*/

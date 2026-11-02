@@ -4,6 +4,7 @@ const CACHE_NAME = "radio-full-cache-v70";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
+  "./hls.min-173.js"
 
   "./radio_boletos.html",
   "./radio_daily.html",
@@ -21,6 +22,7 @@ const FILES_TO_CACHE = [
   "./script-fastload.js",
   "./script-interfaz.js",
   "./script-livesound.js",
+  "./script-serviceworker.js",
 
   "./live_boleto/script-extrabol.js",
 

@@ -154,7 +154,7 @@
   function actualizarTitulos(titulo) {
     document.title = titulo;
 
-    const encabezado = document.querySelector("h1");
+    const encabezado = document.querySelector("h3") || document.querySelector("h1");
 
     if (encabezado) {
       encabezado.textContent = titulo;
@@ -187,7 +187,7 @@
     `;
     document.head.appendChild(estilo);
 
-    const cantidad = 72;
+    const cantidad = 60;
     const ancho = window.innerWidth;
     const alto = window.innerHeight;
     const elementos = [];
@@ -268,7 +268,7 @@
       if (quedan > 0) {
         animacionId = requestAnimationFrame(animar);
       } else {
-        cancelarAnimationFrame(animacionId);
+        cancelAnimationFrame(animacionId);
         estilo.remove();
       }
     }
@@ -305,7 +305,7 @@
 
     document.head.appendChild(estilo);
 
-    const cantidad = 72;
+    const cantidad = 60;
     const ancho = window.innerWidth;
     const alto = window.innerHeight;
     const elementos = [];
@@ -324,7 +324,7 @@
 
       document.body.appendChild(emoji);
 
-      const inicioX = ancho * (0.25 + Math.random() * 0.5);
+      const inicioX = ancho * (0.3 + Math.random() * 0.4);
       const inicioY = alto + 30;
 
       elementos.push({
@@ -335,12 +335,12 @@
         y: inicioY,
 
         // Impulso inicial del cañón.
-        vx: (Math.random() - 0.5) * 3.5,
-        vy: -(alto * (0.65 + Math.random() * 0.6)) / 1.6,
+        vx: (Math.random() - 0.5) * 1.0,
+        vy: -(alto * (0.55 + Math.random() * 0.55)) / 1.6,
 
         // Cada emoji tiene su propia física.
         gravedad: alto * (0.75 + Math.random() * 0.45) / 8,
-        balanceo: 3 + Math.random() * 4,
+        balanceo: 2 + Math.random() * 2,
         frecuencia: 1.5 + Math.random() * 2,
         fase: Math.random() * Math.PI * 2,
         giro: (Math.random() - 0.5) * 220,
@@ -409,7 +409,7 @@
       if (quedan > 0) {
         animacionId = requestAnimationFrame(animar);
       } else {
-        cancelarAnimationFrame(animacionId);
+        cancelAnimationFrame(animacionId);
         estilo.remove();
       }
     }
