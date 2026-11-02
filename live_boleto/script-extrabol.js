@@ -8,14 +8,26 @@ let localBaseTime = null;
 // Obtener hora oficial desde internet
 async function obtenerHoraOficial() {
     try {
+        const t0 = Date.now();
         const response = await fetch("https://time.now/developer/api/timezone/Europe/Madrid");
-        const data = await response.json();
+        const t1 = Date.now();
 
-        officialBaseTime = new Date(data.datetime);
-        localBaseTime = new Date();
+        if (!response.ok) throw new Error("HTTP " + response.status);
+
+        const data = await response.json();
+        const oficial = new Date(data.datetime);
+
+        // Una respuesta sin fecha válida daría un desfase NaN y la página creería que
+        // nunca es horario de noticias (y cortaría las que estén sonando).
+        if (Number.isNaN(oficial.getTime())) throw new Error("fecha no válida");
+
+        officialBaseTime = oficial;
+
+        // El servidor fechó la respuesta a mitad del viaje de ida y vuelta, no cuando llegó.
+        localBaseTime = new Date((t0 + t1) / 2);
 
     } catch (err) {
-        console.log("⚠️ No se pudo obtener la hora oficial");
+        console.log("⚠️ No se pudo obtener la hora oficial", err);
         document.getElementById("officialTime").innerText = "Hora oficial no disponible"
     }
 }
@@ -128,6 +140,31 @@ function isSomethingPlaying() {
   return liveNews.playing || liveMusic.playing || !audio_prep.paused;
 }
 
+
+// Un único sitio decide qué logo se ve y si rebota. Los flujos de la página dicen qué
+// logo toca (pedirLogo) y draw() lo pinta: ese logo mientras algo suena, y "off" sin rebote
+// mientras no suena nada. Cuando vuelve el sonido (reconexión, play de la notificación...)
+// reaparece solo el logo que toca, sin que nadie tenga que volver a pedirlo.
+let logoIntencion = null;   // { src, bounce, valido }
+
+// valido (opcional): mientras devuelva false, esa petición ya no vale (p. ej. un pin que ya terminó).
+function pedirLogo(src, bounce = false, valido = null) {
+  logoIntencion = { src, bounce, valido };
+}
+
+function quitarRebote() {
+  if (logoIntencion) logoIntencion = { ...logoIntencion, bounce: false };
+}
+
+function pintarLogo(sonando) {
+  if (logoIntencion && logoIntencion.valido && !logoIntencion.valido()) logoIntencion = null;
+
+  const { src, bounce } = (sonando && logoIntencion) ? logoIntencion : { src: imgLogo_off, bounce: false };
+
+  if (imgLogo.getAttribute('src') !== src) imgLogo.src = src;
+  imgLogo.classList.toggle('logo-sonando', bounce);
+}
+
 /*==================================*/
 /*== VISUALIZADOR ORGÁNICO (FAKE) ==*/
 /*==================================*/
@@ -159,12 +196,11 @@ function draw() {
 
             // Suavizado de seguridad
             dataArray[i] = dataArray[i] + (targetHeight - dataArray[i]) * 0.3;
-    
-        } else {
-            // Sin sonido las barras quedan quietas y en rojo, y el logo pasa a "off"
-            imgLogo.src = imgLogo_off;
         }
     }
+
+    // Sin sonido las barras quedan quietas y en rojo, y el logo pasa a "off" (sin rebote)
+    pintarLogo(playing);
 
     // Renderizado
     canvasCtx.fillStyle = playing ? colorOnda : '#e64c3c';

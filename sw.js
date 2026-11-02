@@ -147,7 +147,7 @@ self.addEventListener('install', (event) => {
 
       // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
       return Promise.allSettled(
-        FILES_TO_CACHE.map(url => cache.add(url))
+        FILES_TO_CACHE.map(url => cache.add(new Request(url, { cache: 'reload' })))
       ).then(resultados => {
 
         // Avisar de los archivos que han fallado
@@ -199,15 +199,19 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: cache-first
+// Fetch: cache-first, solo para los ficheros de la propia app
 self.addEventListener('fetch', (event) => {
+
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Streams de radio, RSS, hora oficial, mapas...: no pasan por el service worker
+  // (no se cachean y así su transmisión no depende de él).
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+
+
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Si el archivo está en la caché, lo devolvemos. Si no, lo pedimos a la red.
-      return response || fetch(event.request);
-    }).catch(() => {
-      // Opcional: Si falla todo (estás offline y no está en caché)
-      console.log('Service Worker fetch event exception');
-    })
+    // ignoreSearch: live_boleto/index.html?music=2 debe encontrar live_boleto/index.html
+    caches.match(req, { ignoreSearch: true }).then((response) => response || fetch(req))
   );
 });

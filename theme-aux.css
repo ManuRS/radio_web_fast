@@ -38,7 +38,7 @@
 
 /* Punto del slider para Firefox */
 #volume-slider::-moz-range-thumb,
-.volume-style,::-moz-range-thumb {
+.volume-style::-moz-range-thumb {
   width: 24px;
   height: 24px;
   border: none; /* Quita el borde por defecto */

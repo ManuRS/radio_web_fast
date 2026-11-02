@@ -276,7 +276,7 @@
 
   // Pin de inicio de desconexión
   function desco_ini(){
-    imgLogo.src = imgLogo_pin;
+    pedirLogo(imgLogo_pin, false, () => !audio_prep.paused);   // vale mientras suena el pin
     audio_prep.volume = ganancia_pin_a_noticias*max_news_volume;
     audio_prep.src = "../sounds/desco_ini_gen.mp3";
     audio_prep.play();
@@ -284,7 +284,7 @@
 
   // Pin de fin de desconexión
   function desco_fin(){
-    imgLogo.src = imgLogo_pin;
+    pedirLogo(imgLogo_pin, false, () => !audio_prep.paused);   // vale mientras suena el pin
     // Destino música; si no hay música, queda el nivel de siempre sobre las noticias
     audio_prep.volume = (musicURL != "none") ? ganancia_pin_a_musica*max_music_volume : 0.7*max_news_volume;
     audio_prep.play();
@@ -457,7 +457,7 @@
       () => {
         // Llega la hora
         noticiasEnCurso = true;
-        imgLogo.src = imgLogo_news;
+        pedirLogo(imgLogo_news);
         btn.style.background = 'green';
         btn.textContent = "Trasmitiendo noticias en directo";
         console.log("Transmisión activada");
@@ -481,13 +481,8 @@
 
   /* Logo de lo que suena en el turno de la música */
   function mostrarLogoMusica() {
-    if (musicURL != "none") {
-      imgLogo.src = imgLogo_music;
-      imgLogo.classList.add('logo-sonando');
-    } else {
-      imgLogo.src = imgLogo_off;
-      imgLogo.classList.remove('logo-sonando');
-    }
+    if (musicURL != "none") pedirLogo(imgLogo_music, true);   // rebota mientras suena
+    else pedirLogo(imgLogo_off);
   }
 
   /* Reproducir música: conecta ya, en silencio, y entra con fade in pasado "delay" ms */
@@ -515,7 +510,7 @@
       setTimeout(() => {
         noticiasEnCurso = true;
         cancelaEntradaMusica();
-        imgLogo.classList.remove('logo-sonando');
+        quitarRebote();
         clearInterval(fadeMusic_ID);
         fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID);}, 100);
       }, delay);
@@ -547,7 +542,7 @@
     };
 
     if (habia_musica) {
-      imgLogo.classList.remove('logo-sonando');
+      quitarRebote();
       clearInterval(fadeMusic_ID);
       fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, aplicar);}, 100);
     } else {
