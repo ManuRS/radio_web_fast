@@ -180,8 +180,8 @@ if ('mediaSession' in navigator && 'MediaMetadata' in window) {
       title: 'Radio Web Fast',
       artwork: [
         {
-          src: `${appBase}resources/radio_mini.jpeg`,
-          type: 'image/jpeg'
+          src: `${appBase}resources/notificacion.webp`,
+          type: 'image/webp'
         }
       ]
     });

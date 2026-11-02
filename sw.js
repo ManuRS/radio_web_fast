@@ -4,7 +4,7 @@ const CACHE_NAME = "radio-full-cache-v70";
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
-  "./hls.min-173.js"
+  "./hls.min-173.js",
 
   "./radio_boletos.html",
   "./radio_daily.html",
@@ -53,6 +53,7 @@ const FILES_TO_CACHE = [
   "./resources/mn.jpeg",
   "./resources/radio_classic.webp",
   "./resources/federico.webp",
+  "./resources/notificacion.webp",
 
   "./resources/favicon.ico",
   "./resources/favicon2.ico",
