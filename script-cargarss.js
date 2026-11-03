@@ -16,7 +16,7 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type
     const items = Array.from(feed.items).slice(0, numElems_arg);
 
     // Definir image si queremos la portada
-    imagen_select = defineImagenPodcast (feed, imagen_type);
+    const imagen_select = defineImagenPodcast (feed, imagen_type);
 
     // Rellenar cada contenedor con su audio
     items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select) );
@@ -66,7 +66,7 @@ async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedore
     const items = feed.items;
 
     // Definir image si queremos la portada
-    imagen_select = defineImagenPodcast (feed, imagen_type, imagen_type_global);
+    const imagen_select = defineImagenPodcast (feed, imagen_type, imagen_type_global);
 
     // Contador
     let ncaps_encontrados=0;
@@ -98,18 +98,35 @@ async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedore
 
 /******************************************
  * 
+ * ESCAPAR TEXTO PARA HTML
+ * 
+ * ****************************************/
+function escaparHtml(texto) {
+  return String(texto)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/******************************************
+ * 
  * CONSTRUIR CAPITULO
  * 
  * ****************************************/
 function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select){
 
-  const titulo = item.querySelector("title")?.textContent || "Sin título";
+  // Todo lo que viene del feed se escapa: se inserta como HTML y un título con "<" o "&"
+  // (o algo peor) no debe poder romper la página ni colar etiquetas.
+  const titulo = escaparHtml(item.querySelector("title")?.textContent || "Sin título");
 
   const pubDate = item.querySelector("pubDate")?.textContent || null;
   const antiguedad = pubDate ? tiempoDesde(pubDate) : "";
   const fecha = pubDate ? formatearFecha(pubDate) : "";
 
-  const audioUrl = item.querySelector("enclosure")?.getAttribute("url") || null;
+  const audioUrlFeed = item.querySelector("enclosure")?.getAttribute("url") || null;
+  const audioUrl = audioUrlFeed ? escaparHtml(audioUrlFeed) : null;
   imagen_select = defineImagenCapitulo(item, imagen_select);
 
 
@@ -188,7 +205,7 @@ function defineImagenPodcast (feed, imagen_type, imagen_type_global=null) {
   // Caso queremos usar la portada del podcast
   if (imagen_type == "general") {
     const imageUrl = feed.imageUrl;
-    portada_podcast = imageUrl ? `<img src="${imageUrl}" alt="Podcast">` : "";
+    const portada_podcast = imageUrl ? `<img src="${escaparHtml(imageUrl)}" alt="Podcast">` : "";
     imagen_select = portada_podcast;
   }
 
@@ -214,7 +231,8 @@ function defineImagenCapitulo(item, imagen_select) {
     // El item es un capitulo, por lo tanto sacamos su imagen y a correr
     const imageUrlElement = item.getElementsByTagName('itunes:image')[0];
     const imageUrl = imageUrlElement ? imageUrlElement.getAttribute('href') : null;
-    return imageUrl ? `<img src="${imageUrl}" alt="${item.nombre}">` : "";
+    const titulo = item.querySelector("title")?.textContent || "";
+    return imageUrl ? `<img src="${escaparHtml(imageUrl)}" alt="${escaparHtml(titulo)}">` : "";
 
   }
 
