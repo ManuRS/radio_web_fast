@@ -247,7 +247,29 @@ function crearContenedoresPodcasts(podcasts, listaDiv) {
  * Descargar un RSS
  * 
  * ****************************************/
-async function descargarFeedRss(url, antiCache=true){
+
+// Cada feed se descarga una sola vez por carga de página. Varias entradas de una misma
+// página pueden usar el mismo feed (por ejemplo, distintas secciones de un programa) y
+// comparten esa descarga, también cuando llegan en llamadas distintas a cargarRSS_bycaps.
+// Es memoria de esta página solamente: al recargar se vuelve a pedir, así que sigue
+// siendo siempre reciente.
+const feedsPedidos = new Map();
+
+function descargarFeedRss(url, antiCache=true){
+  const clave = `${antiCache}|${url}`;
+
+  if (!feedsPedidos.has(clave)) {
+    const descarga = pedirFeedRss(url, antiCache);
+    feedsPedidos.set(clave, descarga);
+
+    // Si falla, el error no se queda guardado: la siguiente petición lo intenta de nuevo
+    descarga.catch(() => feedsPedidos.delete(clave));
+  }
+
+  return feedsPedidos.get(clave);
+}
+
+async function pedirFeedRss(url, antiCache=true){
 
   let res;
 
@@ -270,6 +292,9 @@ async function descargarFeedRss(url, antiCache=true){
     // Fetch simple
     res = await fetch(url);
   }
+
+  // Un error HTTP no se interpreta como un feed vacío (y así no se comparte como tal)
+  if (!res.ok) throw new Error(`HTTP ${res.status} al descargar ${url}`);
 
   // Preparacion del resultado
   const texto = await res.text();
