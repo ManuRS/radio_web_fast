@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v74";
+const CACHE_NAME = "radio-full-cache-v75";
 
 const FILES_TO_CACHE = [
   "./",
@@ -139,6 +139,18 @@ const FILES_TO_CACHE = [
   "./sounds/radio_madrid.mp3",
 ];
 
+// Cloudflare Pages redirige /live/index.html -> /live/ y /x.html -> /x.
+// Una respuesta con redirected=true no se puede servir a una navegación (ERR_FAILED),
+// así que se guarda una copia limpia, sin la marca de redirección.
+async function limpiarRedireccion(res) {
+  if (!res.redirected) return res;
+  return new Response(await res.blob(), {
+    status: res.status,
+    statusText: res.statusText,
+    headers: res.headers
+  });
+}
+
 // Instalación
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -147,7 +159,12 @@ self.addEventListener('install', (event) => {
 
       // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
       return Promise.allSettled(
-        FILES_TO_CACHE.map(url => cache.add(new Request(url, { cache: 'reload' })))
+        FILES_TO_CACHE.map(async (url) => {
+          const req = new Request(url, { cache: 'reload' });
+          const res = await fetch(req);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          await cache.put(req, await limpiarRedireccion(res));
+        })
       ).then(resultados => {
 
         // Avisar de los archivos que han fallado
