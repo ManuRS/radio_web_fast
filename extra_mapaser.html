@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Mapa de emisoras de la SER</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css" />
 
   <link rel="stylesheet" href="theme-colors.css">
   <link rel="stylesheet" href="theme-aux.css">
@@ -135,8 +135,8 @@
   <script type="importmap">
     {
       "imports": {
-        "leaflet": "https://unpkg.com/leaflet/dist/leaflet-src.esm.js",
-        "maplibre-gl": "https://unpkg.com/maplibre-gl/dist/maplibre-gl.mjs"
+        "leaflet": "https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js",
+        "maplibre-gl": "https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs"
       }
     }
   </script>
@@ -168,7 +168,7 @@
     import * as L from 'leaflet';
     import * as maplibregl from 'maplibre-gl';
 
-    import {maplibreGL} from 'https://unpkg.com/@maplibre/maplibre-gl-leaflet/dist/leaflet-maplibre-gl.mjs';
+    import {maplibreGL} from 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.4/dist/leaflet-maplibre-gl.mjs';
 
     const ESTILOS = {
       light: 'https://tiles.openfreemap.org/styles/positron',
