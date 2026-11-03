@@ -282,10 +282,24 @@
     }
   }
 
+  // Cada pin suena al volumen del stream al que da paso: los que van a las noticias, al
+  // volumen de las noticias; los que van a la música, al de la música. Si mientras suena un
+  // pin se mueve el slider correspondiente, el pin lo sigue (lo llama script-interfaz.js).
+  let volumenPin = () => max_news_volume;   // da el volumen que le toca al pin actual
+
+  function ponerVolumenPin(calculo) {
+    volumenPin = calculo;
+    audio_prep.volume = calculo();
+  }
+
+  function seguirVolumenPin() {
+    if (!audio_prep.paused) audio_prep.volume = volumenPin();
+  }
+
   // Pin de inicio de desconexión
   function desco_ini(){
     pedirLogo(imgLogo_pin, false, () => !audio_prep.paused);   // vale mientras suena el pin
-    audio_prep.volume = ganancia_pin_a_noticias*max_news_volume;
+    ponerVolumenPin(() => ganancia_pin_a_noticias*max_news_volume);   // destino: noticias
     audio_prep.src = "../sounds/desco_ini_gen.mp3";
     audio_prep.play();
   }
@@ -294,7 +308,7 @@
   function desco_fin(){
     pedirLogo(imgLogo_pin, false, () => !audio_prep.paused);   // vale mientras suena el pin
     // Destino música; si no hay música, queda el nivel de siempre sobre las noticias
-    audio_prep.volume = (musicURL != "none") ? ganancia_pin_a_musica*max_music_volume : 0.7*max_news_volume;
+    ponerVolumenPin(() => (musicURL != "none") ? ganancia_pin_a_musica*max_music_volume : 0.7*max_news_volume);
     audio_prep.play();
   }
 
@@ -327,8 +341,18 @@
     }
   }
 
-  // Pin generico
+  // Pin generico (el del primer clic). Va al stream que empezará a sonar a continuación,
+  // el mismo criterio que usa actualizarReproduccion(true): noticias si ya es el minuto clave
+  // (o no hay música), música en cualquier otro caso.
   function pin(){
+    const ventana = ventanaNoticias(ahoraOficialMs());
+    const vaANoticias = (musicURL == "none") ||
+      (ventana !== null && ahoraOficialMs() >= inicioMinutoClave(ventana.entradaMs));
+
+    ponerVolumenPin(vaANoticias
+      ? () => ganancia_pin_a_noticias*max_news_volume
+      : () => ganancia_pin_a_musica*max_music_volume);
+
     audio_prep.src = "../sounds/pin_noid.mp3";
     audio_prep.play();
   }

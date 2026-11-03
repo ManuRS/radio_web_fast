@@ -28,6 +28,7 @@ if (news_volume) {
     max_news_volume = Number(e.target.value);
     // Si las noticias aún esperan conectadas en silencio, solo se guarda el máximo
     if (noticiasAudibles) liveNews.volume = max_news_volume;
+    seguirVolumenPin();   // si suena un pin hacia las noticias, lo acompaña
   });
 
   // Volumen de la música
@@ -35,6 +36,7 @@ if (news_volume) {
     max_music_volume = Number(e.target.value);
     // Si la música aún espera conectada en silencio, solo se guarda el máximo
     if (musicaAudible) liveMusic.volume = max_music_volume;
+    seguirVolumenPin();   // si suena un pin hacia la música, lo acompaña
   });
 }
 
