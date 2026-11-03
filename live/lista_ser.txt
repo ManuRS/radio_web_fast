@@ -77,3 +77,19 @@ https://icecast.unitedradio.it/Radio105.mp3
 
 Kiss Kiss 	
 https://kisskiss.fluidstream.eu/KissKiss.aac
+
+----------------
+
+OTRAS - TV
+
+24H
+https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8
+
+CNN
+https://ds2c506obo7m8.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-7zjq3tdqasbg8/index.m3u8
+
+Sky news
+https://dqco14bu26p3z.cloudfront.net/30505/89006005/hls/master.m3u8?ads.xumo_channelId=89006005&ads.xumo_streamId=89006005
+
+CBS News
+https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8

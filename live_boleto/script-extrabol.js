@@ -50,12 +50,42 @@ function ahoraOficialMs() {
 /*==  VENTANAS DE NOTICIAS ==*/
 /*===========================*/
 
-// "HH:MM:SS" -> milisegundos de esa hora en el mismo día que "ref"
+// Los horarios de las noticias son horas de Madrid, esté donde esté el dispositivo.
+// Por eso el cálculo de ventanas no usa la zona horaria del móvil sino estas funciones.
+const ZONA_HORARIA = "Europe/Madrid";
+
+const formatoMadrid = new Intl.DateTimeFormat("en-US", {
+    timeZone: ZONA_HORARIA,
+    hourCycle: "h23",
+    year: "numeric", month: "numeric", day: "numeric",
+    hour: "numeric", minute: "numeric", second: "numeric"
+});
+
+// Fecha y hora que marca el reloj de pared de Madrid en un instante (ms)
+function partesMadrid(ms) {
+    const p = {};
+    for (const { type, value } of formatoMadrid.formatToParts(new Date(ms))) {
+        if (type !== "literal") p[type] = Number(value);
+    }
+    return p;   // year, month, day, hour, minute, second
+}
+
+// Diferencia entre la hora de Madrid y UTC en ese instante (1 h en invierno, 2 h en verano)
+function desfaseMadridMs(ms) {
+    const p = partesMadrid(ms);
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(ms / 1000) * 1000;
+}
+
+// "HH:MM:SS" (hora de Madrid) -> milisegundos de esa hora en el mismo día de Madrid que "ref"
 function hmsAMs(hms, ref) {
     const [h, m, s = 0] = hms.split(":").map(Number);
-    const d = new Date(ref);
-    d.setHours(h, m, s, 0);
-    return d.getTime();
+    const p = partesMadrid(ref);
+    const comoUTC = Date.UTC(p.year, p.month - 1, p.day, h, m, s);
+
+    // Se resta el desfase de Madrid. La segunda pasada corrige los días del cambio de hora.
+    let ms = comoUTC - desfaseMadridMs(comoUTC);
+    ms = comoUTC - desfaseMadridMs(ms);
+    return ms;
 }
 
 // Ventana de noticias activa a la hora indicada (ms), o null.
@@ -73,14 +103,26 @@ function ventanaNoticias(ahoraMs) {
     return null;
 }
 
+// "Minuto clave": el minuto XX:59 anterior a la hora en punto a la que van las noticias.
+// Devuelve el instante (ms) en que empieza, es decir, las XX:59:00 de esa ventana.
+// Se redondea a la hora más cercana a la entrada, porque la entrada cae a las XX:00:xx
+// (XX:59:xx de emisión + el retraso del stream), o poco antes si el retraso es pequeño.
+// Madrid va siempre a horas enteras de UTC, así que redondear el instante a la hora UTC
+// es redondear a la hora de Madrid, sea cual sea la zona horaria del dispositivo.
+function inicioMinutoClave(entradaMs) {
+    const hora = 60 * 60 * 1000;
+    return Math.round(entradaMs / hora) * hora - 60 * 1000;
+}
+
 /*===========================*/
 /*==  RELOJES EN PANTALLA  ==*/
 /*===========================*/
 
-// Formatear hora HH:MM:SS
-function formatTime(date) {
+// Formatear hora HH:MM:SS (en la zona horaria indicada; sin indicarla, la del dispositivo)
+function formatTime(date, timeZone) {
     return date.toLocaleTimeString('es-ES', {
-        hour12: false
+        hour12: false,
+        timeZone
     });
 }
 
@@ -95,9 +137,9 @@ function actualizarRelojes() {
         const elapsed = nowDevice - localBaseTime;
         const officialNow = new Date(officialBaseTime.getTime() + elapsed);
 
-        document.getElementById("officialTime").innerText = "Hora oficial " + formatTime(officialNow);
+        document.getElementById("officialTime").innerText = "Hora oficial " + formatTime(officialNow, ZONA_HORARIA);
         const minus_time = new Date(officialNow.getTime() - RETRASO_STREAM_S * 1000);
-        document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time);
+        document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time, ZONA_HORARIA);
     }
 
 }

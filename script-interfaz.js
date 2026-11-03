@@ -25,14 +25,16 @@ const music_volume = document.getElementById('radio_music_volume');
 if (news_volume) {
   // Volumen de las noticias
   news_volume.addEventListener("input", (e) => {
-    max_news_volume = e.target.value;
-    liveNews.volume = Number(e.target.value);
+    max_news_volume = Number(e.target.value);
+    // Si las noticias aún esperan conectadas en silencio, solo se guarda el máximo
+    if (noticiasAudibles) liveNews.volume = max_news_volume;
   });
 
   // Volumen de la música
   music_volume.addEventListener("input", (e) => {
-    max_music_volume = e.target.value;
-    liveMusic.volume = Number(e.target.value);
+    max_music_volume = Number(e.target.value);
+    // Si la música aún espera conectada en silencio, solo se guarda el máximo
+    if (musicaAudible) liveMusic.volume = max_music_volume;
   });
 }
 

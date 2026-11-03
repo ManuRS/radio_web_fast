@@ -8,6 +8,8 @@
 
   <meta name="theme-color" content="#f6f6f6" id="theme-color-meta">
 
+  <title>Solo boletines en directo</title>
+
   <script src="../script-fastload.js"></script>
 
   <link rel="stylesheet" href="../theme-colors.css">
@@ -149,6 +151,12 @@
 
   let max_news_volume = 1.0;
   let max_music_volume = 0.5;
+
+  // Un slider solo mueve el volumen real de su stream cuando ese stream ya está a la vista
+  // (suena o está subiendo con su fade in). Mientras espera conectado en silencio
+  // (volumen mínimo) el slider solo cambia el máximo al que subirá cuando le toque.
+  let noticiasAudibles = false;
+  let musicaAudible = false;
 
   // Cada stream tiene su propia instancia de script-livesound.js: reconexión,
   // watchdog, traspaso entre dos <audio> y pausa/play de la notificación.
@@ -336,8 +344,15 @@
     if (enHorario && !semaforo && safeMode) {
       /** CARGA - PERIODO DE REPRODUCCIÓN **/
 
-      // Noticias play
-      play_news();
+      if (ahoraOficialMs() < inicioMinutoClave(ventana.entradaMs)) {
+        // Todavía no es el minuto clave (XX:59): empieza la música y el ciclo de cada
+        // segundo (el bloque siguiente) prepara las noticias, el fade out y el pin.
+        play_music();
+      } else {
+        // Ya es el minuto clave (o más tarde): quedan segundos, así que no se pone música.
+        // Noticias play
+        play_news();
+      }
       
       // Intervalos rápidos
       clearInterval(interval);
@@ -441,6 +456,7 @@
   function play_news(delay=0) {
 
     liveNews.volume = 0.01;
+    noticiasAudibles = false;
     liveNews.startLive(card_news);
 
     semaforo = true;
@@ -464,6 +480,7 @@
       },
       () => {
         // Ya suena: fade in
+        noticiasAudibles = true;
         clearInterval(fadeAudio_ID);
         fadeAudio_ID = setInterval(() => {fadeInVol(liveNews, fadeAudio_ID, max_news_volume);}, 100);
       }
@@ -490,12 +507,14 @@
   function play_music(delay=0) {
     if (musicURL != "none"){
       liveMusic.volume = 0.01;
+      musicaAudible = false;
       liveMusic.startLive(card_music);
 
       cancelaEntradaMusica();
       cancelaEntradaMusica = programarEntrada(liveMusic, delay,
         mostrarLogoMusica,
         () => {
+          musicaAudible = true;
           clearInterval(fadeMusic_ID);
           fadeMusic_ID = setInterval(() => {fadeInVol(liveMusic, fadeMusic_ID, max_music_volume);}, 300);
         }
