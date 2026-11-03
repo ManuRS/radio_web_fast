@@ -59,13 +59,17 @@
       { nombre: "Hora 14", url: "https://fapi-top.prisasd.com/podcast/playser/hora_14_fin_de_semana/itunestfp/podcast.xml", capitulo: ["Hora 14 Fin de Semana ("] },
       { nombre: "Hora 25", url: "https://fapi-top.prisasd.com/podcast/playser/hora_25_fin_de_semana/itunestfp/podcast.xml", capitulo: ["Hora 25 Fin de Semana ("] },
 
+    ];
+
+    const podcasts2 = [
+
       { nombre: "Punto de Fuga", url: "https://fapi-top.prisasd.com/podcast/playser/punto_de_fuga/itunestfp/podcast.xml", capitulo: ["Punto de Fuga"] },
       { nombre: "Nadie Sabe Nada", url: "https://fapi-top.prisasd.com/podcast/playser/nadie_sabe_nada/itunestfp/podcast.xml", capitulo: ["Nadie Sabe Nada"] },
       { nombre: "Las Noches de Ortega", url: "https://fapi-top.prisasd.com/podcast/playser/las_noches_de_ortega/itunestfp/podcast.xml", capitulo: ["Las Noches de Ortega"] },
 
     ];
 
-    const podcasts2 = [
+    const podcasts3 = [
 
       { nombre: "Las edades de Millás", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["Las edades de Millás"] },
       { nombre: "La Tertulia de Cómicos", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["La Tertulia de Cómicos"] },
@@ -77,23 +81,24 @@
 
     ];
 
-    const podcasts3 = [
+    const podcasts4 = [
 
       { nombre: "Las promo sketches del A Vivir", url: "https://fapi-top.prisasd.com/podcast/playser/a_vivir_que_son_dos_dias/itunestfp/podcast.xml", capitulo: ["sketches"], ncaps: 4 },
 
     ]
 
     cargarRSS_bycaps(podcasts , "personalizado_antiguedad");
-
-    const subtitulo2 = document.createElement("h2");
-    subtitulo2.textContent = "A vivir que son dos días";
-    document.getElementById("lista").appendChild(subtitulo2);
-    cargarRSS_bycaps(podcasts2, "personalizado_antiguedad");
+    cargarRSS_bycaps(podcasts2, "titulo_antiguedad");
 
     const subtitulo3 = document.createElement("h2");
-    subtitulo3.textContent = "Sketches";
+    subtitulo3.textContent = "A vivir que son dos días";
     document.getElementById("lista").appendChild(subtitulo3);
-    cargarRSS_bycaps(podcasts3, "personalizado_antiguedad");
+    cargarRSS_bycaps(podcasts3, "titulo_antiguedad");
+
+    const subtitulo4 = document.createElement("h2");
+    subtitulo4.textContent = "Sketches";
+    document.getElementById("lista").appendChild(subtitulo4);
+    cargarRSS_bycaps(podcasts4, "titulo_antiguedad");
 
   </script>
 
