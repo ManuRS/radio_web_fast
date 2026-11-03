@@ -1,21 +1,21 @@
 
-const CACHE_NAME = "radio-full-cache-v75";
+const CACHE_NAME = "radio-full-cache-v76";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./hls.min-173.js",
 
-  "./radio_boletos.html",
-  "./radio_daily.html",
-  "./radio_extra.html",
-  "./radio_finde.html",
-  "./radio_fun.html",
-  "./radio_mañanas.html",
-  "./radio_programas.html",
+  "./radio_boletos",
+  "./radio_daily",
+  "./radio_extra",
+  "./radio_finde",
+  "./radio_fun",
+  "./radio_mañanas",
+  "./radio_programas",
 
-  "./extra_elpais.html",
-  "./extra_mapaser.html",
+  "./extra_elpais",
+  "./extra_mapaser",
   
   "./script-cargarss.js",
   "./script-eventos.js",
@@ -31,8 +31,12 @@ const FILES_TO_CACHE = [
   "./theme-colors.css",
   "./theme-podcast.css",
 
+  "./live/",
+  "./live_boleto/",
+  "./live_ser/",
+
+  // Direcciones antiguas: las usan las apps ya instaladas (start_url anterior)
   "./live/index.html",
-  "./live_boleto/index.html",
   "./live_ser/index.html",
 
   "./manifest.json",

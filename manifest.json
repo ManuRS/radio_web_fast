@@ -2,9 +2,9 @@
   "name": "Radio Web Fast",
   "short_name": "Radio WF",
 
-  "version": "75",
+  "version": "76",
 
-  "start_url": "/radio_web_fast/index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#1a237e",
