@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v76";
+const CACHE_NAME = "radio-full-cache-v77";
 
 const FILES_TO_CACHE = [
   "./",
@@ -34,10 +34,6 @@ const FILES_TO_CACHE = [
   "./live/",
   "./live_boleto/",
   "./live_ser/",
-
-  // Direcciones antiguas: las usan las apps ya instaladas (start_url anterior)
-  "./live/index.html",
-  "./live_ser/index.html",
 
   "./manifest.json",
   "./live/manifest.json",
