@@ -4,7 +4,9 @@
  * CARGAR ULTIMOS N AUDIOS DE UN FEED
  * 
  * ****************************************/
-async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo") {
+// eq: true pasa los audios por el ecualizador (script-ecualizador.js); false suenan directos.
+// El servidor del archivo debe permitir CORS; si no, el audio se recarga solo sin ecualizador.
+async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo", eq=false) {
   try {
 
     // Crear cascaron HTML
@@ -19,7 +21,7 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type
     const imagen_select = defineImagenPodcast (feed, imagen_type);
 
     // Rellenar cada contenedor con su audio
-    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select) );
+    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select, eq) );
 
   } catch(e) {
     console.error("Error cargando RSS:", e);
@@ -31,7 +33,9 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type
  * CARGAR AUDIOS POR NOMBRE DE CAPITULOS
  * 
  * ****************************************/
-async function cargarRSS_bycaps(podcasts, visualizacion, imagen_type="capitulo") {
+// eq: true pasa los audios por el ecualizador (script-ecualizador.js); false suenan directos.
+// El servidor del archivo debe permitir CORS; si no, el audio se recarga solo sin ecualizador.
+async function cargarRSS_bycaps(podcasts, visualizacion, imagen_type="capitulo", eq=false) {
 
   // Crear cascaron HTML
   const listaDiv = document.getElementById("lista");
@@ -50,7 +54,7 @@ async function cargarRSS_bycaps(podcasts, visualizacion, imagen_type="capitulo")
     const contenedores_pod = contenedores.slice(index, index + ncaps);
 
     // Cargar los capítulos
-    cargarRSS_onecap(pod.url, pod.nombre, pod.capitulo, contenedores_pod, visualizacion, pod.imagen_type, imagen_type, ncaps);
+    cargarRSS_onecap(pod.url, pod.nombre, pod.capitulo, contenedores_pod, visualizacion, pod.imagen_type, imagen_type, ncaps, eq);
 
     // Avanzar al siguiente bloque de contenedores
     index += ncaps;
@@ -59,7 +63,7 @@ async function cargarRSS_bycaps(podcasts, visualizacion, imagen_type="capitulo")
 }
 
 /* Esta funcion busca los capitulos con el titulo deseado en cada entrada pod*/
-async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedores_arg, visual_arg, imagen_type, imagen_type_global, ncaps=1) {
+async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedores_arg, visual_arg, imagen_type, imagen_type_global, ncaps=1, eq=false) {
   try {
     // Conseguir datos
     const feed = await descargarFeedRss(feedUrl_arg);
@@ -81,7 +85,7 @@ async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedore
       if (capitulo_arg.some(c => titulo.includes(c))) {
 
         // Han cantado Bingo!
-        construirUnCapitulo(item, contenedores_arg[ncaps_encontrados], visual_arg, name_arg, imagen_select);
+        construirUnCapitulo(item, contenedores_arg[ncaps_encontrados], visual_arg, name_arg, imagen_select, eq);
 
         // Comprobar si hemos acabado
         if (++ncaps_encontrados == ncaps){
@@ -115,7 +119,11 @@ function escaparHtml(texto) {
  * CONSTRUIR CAPITULO
  * 
  * ****************************************/
-function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select){
+function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select, eq=false){
+
+  // Solo se activa si la página ha cargado script-ecualizador.js
+  const conEq = eq === true && typeof Ecualizador !== "undefined";
+  if (eq === true && !conEq) console.warn("eq=true, pero esta página no carga script-ecualizador.js.");
 
   // Todo lo que viene del feed se escapa: se inserta como HTML y un título con "<" o "&"
   // (o algo peor) no debe poder romper la página ni colar etiquetas.
@@ -166,7 +174,7 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
         ${imagen_select}
         <div class="podcast-texto">
           ${text_p}
-          <audio controls style="background-color: var(--audio-background, #f1f3f4);" src="${audioUrl}"></audio>
+          <audio controls style="background-color: var(--audio-background, #f1f3f4);"${conEq ? ' data-eq="true" crossorigin="anonymous"' : ''} src="${audioUrl}"></audio>
           <div class="controles">
             <div class="botones-reproduccion">
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); if(a.paused){ a.play(); this.textContent='🔴 Pausa'; } else { a.pause(); this.textContent='🟢 Play'; } ">🟢 Play</button>
@@ -180,6 +188,8 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
       <br>
     `;
     /*************************************************************/
+
+    if (conEq) Ecualizador.vigilar(contenedor.querySelector("audio"));
 
   } else {
     contenedor.innerHTML = `<p class="titulo-principal">${titulo} (No se encontró audio)</p>`;

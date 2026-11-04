@@ -13,9 +13,14 @@
  * o suena en silencio: esas emisoras deben llevar data-eq="false".
  * live/test_eq.html comprueba qué emisoras lo permiten.
  *
- * Lo usa script-livesound.js (hay que cargar este fichero antes). Todos los <audio> con
- * ecualizador comparten una sola cadena:
+ * Lo usan script-livesound.js (radio en directo; hay que cargar este fichero antes) y
+ * script-cargarss.js (pódcast, con el argumento eq de cargarRSS_bycaps y cargaRSS_nlast).
+ * Todos los <audio> con ecualizador comparten una sola cadena:
  *    audio -> entrada -> graves -> medios -> agudos -> limitador -> altavoces
+ *
+ * Un <audio> que ya ha pasado por el ecualizador no puede volver a sonar directo, y si
+ * luego carga una emisora sin CORS se queda mudo. Quien cambie de emisora sobre el mismo
+ * <audio> (live_boleto) debe sustituirlo por uno nuevo: estaConectado(audio) lo indica.
  ********************************/
 
 /********************************
@@ -110,10 +115,29 @@ const Ecualizador = (() => {
     if (quiere(audio)) audio.crossOrigin = "anonymous";
   }
 
+  // Crea la cadena y la deja en marcha. Los navegadores solo dejan arrancar el audio tras
+  // un gesto del usuario: las páginas que cargan streams más tarde, sin que nadie pulse
+  // nada (live_boleto), lo llaman en el primer clic.
+  function iniciar() {
+    try {
+      if (!ctx) crearCadena();
+      if (ctx.state !== "running") ctx.resume().catch(() => {});
+    } catch (error) {
+      console.warn("Ecualizador no disponible. Se reproduce sin él:", error);
+    }
+  }
+
   // Se llama justo antes de cargar el stream (dentro del clic del usuario la primera vez).
   // Si algo falla, el <audio> vuelve a su comportamiento normal y la radio sigue sonando.
   function conectar(audio) {
-    if (!quiere(audio)) return;
+
+    // El atributo data-eq puede cambiar entre una emisora y otra sobre el mismo <audio>.
+    if (!quiere(audio)) {
+      if (!conectados.has(audio)) audio.removeAttribute("crossorigin");
+      return;
+    }
+
+    audio.crossOrigin = "anonymous";
 
     try {
       if (!ctx) crearCadena();
@@ -131,9 +155,40 @@ const Ecualizador = (() => {
     }
   }
 
+  // Para los pódcast, cuyo <audio> ya trae su src y se carga solo: se engancha al
+  // empezar a sonar (siempre es un clic del usuario) y, si el servidor del archivo no
+  // permite CORS, el <audio> falla al cargar y se recarga sin ecualizador.
+  function vigilar(audio) {
+    if (!quiere(audio)) return;
+
+    audio.addEventListener("play", () => conectar(audio));
+
+    audio.addEventListener("error", () => {
+      if (conectados.has(audio) || !audio.hasAttribute("crossorigin")) return;
+
+      console.warn("Este archivo no permite CORS. Se reproduce sin ecualizador.");
+
+      // Si el fallo llega con el usuario ya esperando a que suene, se reanuda solo.
+      const reanudar = !audio.paused;
+
+      audio.removeAttribute("crossorigin");
+      audio.dataset.eq = "false";
+      audio.load();
+
+      if (reanudar) audio.play().catch(() => {});
+    });
+  }
+
+  function estaConectado(audio) {
+    return conectados.has(audio);
+  }
+
   return {
     preparar,
+    iniciar,
     conectar,
+    vigilar,
+    estaConectado,
     get contexto() { return ctx; },   // para depuración y pruebas
     get salida() { return salida; }
   };

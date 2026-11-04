@@ -49,6 +49,7 @@
   <div id="lista"></div>
 
   <script src="script-interfaz.js"></script>
+  <script src="script-ecualizador.js"></script>
   <script src="script-cargarss.js"></script>
 
   <script>
@@ -78,7 +79,7 @@
     const subtitulo2 = document.createElement("h2");
     subtitulo2.textContent = "Los 40";
     document.getElementById("lista").appendChild(subtitulo2);
-    cargarRSS_bycaps(podcasts2, "personalizado_antiguedad_titulo");
+    cargarRSS_bycaps(podcasts2, "personalizado_antiguedad_titulo", imagen_type="capitulo", eq=true);
 
   </script>
 

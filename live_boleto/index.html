@@ -59,7 +59,7 @@
   <canvas id="visualizer" style="height: 80px; margin-bottom: 15px; margin-top: 10px;"></canvas>
 
   <!-- Reproductor oculto -->
-  <div id="live_news" hidden><audio id="radio_news" style="display:none;"></audio></div>
+  <div id="live_news" hidden><audio id="radio_news" data-eq="true" style="display:none;"></audio></div>
   <audio id="radio_prep" style="display:none;"></audio>
   <div id="live_music" hidden><audio id="radio_music" style="display:none"></audio></div>
 
@@ -97,6 +97,7 @@
 
   <script src="../script-interfaz.js"></script>
   <script src="../script-eventos.js"></script>
+  <script src="../script-ecualizador.js"></script>
   <script src="../script-livesound.js"></script>
   <script src="script-extrabol.js"></script>
 
@@ -183,20 +184,36 @@
   const imgLogo_off = "../resources/live/off.png";
   imgLogo.src = imgLogo_off;
 
-  // Emisoras de música seleccionables desde los botones ("1" = modo sin música)
+  // Las noticias llevan data-eq="true" en su <audio> (ver script-ecualizador.js).
+  // Emisoras de música seleccionables desde los botones ("1" = modo sin música).
+  // eq: true pasa la emisora por el ecualizador; false sale directa (HitFM no envía CORS).
   const EMISORAS_MUSICA = {
-    "1": { url: "none" },
-    "2": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3", logo: "../resources/live/los40.png" },
-    "3": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3", logo: "../resources/live/classic.png" },
-    "4": { url: "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3", logo: "../resources/live/megastar.png" },
-    "5": { url: "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3", logo: "../resources/live/rockfm.png" },
-    "6": { url: "https://hitfm.kissfmradio.cires21.com/hitfm.mp3", logo: "../resources/live/hitfm.png" }
+    "1": { url: "none", eq: false },
+    "2": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3", logo: "../resources/live/los40.png", eq: true },
+    "3": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3", logo: "../resources/live/classic.png", eq: true },
+    "4": { url: "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3", logo: "../resources/live/megastar.png", eq: true },
+    "5": { url: "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3", logo: "../resources/live/rockfm.png", eq: true },
+    "6": { url: "https://hitfm.kissfmradio.cires21.com/hitfm.mp3", logo: "../resources/live/hitfm.png", eq: false }
   };
 
   let musicId = "1";        // emisora aplicada
   let musicIdPedido = "1";  // última emisora pedida (puede estar a media transición)
   let musicURL = "none";
   let imgLogo_music;
+
+  // Sustituye los <audio> de la música por uno nuevo, sin historial de ecualizador.
+  // stop() cierra su sesión y libera los antiguos; startLive() abrirá otra con el nuevo.
+  function renovarAudiosMusica() {
+    liveMusic.stop();
+    card_music.querySelectorAll('audio').forEach(a => a.remove());
+
+    const nuevo = document.createElement('audio');
+    nuevo.id = 'radio_music';
+    nuevo.style.display = 'none';
+    card_music.appendChild(nuevo);
+
+    liveMusic.bindAudioEvents(nuevo);
+  }
 
   // Aplica una emisora: variables, URL en los <audio>, slider, textos y botones.
   // No toca el sonido (de eso se encarga cambiarMusica).
@@ -206,11 +223,19 @@
     musicURL = emisora.url;
     imgLogo_music = emisora.logo;
 
+    // Un <audio> que ya ha pasado por el ecualizador no puede reproducir una emisora sin
+    // CORS (saldría mudo): se cambian por otros nuevos. Pasa solo al ir de una emisora
+    // con ecualizador a una sin él; al revés no hace falta.
+    if (!emisora.eq && [...card_music.querySelectorAll('audio')].some(a => Ecualizador.estaConectado(a))) {
+      renovarAudiosMusica();
+    }
+
     // La librería lee la URL del data-src del <audio> que tenga en ese momento
     // (el original o el de relevo), así que se pone en todos los de la tarjeta.
     card_music.querySelectorAll('audio').forEach(a => {
       if (musicURL != "none") a.setAttribute('data-src', musicURL);
       else a.removeAttribute('data-src');
+      a.dataset.eq = String(emisora.eq);
     });
 
     document.getElementById('radio_music_volume').disabled = (musicURL == "none");
@@ -617,6 +642,10 @@
   /*===========================*/
   btn.textContent = "Haz click aquí para otorgar permisos";
   btn.addEventListener('click', () => {
+    // El ecualizador necesita arrancar dentro de este clic: las noticias y la música
+    // se cargan después, por temporizadores, y ya no habría gesto del usuario.
+    Ecualizador.iniciar();
+
     setTimeout(() => { setupVisualizer(); }, 0);
     setTimeout(() => { pin(); }, 0);
     setTimeout(() => { main_function(); }, 0);
