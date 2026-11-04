@@ -17,6 +17,8 @@
  *      live.stop();                     // cierra la sesión (la notificación desaparece)
  *      live.playing                     // true si algún <audio> suena
  *    shouldResume() devuelve false para vetar que la notificación reanude esa emisora.
+ *    Con { notificacion: false } la instancia no toca el título ni los botones de la
+ *    notificación (RWFNotificacion, en script-interfaz.js): los pone la página.
  *
  * Ecualizador: los <audio> con data-eq="true" pasan por script-ecualizador.js, que debe
  * cargarse antes que este fichero. Si no está cargado, todo suena como siempre.
@@ -171,6 +173,33 @@ function createLiveSound(options = {}) {
   function setMediaSessionState(state) {
     mediaState = state;
     refreshMediaSessionState();
+  }
+
+  // Título y botones de la notificación de las páginas de tarjetas: el nombre de la
+  // emisora y, si su categoría (generalistas o musicales) tiene más de una, << y >> para
+  // recorrerla. live_boleto lo gestiona la propia página (options.notificacion = false).
+  function publicarNotificacion(card) {
+    if (options.notificacion === false) return;
+    if (typeof RWFNotificacion === "undefined" || !card) return;
+
+    const nombre = card.querySelector(".station-name")?.textContent.trim();
+    if (!nombre) return;
+
+    const categoria = card.classList.contains("musical") ? "musical" : "general";
+    const tarjetas = [...document.querySelectorAll(`.card.${categoria}`)];
+    const posicion = tarjetas.indexOf(card);
+
+    // Cíclico: tras la última se vuelve a la primera
+    const irA = (salto) => () => {
+      playPause(tarjetas[(posicion + salto + tarjetas.length) % tarjetas.length]);
+    };
+
+    RWFNotificacion.poner({
+      titulo: nombre,
+      acciones: (tarjetas.length > 1 && posicion >= 0)
+        ? { previoustrack: irA(-1), nexttrack: irA(1) }
+        : {}
+    });
   }
 
   function destroyCurrentHls() {
@@ -1049,6 +1078,7 @@ function createLiveSound(options = {}) {
 
       // Estado de la notificación de Android.
       setMediaSessionState("playing");
+      publicarNotificacion(currentCard);
 
     });
 

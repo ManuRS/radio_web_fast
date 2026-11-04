@@ -189,6 +189,13 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
     `;
     /*************************************************************/
 
+    // Primera línea de la notificación de Android (ver RWFNotificacion en script-interfaz.js):
+    // lo mismo que se ve como título en la tarjeta, sin la antigüedad. Es el nombre
+    // personalizado si la tarjeta lo muestra y, si no, el título del capítulo.
+    const tituloCapitulo = item.querySelector("title")?.textContent?.trim() || "Sin título";
+    const nombreTarjeta = String(visual ?? "").startsWith("personalizado") ? String(personalizado ?? "").trim() : "";
+    contenedor.querySelector("audio").dataset.notifTitulo = nombreTarjeta || tituloCapitulo;
+
     if (conEq) Ecualizador.vigilar(contenedor.querySelector("audio"));
 
   } else {

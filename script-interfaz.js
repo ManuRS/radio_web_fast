@@ -166,8 +166,26 @@ window.addEventListener('storage', event => {
 /******************************
   NOTIFICACION
 *******************************/
-// Android Media Session
-if ('mediaSession' in navigator && 'MediaMetadata' in window) {
+// Notificación de Android (Media Session). Todas las páginas la manejan con la misma API:
+//
+//   RWFNotificacion.poner({
+//     titulo: 'Texto de la primera línea',
+//     acciones: { previoustrack, nexttrack, seekbackward, seekforward }
+//   });
+//
+// La segunda línea es siempre "Radio Web Fast". Cada modo decide su título y sus botones:
+// los podcasts (más abajo), las tarjetas de directo (script-livesound.js) y los boletos
+// (live_boleto/index.html). Un botón solo aparece si se le pasa su función.
+// Sin "acciones" se conservan los botones anteriores; con "acciones: {}" se quitan todos.
+const RWFNotificacion = (() => {
+
+  const SEGUNDA_LINEA = 'Radio Web Fast';
+  const ACCIONES = ['previoustrack', 'nexttrack', 'seekbackward', 'seekforward'];
+
+  // Sin soporte (otros navegadores): la API existe, pero no hace nada.
+  if (!('mediaSession' in navigator && 'MediaMetadata' in window)) {
+    return { poner() {} };
+  }
 
   // Detectar la raíz de la aplicación
   let appBase = location.pathname.substring(
@@ -178,39 +196,78 @@ if ('mediaSession' in navigator && 'MediaMetadata' in window) {
   // Volver a la raíz desde las carpetas de reproducción
   appBase = appBase.replace(/(?:live|live_boleto|live_ser)\/$/, '');
 
-  const publishMediaMetadata = () => {
+  // Lo que se ve ahora mismo en la notificación
+  let tituloActual = SEGUNDA_LINEA;
+  let accionesActuales = {};
 
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Radio Web Fast',
-      artwork: [
-        {
-          src: `${appBase}resources/notificacion.webp`,
-          type: 'image/webp'
-        }
-      ]
-    });
-
+  const publicar = () => {
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: tituloActual,
+        artist: SEGUNDA_LINEA,
+        artwork: [
+          {
+            src: `${appBase}resources/notificacion.webp`,
+            type: 'image/webp'
+          }
+        ]
+      });
+    } catch (error) {
+      // La reproducción no depende de la notificación.
+    }
   };
 
-  publishMediaMetadata();
+  const fijarAcciones = () => {
+    ACCIONES.forEach(nombre => {
+      try {
+        // null quita el botón
+        navigator.mediaSession.setActionHandler(nombre, accionesActuales[nombre] || null);
+      } catch (error) {
+        // Acción que este navegador no soporta: se ignora.
+      }
+    });
+  };
 
-  // Cada vez que el audio empieza o se recupera (por ejemplo, tras una
-  // reconexión) se vuelven a publicar los metadatos, para que Android reconstruya
-  // la notificación si la había retirado. El listener es de captura porque los
-  // eventos de audio no burbujean.
-  document.addEventListener('playing', event => {
-    if (!(event.target instanceof HTMLAudioElement)) return;
-
-    const current = navigator.mediaSession.metadata;
-
-    // Solo si los metadatos son los nuestros (o no hay ninguno), para no
-    // pisar los que pueda poner otra página, como las de podcast.
-    if (!current || current.title === 'Radio Web Fast') {
-      publishMediaMetadata();
+  const poner = ({ titulo, acciones } = {}) => {
+    if (typeof titulo === 'string' && titulo.trim() !== '') {
+      tituloActual = titulo.trim();
     }
+
+    if (acciones) {
+      accionesActuales = acciones;
+      fijarAcciones();
+    }
+
+    publicar();
+  };
+
+  publicar();
+
+  // Cada vez que el audio empieza o se recupera (por ejemplo, tras una reconexión) se
+  // vuelven a publicar los metadatos, para que Android reconstruya la notificación si la
+  // había retirado. El listener es de captura porque los eventos de audio no burbujean.
+  document.addEventListener('playing', event => {
+    if (event.target instanceof HTMLAudioElement) publicar();
   }, true);
 
-}
+  return { poner };
+
+})();
+
+/* Podcasts: cada <audio> lleva su título en data-notif-titulo (lo pone script-cargarss.js).
+   Al darle a play, la notificación pasa a ser la de ese capítulo, con los botones de -10 y +10 s. */
+document.addEventListener('play', event => {
+  const audio = event.target;
+  if (!(audio instanceof HTMLAudioElement) || !audio.dataset.notifTitulo) return;
+
+  RWFNotificacion.poner({
+    titulo: audio.dataset.notifTitulo,
+    acciones: {
+      seekbackward: () => { audio.currentTime = Math.max(0, audio.currentTime - 10); },
+      seekforward: () => { audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 10); }
+    }
+  });
+}, true);
 
 /******************************
   OTROS
