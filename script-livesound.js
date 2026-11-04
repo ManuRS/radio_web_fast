@@ -18,6 +18,9 @@
  *      live.playing                     // true si algún <audio> suena
  *    shouldResume() devuelve false para vetar que la notificación reanude esa emisora.
  *
+ * Ecualizador: los <audio> con data-eq="true" pasan por script-ecualizador.js, que debe
+ * cargarse antes que este fichero. Si no está cargado, todo suena como siempre.
+ *
  * Todo el estado de una instancia vive en createLiveSound() y lo comparten sus partes
  * (reconexión, traspaso, pausa y eventos), por eso va en un único bloque.
  ********************************/
@@ -276,6 +279,10 @@ function createLiveSound(options = {}) {
     if (!relief) {
       relief = document.createElement("audio");
       relief.preload = "none";
+
+      // El relevo hereda si la emisora pasa por el ecualizador.
+      if (active.dataset.eq) relief.dataset.eq = active.dataset.eq;
+
       card.appendChild(relief);
 
       bindAudioEvents(relief);
@@ -588,6 +595,9 @@ function createLiveSound(options = {}) {
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
+
+    // Si la emisora lleva ecualizador, se engancha a la cadena antes de cargar el stream.
+    if (typeof Ecualizador !== "undefined") Ecualizador.conectar(audio);
 
     /*********** HLS ***********/
 
@@ -994,6 +1004,9 @@ function createLiveSound(options = {}) {
     if (audio.dataset.streamRecoveryBound === "true") return;
 
     audio.dataset.streamRecoveryBound = "true";
+
+    // Si la emisora lleva ecualizador, crossorigin tiene que estar puesto antes de cargar nada.
+    if (typeof Ecualizador !== "undefined") Ecualizador.preparar(audio);
 
     // Error del elemento multimedia.
     audio.addEventListener("error", () => {

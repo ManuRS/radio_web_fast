@@ -101,6 +101,7 @@
   </div>
 </div>
 
+<!-- data-eq="true": la emisora pasa por el ecualizador; "false": sale directa (HitFM y KissFM no envían CORS). Ver script-ecualizador.js -->
 <div class="links" id="lista">
 
   <!-- Cadena SER -->
@@ -109,7 +110,7 @@
       <span class="station-name">Cadena SER</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3" data-eq="true"></audio>
   </div>
 
   <!-- COPE -->
@@ -118,7 +119,7 @@
       <span class="station-name">COPE</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://flucast09-h-cloud.flumotion.com/cope/net1.mp3"></audio>
+    <audio data-src="https://flucast09-h-cloud.flumotion.com/cope/net1.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Onda Cero -->
@@ -127,7 +128,7 @@
       <span class="station-name">Onda Cero</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://atres-live.ondacero.es/live/ondacero/bitrate_1.m3u8"></audio>
+    <audio data-src="https://atres-live.ondacero.es/live/ondacero/bitrate_1.m3u8" data-eq="true"></audio>
   </div>
 
   <!-- <div class="category-separator general">Test</div> -->
@@ -138,7 +139,7 @@
       <span class="station-name">Radio Nacional</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rne1/mur/mp3/high"></audio>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rne1/mur/mp3/high" data-eq="true"></audio>
   </div>
 
   <!-- esRadio -->
@@ -147,7 +148,7 @@
       <span class="station-name">esRadio</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-med.aac"></audio>
+    <audio data-src="https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-med.aac" data-eq="true"></audio>
   </div>
 
   <!-- RAC1 -->
@@ -156,7 +157,7 @@
       <span class="station-name">RAC1</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RAC_1.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RAC_1.mp3" data-eq="true"></audio>
   </div>
 
   <!-- SER Más -->
@@ -165,7 +166,7 @@
       <span class="station-name">SER+</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRID.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRID.mp3" data-eq="true"></audio>
   </div>
 
   <!-- COPE Más -->
@@ -174,7 +175,7 @@
       <span class="station-name">COPE MÁS</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://flucast31-h-cloud.flumotion.com/cope/net2.mp3"></audio>
+    <audio data-src="https://flucast31-h-cloud.flumotion.com/cope/net2.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Radio MARCA -->
@@ -183,7 +184,7 @@
       <span class="station-name">Radio MARCA</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOMARCA_NACIONAL.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOMARCA_NACIONAL.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Radio 3 -->
@@ -192,7 +193,7 @@
       <span class="station-name">Radio 3</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high"></audio>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high" data-eq="true"></audio>
   </div>
 
   <!-- Radio 5 -->
@@ -201,7 +202,7 @@
       <span class="station-name">Radio 5</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rne5/mur/mp3/high"></audio>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rne5/mur/mp3/high" data-eq="true"></audio>
   </div>
 
   <!-- Radio Exterior -->
@@ -210,7 +211,7 @@
       <span class="station-name">Radio Exterior</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/rne/rne_re_main_dvr.m3u8"></audio>
+    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/rne/rne_re_main_dvr.m3u8" data-eq="true"></audio>
   </div>
 
   <!-- SER Catalunya -->
@@ -219,7 +220,7 @@
       <span class="station-name">SER Catalunya</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Catalunya Radio -->
@@ -228,7 +229,7 @@
       <span class="station-name">Catalunya Ràdio</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8"></audio>
+    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8" data-eq="true"></audio>
   </div>
 
   <!-- Ràdio 4 -->
@@ -237,7 +238,7 @@
       <span class="station-name">Ràdio 4</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high"></audio>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high" data-eq="true"></audio>
   </div>  
 
   <!-- RTVE La1 -->
@@ -246,7 +247,7 @@
       <span class="station-name">La 1</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr_720.m3u8"></audio>
+    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr_720.m3u8" data-eq="true"></audio>
   </div>
 
   <!-- RTVE 24h -->
@@ -255,7 +256,7 @@
       <span class="station-name">Canal 24h</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8"></audio>
+    <audio data-src="https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8" data-eq="true"></audio>
   </div>
 
   <!-- La Sexta -->
@@ -264,7 +265,7 @@
       <span class="station-name">laSexta</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://audiotvlive.atresmedia.com/h264/live/lasexta/audio_1.m3u8"></audio>
+    <audio data-src="https://audiotvlive.atresmedia.com/h264/live/lasexta/audio_1.m3u8" data-eq="true"></audio>
   </div>
 
   <!-- ------------------------------------------ -->
@@ -275,7 +276,7 @@
       <span class="station-name">LOS40</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3" data-eq="true"></audio>
   </div>
 
   <!-- LOS40 CLASSIC -->
@@ -284,7 +285,7 @@
       <span class="station-name">LOS40 CLASSIC</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3" data-eq="true"></audio>
   </div>
 
   <!-- MegaStar -->
@@ -293,7 +294,7 @@
       <span class="station-name">MegaStar</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3"></audio>
+    <audio data-src="https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3" data-eq="true"></audio>
   </div>
 
   <!-- HitFM -->
@@ -302,7 +303,7 @@
       <span class="station-name">HitFM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://hitfm.kissfmradio.cires21.com/hitfm.mp3"></audio>
+    <audio data-src="https://hitfm.kissfmradio.cires21.com/hitfm.mp3" data-eq="false"></audio>
   </div>
 
   <!-- RockFM -->
@@ -311,7 +312,7 @@
       <span class="station-name">RockFM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3"></audio>
+    <audio data-src="https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Melodía FM -->
@@ -320,7 +321,7 @@
       <span class="station-name">Melodía FM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/MELODIA_FMAAC.aac"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/MELODIA_FMAAC.aac" data-eq="true"></audio>
   </div>
 
   <!-- Europa FM -->
@@ -329,7 +330,7 @@
       <span class="station-name">Europa FM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://str1.mediatelekom.net:9950/live"></audio>
+    <audio data-src="https://str1.mediatelekom.net:9950/live" data-eq="true"></audio>
   </div>
 
   <!-- Cadena 100 -->
@@ -338,7 +339,7 @@
       <span class="station-name">Cadena 100</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://cadena100-cope-rrcast.flumotion.com/cope/cadena100.mp3"></audio>
+    <audio data-src="https://cadena100-cope-rrcast.flumotion.com/cope/cadena100.mp3" data-eq="true"></audio>
   </div>
 
   <!-- KissFM -->
@@ -347,7 +348,7 @@
       <span class="station-name">KissFM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://kissfm.kissfmradio.cires21.com/kissfm.mp3"></audio>
+    <audio data-src="https://kissfm.kissfmradio.cires21.com/kissfm.mp3" data-eq="false"></audio>
   </div>
 
   <!-- Cadena DIAL -->
@@ -356,7 +357,7 @@
       <span class="station-name">Cadena DIAL</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3" data-eq="true"></audio>
   </div>
 
   <!-- LOS40 DANCE -->
@@ -365,7 +366,7 @@
       <span class="station-name">LOS40 DANCE</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_DANCE.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_DANCE.mp3" data-eq="true"></audio>
   </div>
 
   <!-- LOS40 URBAN -->
@@ -374,7 +375,7 @@
       <span class="station-name">LOS40 URBAN</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_URBAN.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_URBAN.mp3" data-eq="true"></audio>
   </div>
 
   <!-- RAC105 -->
@@ -383,7 +384,7 @@
       <span class="station-name">RAC105</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RAC105.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RAC105.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Flaix FM -->
@@ -392,7 +393,7 @@
       <span class="station-name">Flaix FM</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://us-b4-p-e-cg11-audio.cdn.mdstrm.com/live-audio-aw/65afe4a0357cec56667ac739"></audio>
+    <audio data-src="https://us-b4-p-e-cg11-audio.cdn.mdstrm.com/live-audio-aw/65afe4a0357cec56667ac739" data-eq="true"></audio>
   </div>
 
   <!-- Flaixbac -->
@@ -401,7 +402,7 @@
       <span class="station-name">Flaixbac</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://us-b4-p-e-qg12-audio.cdn.mdstrm.com/live-audio-aw/65afe517d47dc208abd053d2"></audio>
+    <audio data-src="https://us-b4-p-e-qg12-audio.cdn.mdstrm.com/live-audio-aw/65afe517d47dc208abd053d2" data-eq="true"></audio>
   </div>
 
   <!-- Radio Clasica -->
@@ -410,7 +411,7 @@
       <span class="station-name">Radio Clásica</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high"></audio>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high" data-eq="true"></audio>
   </div>
 
   <!-- Radiolé -->
@@ -419,7 +420,7 @@
       <span class="station-name">Radiolé</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOLE.mp3"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOLE.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Canal Fiesta Radio -->
@@ -428,7 +429,7 @@
       <span class="station-name">Canal Fiesta Radio</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://rtva-live-radio.flumotion.com/rtva/cfr.mp3"></audio>
+    <audio data-src="https://rtva-live-radio.flumotion.com/rtva/cfr.mp3" data-eq="true"></audio>
   </div>
 
 </div>
@@ -437,6 +438,7 @@
 <script src="../script-eventos.js"></script>
 <script src="../script-serviceworker.js"></script>
 
+<script src="../script-ecualizador.js"></script>
 <script src="../script-livesound.js"></script>
 
 </body>
