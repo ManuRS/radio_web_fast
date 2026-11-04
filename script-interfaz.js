@@ -255,16 +255,24 @@ const RWFNotificacion = (() => {
 })();
 
 /* Podcasts: cada <audio> lleva su título en data-notif-titulo (lo pone script-cargarss.js).
-   Al darle a play, la notificación pasa a ser la de ese capítulo, con los botones de -10 y +10 s. */
+   Al darle a play, la notificación pasa a ser la de ese capítulo, con los saltos de -10 y +10 s.
+   Se registran como seekbackward/seekforward (Android Auto los dibuja como tales) y también
+   en previoustrack/nexttrack, porque la notificación del móvil solo dibuja los botones de
+   anterior y siguiente: así el -10 y el +10 salen en las dos. */
 document.addEventListener('play', event => {
   const audio = event.target;
   if (!(audio instanceof HTMLAudioElement) || !audio.dataset.notifTitulo) return;
 
+  const atras = () => { audio.currentTime = Math.max(0, audio.currentTime - 10); };
+  const adelante = () => { audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 10); };
+
   RWFNotificacion.poner({
     titulo: audio.dataset.notifTitulo,
     acciones: {
-      seekbackward: () => { audio.currentTime = Math.max(0, audio.currentTime - 10); },
-      seekforward: () => { audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 10); }
+      previoustrack: atras,
+      nexttrack: adelante,
+      seekbackward: atras,
+      seekforward: adelante
     }
   });
 }, true);
