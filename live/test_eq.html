@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba del ecualizador</title>
+
+  <script src="../hls.min-173.js"></script>
+
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 16px; max-width: 760px; }
+    h1 { font-size: 1.3rem; }
+    p, label { font-size: .9rem; }
+    button { padding: 8px 14px; margin: 4px 6px 4px 0; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: .9rem; }
+    td, th { border-bottom: 1px solid #8884; padding: 6px 4px; text-align: left; vertical-align: top; }
+    .ok { color: #0a7d2c; font-weight: 600; }
+    .mal { color: #b3261e; font-weight: 600; }
+    .dudoso { color: #9a6700; font-weight: 600; }
+    textarea { width: 100%; height: 160px; margin-top: 12px; font-family: monospace; font-size: .8rem; }
+    #custom { width: 70%; padding: 6px; }
+  </style>
+</head>
+<body>
+
+<h1>Prueba del ecualizador</h1>
+<p>
+  Pasa cada emisora por la cadena de filtros y comprueba si el navegador deja procesar su audio.
+  El resultado depende de la dirección desde la que abras esta página:
+  <b id="origen"></b>
+</p>
+
+<button id="todas">Probar todas</button>
+<label><input type="checkbox" id="oir"> Oír mientras prueba (por defecto va en silencio)</label>
+<br>
+<input id="custom" placeholder="Otra URL de stream o de audio (mp3, aac, m3u8)">
+<button id="una">Probar esta</button>
+
+<table>
+  <thead><tr><th>Emisora</th><th>Resultado</th></tr></thead>
+  <tbody id="tabla"></tbody>
+</table>
+
+<p id="resumen"></p>
+<textarea id="informe" readonly placeholder="Aquí aparece el informe para copiarlo"></textarea>
+<button id="copiar">Copiar informe</button>
+
+<script>
+/********************************
+ * Ajustes del ecualizador
+ ********************************/
+const EQ = {
+  lowHz: 100,    // graves: estante bajo
+  midHz: 1000,   // medios: campana
+  midQ: 0.8,
+  highHz: 8000,  // agudos: estante alto
+  low: 5,        // dB
+  mid: -1,       // dB
+  high: 4        // dB
+};
+
+// Tiempo que se escucha cada emisora
+const DURACION_MS = 7000;
+// Por debajo de esto se considera silencio (el exacto, 0, es lo que da el bloqueo por CORS)
+const UMBRAL_SONIDO = 0.0005;
+
+const EMISORAS = [
+  ["Cadena SER", "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENASER.mp3"],
+  ["COPE", "https://flucast09-h-cloud.flumotion.com/cope/net1.mp3"],
+  ["Onda Cero (HLS)", "https://atres-live.ondacero.es/live/ondacero/bitrate_1.m3u8"],
+  ["Radio Nacional", "https://dispatcher.rndfnk.com/crtve/rne1/mur/mp3/high"],
+  ["esRadio", "https://libertaddigital-radio-live1.flumotion.com/libertaddigital/ld-live1-med.aac"],
+  ["RAC1", "https://playerservices.streamtheworld.com/api/livestream-redirect/RAC_1.mp3"],
+  ["SER+", "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_MAS_MADRID.mp3"],
+  ["COPE MÁS", "https://flucast31-h-cloud.flumotion.com/cope/net2.mp3"],
+  ["Radio MARCA", "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOMARCA_NACIONAL.mp3"],
+  ["Radio 3", "https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high"],
+  ["Radio 5", "https://dispatcher.rndfnk.com/crtve/rne5/mur/mp3/high"],
+  ["Radio Exterior (HLS)", "https://rtvelivestream.rtve.es/rtvesec/rne/rne_re_main_dvr.m3u8"],
+  ["SER Catalunya", "https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3"],
+  ["Catalunya Ràdio (HLS)", "https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8"],
+  ["Ràdio 4", "https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high"],
+  ["La 1 (HLS)", "https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr_720.m3u8"],
+  ["Canal 24h (HLS)", "https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8"],
+  ["laSexta (HLS)", "https://audiotvlive.atresmedia.com/h264/live/lasexta/audio_1.m3u8"],
+  ["LOS40", "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3"],
+  ["LOS40 CLASSIC", "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3"],
+  ["MegaStar", "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3"],
+  ["HitFM", "https://hitfm.kissfmradio.cires21.com/hitfm.mp3"],
+  ["RockFM", "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3"],
+  ["Melodía FM", "https://playerservices.streamtheworld.com/api/livestream-redirect/MELODIA_FMAAC.aac"],
+  ["Europa FM", "https://str1.mediatelekom.net:9950/live"],
+  ["Cadena 100", "https://cadena100-cope-rrcast.flumotion.com/cope/cadena100.mp3"],
+  ["KissFM", "https://kissfm.kissfmradio.cires21.com/kissfm.mp3"],
+  ["Cadena DIAL", "https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3"],
+  ["LOS40 DANCE", "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_DANCE.mp3"],
+  ["LOS40 URBAN", "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_URBAN.mp3"],
+  ["RAC105", "https://playerservices.streamtheworld.com/api/livestream-redirect/RAC105.mp3"],
+  ["Flaix FM", "https://us-b4-p-e-cg11-audio.cdn.mdstrm.com/live-audio-aw/65afe4a0357cec56667ac739"],
+  ["Flaixbac", "https://us-b4-p-e-qg12-audio.cdn.mdstrm.com/live-audio-aw/65afe517d47dc208abd053d2"],
+  ["Radio Clásica", "https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high"],
+  ["Radiolé", "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOLE.mp3"],
+  ["Canal Fiesta Radio", "https://rtva-live-radio.flumotion.com/rtva/cfr.mp3"]
+];
+
+/********************************
+ * Cadena de audio
+ ********************************/
+let ctx = null;
+
+function obtenerContexto() {
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === "suspended") ctx.resume();
+  return ctx;
+}
+
+function filtro(c, type, frequency, gain, Q) {
+  const f = c.createBiquadFilter();
+  f.type = type;
+  f.frequency.value = frequency;
+  f.gain.value = gain;
+  if (Q !== undefined) f.Q.value = Q;
+  return f;
+}
+
+// audio -> graves -> medios -> agudos -> analizador -> salida (muda o no) -> altavoces
+function montarCadena(c, audio, oir) {
+  const fuente = c.createMediaElementSource(audio);
+  const graves = filtro(c, "lowshelf", EQ.lowHz, EQ.low);
+  const medios = filtro(c, "peaking", EQ.midHz, EQ.mid, EQ.midQ);
+  const agudos = filtro(c, "highshelf", EQ.highHz, EQ.high);
+
+  const analizador = c.createAnalyser();
+  analizador.fftSize = 2048;
+
+  const salida = c.createGain();
+  salida.gain.value = oir ? 1 : 0;
+
+  fuente.connect(graves);
+  graves.connect(medios);
+  medios.connect(agudos);
+  agudos.connect(analizador);
+  analizador.connect(salida);
+  salida.connect(c.destination);
+
+  return {
+    analizador,
+    desmontar() {
+      [fuente, graves, medios, agudos, analizador, salida].forEach(n => {
+        try { n.disconnect(); } catch (e) { /* ya desconectado */ }
+      });
+    }
+  };
+}
+
+/********************************
+ * Prueba de una emisora
+ ********************************/
+const espera = ms => new Promise(r => setTimeout(r, ms));
+
+async function probarStream(url, oir) {
+  const c = obtenerContexto();
+
+  const audio = new Audio();
+  audio.crossOrigin = "anonymous";
+  audio.preload = "none";
+
+  let fallo = null;
+  audio.addEventListener("error", () => {
+    fallo = audio.error ? "error del elemento (código " + audio.error.code + ")" : "error del elemento";
+  });
+
+  const cadena = montarCadena(c, audio, oir);
+  let hls = null;
+
+  const esHls = /\.m3u8(?:[?#].*)?$/i.test(url);
+
+  if (esHls && typeof Hls !== "undefined" && Hls.isSupported()) {
+    hls = new Hls();
+    hls.on(Hls.Events.ERROR, (_e, data) => {
+      if (data.fatal) fallo = "error fatal de HLS (" + data.details + ")";
+    });
+    hls.loadSource(url);
+    hls.attachMedia(audio);
+  } else {
+    audio.src = url;
+  }
+
+  try {
+    await audio.play();
+  } catch (e) {
+    if (e.name !== "AbortError") fallo = fallo || ("play(): " + e.name);
+  }
+
+  const datos = new Float32Array(cadena.analizador.fftSize);
+  let maximo = 0;
+  const inicio = Date.now();
+
+  while (Date.now() - inicio < DURACION_MS) {
+    await espera(250);
+    cadena.analizador.getFloatTimeDomainData(datos);
+    for (let i = 0; i < datos.length; i++) {
+      const v = Math.abs(datos[i]);
+      if (v > maximo) maximo = v;
+    }
+  }
+
+  const avance = audio.currentTime;
+
+  audio.pause();
+  if (hls) hls.destroy();
+  audio.removeAttribute("src");
+  audio.load();
+  cadena.desmontar();
+
+  if (avance < 1) {
+    return {
+      nivel: "mal",
+      texto: fallo
+        ? "No carga con crossorigin: " + fallo + ". O el servidor no envía CORS o el stream está caído: si en la app suena, es lo primero."
+        : "No arrancó en " + (DURACION_MS / 1000) + " s."
+    };
+  }
+
+  if (maximo === 0) {
+    return {
+      nivel: "mal",
+      texto: "Silencio exacto con el audio avanzando: el navegador bloquea el audio por CORS."
+    };
+  }
+
+  if (maximo < UMBRAL_SONIDO) {
+    return {
+      nivel: "dudoso",
+      texto: "Nivel casi nulo (" + maximo.toFixed(5) + "). Puede ser un silencio real de la emisora: repítela."
+    };
+  }
+
+  return { nivel: "ok", texto: "OK, suena con el ecualizador (pico " + maximo.toFixed(3) + ")." };
+}
+
+/********************************
+ * Interfaz
+ ********************************/
+const tabla = document.getElementById("tabla");
+const resumen = document.getElementById("resumen");
+const informe = document.getElementById("informe");
+const botonTodas = document.getElementById("todas");
+const botonUna = document.getElementById("una");
+const casillaOir = document.getElementById("oir");
+const resultados = [];
+let ocupado = false;
+
+document.getElementById("origen").textContent = location.origin;
+
+function crearFila(nombre) {
+  const fila = document.createElement("tr");
+  const celdaNombre = document.createElement("td");
+  const celdaEstado = document.createElement("td");
+  celdaNombre.textContent = nombre;
+  celdaEstado.textContent = "Pendiente";
+  fila.append(celdaNombre, celdaEstado);
+  tabla.appendChild(fila);
+  return celdaEstado;
+}
+
+function actualizarInforme() {
+  const ok = resultados.filter(r => r.nivel === "ok").length;
+  const mal = resultados.filter(r => r.nivel === "mal").length;
+  const dudoso = resultados.filter(r => r.nivel === "dudoso").length;
+
+  resumen.textContent = "Probadas: " + resultados.length + " · OK: " + ok + " · Con problema: " + mal + " · Dudosas: " + dudoso;
+
+  informe.value =
+    "Origen: " + location.origin + "\n" +
+    "Navegador: " + navigator.userAgent + "\n\n" +
+    resultados.map(r => r.nombre + " -> " + r.nivel.toUpperCase() + " - " + r.texto).join("\n");
+}
+
+async function ejecutar(lista) {
+  if (ocupado) return;
+  ocupado = true;
+  botonTodas.disabled = true;
+  botonUna.disabled = true;
+
+  for (const [nombre, url] of lista) {
+    const celda = crearFila(nombre);
+    celda.textContent = "Probando…";
+
+    let r;
+    try {
+      r = await probarStream(url, casillaOir.checked);
+    } catch (e) {
+      r = { nivel: "mal", texto: "Excepción: " + e.message };
+    }
+
+    celda.textContent = r.texto;
+    celda.className = r.nivel;
+    resultados.push({ nombre, ...r });
+    actualizarInforme();
+  }
+
+  ocupado = false;
+  botonTodas.disabled = false;
+  botonUna.disabled = false;
+}
+
+botonTodas.addEventListener("click", () => ejecutar(EMISORAS));
+
+botonUna.addEventListener("click", () => {
+  const url = document.getElementById("custom").value.trim();
+  if (url) ejecutar([[url, url]]);
+});
+
+document.getElementById("copiar").addEventListener("click", () => {
+  informe.select();
+  try { document.execCommand("copy"); } catch (e) { /* se puede copiar a mano */ }
+});
+</script>
+
+</body>
+</html>
