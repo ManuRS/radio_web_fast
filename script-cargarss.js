@@ -6,7 +6,9 @@
  * ****************************************/
 // eq: true pasa los audios por el ecualizador (script-ecualizador.js); false suenan directos.
 // El servidor del archivo debe permitir CORS; si no, el audio se recarga solo sin ecualizador.
-async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo", eq=false) {
+// tituloNotif: si se indica, es la primera línea de la notificación de Android para todos los audios
+// de la página (por defecto, el nombre que muestra la tarjeta).
+async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo", eq=false, tituloNotif=null) {
   try {
 
     // Crear cascaron HTML
@@ -21,7 +23,7 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type
     const imagen_select = defineImagenPodcast (feed, imagen_type);
 
     // Rellenar cada contenedor con su audio
-    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select, eq) );
+    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select, eq, tituloNotif) );
 
   } catch(e) {
     console.error("Error cargando RSS:", e);
@@ -119,7 +121,7 @@ function escaparHtml(texto) {
  * CONSTRUIR CAPITULO
  * 
  * ****************************************/
-function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select, eq=false){
+function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select, eq=false, tituloNotif=null){
 
   // Solo se activa si la página ha cargado script-ecualizador.js
   const conEq = eq === true && typeof Ecualizador !== "undefined";
@@ -191,10 +193,11 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
 
     // Primera línea de la notificación de Android (ver RWFNotificacion en script-interfaz.js):
     // lo mismo que se ve como título en la tarjeta, sin la antigüedad. Es el nombre
-    // personalizado si la tarjeta lo muestra y, si no, el título del capítulo.
+    // personalizado si la tarjeta lo muestra y, si no, el título del capítulo. Una página puede
+    // fijar el suyo para todos sus audios (tituloNotif).
     const tituloCapitulo = item.querySelector("title")?.textContent?.trim() || "Sin título";
     const nombreTarjeta = String(visual ?? "").startsWith("personalizado") ? String(personalizado ?? "").trim() : "";
-    contenedor.querySelector("audio").dataset.notifTitulo = nombreTarjeta || tituloCapitulo;
+    contenedor.querySelector("audio").dataset.notifTitulo = tituloNotif || nombreTarjeta || tituloCapitulo;
 
     if (conEq) Ecualizador.vigilar(contenedor.querySelector("audio"));
 

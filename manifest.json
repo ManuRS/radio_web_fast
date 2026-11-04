@@ -2,7 +2,7 @@
   "name": "Radio Web Fast",
   "short_name": "Radio WF",
 
-  "version": "87",
+  "version": "88",
 
   "start_url": "./",
   "display": "standalone",

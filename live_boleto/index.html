@@ -207,13 +207,13 @@
   let imgLogo_music;
 
   // Notificación de Android (RWFNotificacion, en script-interfaz.js).
-  //  - Toca boleto: "Las noticias de la SER", sin botones (no hay emisora que cambiar).
+  //  - Toca boleto: "Boleto SER en directo", sin botones (no hay emisora que cambiar).
   //  - Sin música: "Esperando boleto", sin botones.
   //  - Con música: "<emisora> (modo noticias)", con << y >> para recorrer las emisoras de música.
   // Usa la emisora pedida (musicIdPedido), así el título cambia en cuanto se pulsa.
   function actualizarNotificacion() {
     if (noticiasEnCurso) {
-      RWFNotificacion.poner({ titulo: "Las noticias de la SER", acciones: {} });
+      RWFNotificacion.poner({ titulo: "Boleto SER en directo", acciones: {} });
       return;
     }
 
