@@ -1,3 +1,12 @@
+/******************************
+  SIN "TIRAR PARA RECARGAR"
+*******************************/
+
+/* Evita que deslizar hacia abajo desde arriba recargue la página (la app instalada
+   perdería lo que se esté reproduciendo). La página sigue desplazándose con normalidad. */
+html, body {
+  overscroll-behavior-y: none;
+}
 
 /******************************
   SLIDER SUPERIOR VOLUMEN
