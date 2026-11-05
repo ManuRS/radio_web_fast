@@ -44,56 +44,119 @@ if (news_volume) {
 /******************************
   MODAL DE SALIDA
 *******************************/
+// Una vez que ha sonado algo, el primer gesto atrás no saca de la página: abre un modal, y
+// el segundo gesto sale. Antes de dar a play, el gesto atrás funciona con normalidad.
+//
+// Con CloseWatcher (Chrome y Edge 126, Firefox 149) el navegador avisa de la petición de
+// cierre sin tocar el historial: no se añaden entradas fantasma. Solo se vigila el primer
+// gesto: al abrir el modal se deja de vigilar, así el segundo gesto es un atrás normal del
+// navegador, con su vista previa de la página anterior. "Seguir en la página" vuelve a vigilar
+// (un vigilante nuevo por cada pregunta: Chrome solo deja cancelar un par de veces el mismo).
+// En los navegadores que no lo soportan se usa el truco clásico de añadir una entrada al historial.
 const exitModal = document.getElementById("exit-modal");
 const stayBtn = document.getElementById("stay-btn");
 
 if (exitModal && stayBtn) {
-  let scrollPosition = 0;
   let modalAbierto = false;
-  let audioIniciado = false;
 
-  // Detectar reproducciones, incluidos los audios creados dinámicamente
-  document.addEventListener("play", event => {
-    if (event.target instanceof HTMLAudioElement) {
-      audioIniciado = true;
-    }
-  }, true);
-
-  // Crear una entrada para interceptar el primer gesto atrás
-  history.pushState({ exitModal: true }, "", location.href);
-
-  window.addEventListener("popstate", () => {
-    // Sin audio previo: no interceptar la navegación
-    if (!audioIniciado) {
-      history.back();
-      return;
-    }
-
-    // Si el modal está abierto, el siguiente gesto permite salir
-    if (modalAbierto) {
-      exitModal.style.display = "none";
-      modalAbierto = false;
-      return;
-    }
-
-    // Mostrar el modal
-    scrollPosition = window.scrollY;
+  const mostrarModal = () => {
     modalAbierto = true;
     exitModal.style.display = "flex";
+  };
 
-    // Mantener una entrada para el siguiente gesto atrás
+  const ocultarModal = () => {
+    modalAbierto = false;
+    exitModal.style.display = "none";
+  };
+
+  stayBtn.addEventListener("click", ocultarModal);
+
+  /* --- Con CloseWatcher --- */
+  const vigilarAtrasConCloseWatcher = () => {
+    let vigilante = null;
+
+    const armar = () => {
+      // Con el modal abierto no se vigila: el siguiente gesto debe ser un atrás normal
+      if (vigilante || modalAbierto) return;
+      const watcher = new CloseWatcher();
+      vigilante = watcher;
+
+      // Primer gesto atrás: abrir el modal y dejar de vigilar. El navegador solo permite
+      // cancelarlo si el usuario ha tocado la página desde el último gesto; si no, salta
+      // directo a "close" para que nadie quede atrapado.
+      watcher.addEventListener("cancel", event => {
+        if (!event.cancelable) return;
+        event.preventDefault();
+        watcher.destroy();
+        vigilante = null;
+        mostrarModal();
+      });
+
+      // Cierre que no se ha podido preguntar: salir de la página
+      watcher.addEventListener("close", () => {
+        vigilante = null;
+        history.back();
+      });
+    };
+
+    // Armarlo con la primera reproducción, incluidos los audios creados dinámicamente
+    document.addEventListener("play", event => {
+      if (event.target instanceof HTMLAudioElement) armar();
+    }, true);
+
+    // Seguir en la página: volver a vigilar el gesto atrás
+    stayBtn.addEventListener("click", armar);
+  };
+
+  /* --- Respaldo: navegadores sin CloseWatcher --- */
+  const vigilarAtrasConHistorial = () => {
+    let scrollPosition = 0;
+    let audioIniciado = false;
+
+    document.addEventListener("play", event => {
+      if (event.target instanceof HTMLAudioElement) {
+        audioIniciado = true;
+      }
+    }, true);
+
+    // Crear una entrada para interceptar el primer gesto atrás
     history.pushState({ exitModal: true }, "", location.href);
 
-    requestAnimationFrame(() => {
+    window.addEventListener("popstate", () => {
+      // Sin audio previo: no interceptar la navegación
+      if (!audioIniciado) {
+        history.back();
+        return;
+      }
+
+      // Si el modal está abierto, el siguiente gesto permite salir
+      if (modalAbierto) {
+        ocultarModal();
+        return;
+      }
+
+      // Mostrar el modal
+      scrollPosition = window.scrollY;
+      mostrarModal();
+
+      // Mantener una entrada para el siguiente gesto atrás
+      history.pushState({ exitModal: true }, "", location.href);
+
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPosition);
+      });
+    });
+
+    stayBtn.addEventListener("click", () => {
       window.scrollTo(0, scrollPosition);
     });
-  });
+  };
 
-  stayBtn.addEventListener("click", () => {
-    exitModal.style.display = "none";
-    modalAbierto = false;
-    window.scrollTo(0, scrollPosition);
-  });
+  if ("CloseWatcher" in window) {
+    vigilarAtrasConCloseWatcher();
+  } else {
+    vigilarAtrasConHistorial();
+  }
 }
   
 /******************************
@@ -166,8 +229,26 @@ window.addEventListener('storage', event => {
 /******************************
   NOTIFICACION
 *******************************/
-// Android Media Session
-if ('mediaSession' in navigator && 'MediaMetadata' in window) {
+// Notificación de Android (Media Session). Todas las páginas la manejan con la misma API:
+//
+//   RWFNotificacion.poner({
+//     titulo: 'Texto de la primera línea',
+//     acciones: { previoustrack, nexttrack, seekbackward, seekforward }
+//   });
+//
+// La segunda línea es siempre "Radio Web Fast". Cada modo decide su título y sus botones:
+// los podcasts (más abajo), las tarjetas de directo (script-livesound.js) y los boletos
+// (live_boleto/index.html). Un botón solo aparece si se le pasa su función.
+// Sin "acciones" se conservan los botones anteriores; con "acciones: {}" se quitan todos.
+const RWFNotificacion = (() => {
+
+  const SEGUNDA_LINEA = 'Radio Web Fast';
+  const ACCIONES = ['previoustrack', 'nexttrack', 'seekbackward', 'seekforward'];
+
+  // Sin soporte (otros navegadores): la API existe, pero no hace nada.
+  if (!('mediaSession' in navigator && 'MediaMetadata' in window)) {
+    return { poner() {} };
+  }
 
   // Detectar la raíz de la aplicación
   let appBase = location.pathname.substring(
@@ -178,39 +259,86 @@ if ('mediaSession' in navigator && 'MediaMetadata' in window) {
   // Volver a la raíz desde las carpetas de reproducción
   appBase = appBase.replace(/(?:live|live_boleto|live_ser)\/$/, '');
 
-  const publishMediaMetadata = () => {
+  // Lo que se ve ahora mismo en la notificación
+  let tituloActual = SEGUNDA_LINEA;
+  let accionesActuales = {};
 
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Radio Web Fast',
-      artwork: [
-        {
-          src: `${appBase}resources/notificacion.webp`,
-          type: 'image/webp'
-        }
-      ]
-    });
-
+  const publicar = () => {
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: tituloActual,
+        artist: SEGUNDA_LINEA,
+        artwork: [
+          {
+            src: `${appBase}resources/notificacion.webp`,
+            type: 'image/webp'
+          }
+        ]
+      });
+    } catch (error) {
+      // La reproducción no depende de la notificación.
+    }
   };
 
-  publishMediaMetadata();
+  const fijarAcciones = () => {
+    ACCIONES.forEach(nombre => {
+      try {
+        // null quita el botón
+        navigator.mediaSession.setActionHandler(nombre, accionesActuales[nombre] || null);
+      } catch (error) {
+        // Acción que este navegador no soporta: se ignora.
+      }
+    });
+  };
 
-  // Cada vez que el audio empieza o se recupera (por ejemplo, tras una
-  // reconexión) se vuelven a publicar los metadatos, para que Android reconstruya
-  // la notificación si la había retirado. El listener es de captura porque los
-  // eventos de audio no burbujean.
-  document.addEventListener('playing', event => {
-    if (!(event.target instanceof HTMLAudioElement)) return;
-
-    const current = navigator.mediaSession.metadata;
-
-    // Solo si los metadatos son los nuestros (o no hay ninguno), para no
-    // pisar los que pueda poner otra página, como las de podcast.
-    if (!current || current.title === 'Radio Web Fast') {
-      publishMediaMetadata();
+  const poner = ({ titulo, acciones } = {}) => {
+    if (typeof titulo === 'string' && titulo.trim() !== '') {
+      tituloActual = titulo.trim();
     }
+
+    if (acciones) {
+      accionesActuales = acciones;
+      fijarAcciones();
+    }
+
+    publicar();
+  };
+
+  publicar();
+
+  // Cada vez que el audio empieza o se recupera (por ejemplo, tras una reconexión) se
+  // vuelven a publicar los metadatos, para que Android reconstruya la notificación si la
+  // había retirado. El listener es de captura porque los eventos de audio no burbujean.
+  document.addEventListener('playing', event => {
+    if (event.target instanceof HTMLAudioElement) publicar();
   }, true);
 
-}
+  return { poner };
+
+})();
+
+/* Podcasts: cada <audio> lleva su título en data-notif-titulo (lo pone script-cargarss.js).
+   Al darle a play, la notificación pasa a ser la de ese capítulo, con los saltos de -10 y +10 s.
+   Se registran como seekbackward/seekforward (Android Auto los dibuja como tales) y también
+   en previoustrack/nexttrack, porque la notificación del móvil solo dibuja los botones de
+   anterior y siguiente: así el -10 y el +10 salen en las dos. */
+document.addEventListener('play', event => {
+  const audio = event.target;
+  if (!(audio instanceof HTMLAudioElement) || !audio.dataset.notifTitulo) return;
+
+  const atras = () => { audio.currentTime = Math.max(0, audio.currentTime - 10); };
+  const adelante = () => { audio.currentTime = Math.min(audio.duration || Infinity, audio.currentTime + 10); };
+
+  RWFNotificacion.poner({
+    titulo: audio.dataset.notifTitulo,
+    acciones: {
+      previoustrack: atras,
+      nexttrack: adelante,
+      seekbackward: atras,
+      seekforward: adelante
+    }
+  });
+}, true);
 
 /******************************
   OTROS
@@ -233,6 +361,9 @@ window.addEventListener('resize', actualizarEspacioInferior);
  * CATEGORIAS - Filtrar emisoras y separadores
  * *****************************/
 function filterStations(category, btn) {
+  // live/index.html oculta la otra categoría desde el primer pintado con este atributo
+  document.documentElement.dataset.cat = category;
+
   // Seleccionamos tanto las tarjetas como los separadores
   const items = document.querySelectorAll('.card, .category-separator');
   const buttons = document.querySelectorAll('.category-btn');

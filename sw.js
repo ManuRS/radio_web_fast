@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v84";
+const CACHE_NAME = "radio-full-cache-v95";
 
 const FILES_TO_CACHE = [
   "./",
@@ -39,6 +39,13 @@ const FILES_TO_CACHE = [
   "./manifest.json",
   "./live/manifest.json",
   "./live_ser/manifest.json",
+
+  "./capturas/cap1.png",
+  "./capturas/cap2.png",
+  "./capturas/cap3.png",
+  "./capturas/wide1.png",
+  "./capturas/wide2.png",
+  "./capturas/wide3.png",
 
   "./resources/ser_a1.jpg",
   "./resources/redaser.jpg",

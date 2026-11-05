@@ -17,6 +17,8 @@
  *      live.stop();                     // cierra la sesión (la notificación desaparece)
  *      live.playing                     // true si algún <audio> suena
  *    shouldResume() devuelve false para vetar que la notificación reanude esa emisora.
+ *    Con { notificacion: false } la instancia no toca el título ni los botones de la
+ *    notificación (RWFNotificacion, en script-interfaz.js): los pone la página.
  *
  * Ecualizador: los <audio> con data-eq="true" pasan por script-ecualizador.js, que debe
  * cargarse antes que este fichero. Si no está cargado, todo suena como siempre.
@@ -171,6 +173,37 @@ function createLiveSound(options = {}) {
   function setMediaSessionState(state) {
     mediaState = state;
     refreshMediaSessionState();
+  }
+
+  // Título y botones de la notificación de las páginas de tarjetas: el nombre de la
+  // emisora y, si su categoría (generalistas o musicales) tiene más de una, << y >> para
+  // recorrerla. live_boleto lo gestiona la propia página (options.notificacion = false).
+  function publicarNotificacion(card) {
+    if (options.notificacion === false) return;
+    if (typeof RWFNotificacion === "undefined" || !card) return;
+
+    const nombre = card.querySelector(".station-name")?.textContent.trim();
+    if (!nombre) return;
+
+    const categoria = card.classList.contains("musical") ? "musical" : "general";
+    const tarjetas = [...document.querySelectorAll(`.card.${categoria}`)];
+    const posicion = tarjetas.indexOf(card);
+
+    // Cíclico: tras la última se vuelve a la primera. Se cuenta desde la última emisora
+    // pedida (currentCard), no desde la que aún suena, para que varias pulsaciones
+    // seguidas, antes de que conecte la nueva, avancen de una en una.
+    const irA = (salto) => () => {
+      const base = tarjetas.indexOf(currentCard ?? pausedCard);
+      const desde = base >= 0 ? base : posicion;
+      playPause(tarjetas[(desde + salto + tarjetas.length) % tarjetas.length]);
+    };
+
+    RWFNotificacion.poner({
+      titulo: nombre,
+      acciones: (tarjetas.length > 1 && posicion >= 0)
+        ? { previoustrack: irA(-1), nexttrack: irA(1) }
+        : {}
+    });
   }
 
   function destroyCurrentHls() {
@@ -343,6 +376,59 @@ function createLiveSound(options = {}) {
       old.muted = true;
       scheduleRelease(old, oldHls);
     }
+  }
+
+  // Cambio a otra tarjeta con una emisora ya cargada (sonando o en pausa): esa emisora
+  // pasa a ser el "relevo saliente", igual que en una reconexión. Sigue ahí, con el
+  // sonido, hasta que la nueva suena de verdad; entonces completeHandover() la retira.
+  // Así Android no se queda ni un instante sin reproductor y la notificación no
+  // parpadea. Si hay prisa (varios << seguidos), se retiene siempre la primera y las
+  // intermedias, que aún no sonaban, se descartan.
+  // Devuelve false (sin tocar nada) si no hay emisora que retener.
+  function beginCardSwitch() {
+    flushPendingReleases();
+
+    let keep = null;
+    let keepHls = null;
+
+    if (retiringAudio) {
+      keep = retiringAudio;
+      keepHls = retiringHls;
+
+      if (currentAudio && currentAudio !== keep) {
+        currentCard?.classList.remove("playing");
+        releaseAudioElement(currentAudio, currentHls);
+      }
+    } else if (currentAudio && (currentAudio.src || currentHls)) {
+      keep = currentAudio;
+      keepHls = currentHls;
+      currentCard?.classList.remove("playing");
+    } else if (pausedAudio) {
+      keep = pausedAudio;
+      keepHls = currentHls;
+    }
+
+    if (!keep) return false;
+
+    clearBufferMonitor();
+    clearStallWatchdog();
+    clearReconnectTimer();
+
+    pausedAudio = null;
+    pausedCard = null;
+    currentAudio = null;
+    currentCard = null;
+    currentHls = null;
+    reconnecting = false;
+    attemptInFlight = false;
+    reconnectAttempts = 0;
+
+    retiringAudio = keep;
+    retiringHls = keepHls;
+
+    console.log("Cambio de emisora: la anterior se retiene hasta que suene la nueva.");
+
+    return true;
   }
 
   /********************************
@@ -556,18 +642,24 @@ function createLiveSound(options = {}) {
       return;
     }
 
-    // Si pulsamos la emisora activa, paramos la reproducción.
+    // Si pulsamos la emisora activa, queda en pausa: la notificación de Android no se
+    // cierra y conserva su botón de reproducir. Al pulsar la tarjeta otra vez (o el botón
+    // de la notificación) se reanuda saltando al directo.
     if (
       audio === currentAudio &&
       currentCard === card &&
       card.classList.contains("playing")
     ) {
-      stopCurrentPlayback();
+      enterPausedState(audio);
       return;
     }
 
-    // Al cambiar de emisora, limpiamos completamente la anterior.
-    stopCurrentPlayback();
+    // Al cambiar de emisora, la anterior se retiene hasta que la nueva suene (así la
+    // notificación de Android no desaparece). Si no hay nada que retener, se limpia todo.
+    const retenida = audio !== currentAudio && audio !== retiringAudio && audio !== pausedAudio &&
+      beginCardSwitch();
+
+    if (!retenida) stopCurrentPlayback();
 
     currentAudio = audio;
     currentCard = card;
@@ -1049,6 +1141,7 @@ function createLiveSound(options = {}) {
 
       // Estado de la notificación de Android.
       setMediaSessionState("playing");
+      publicarNotificacion(currentCard);
 
     });
 

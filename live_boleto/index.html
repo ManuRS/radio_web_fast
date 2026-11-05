@@ -22,6 +22,11 @@
 
     html, body { overflow: hidden; touch-action: none; }
 
+    /* Sitio reservado desde el primer pintado: el logo (60 px) y las 3 líneas de hora ya
+       ocupan lo que ocuparán, y no se mueve todo lo de debajo cuando se rellenan. */
+    #logo-emisora-caja { display: flex; justify-content: center; align-items: flex-start; height: 64px; }
+    .time { min-height: 1lh; }
+
     /* Emisora de música seleccionada: su texto en negrita */
     .buttonExtraBol[data-music] { font-weight: 400; }
     .buttonExtraBol[data-music][aria-pressed="true"] { font-weight: 700; }
@@ -51,7 +56,7 @@
   </div>
 
   <!-- Imagen emisora sonando -->
-  <div style="width: 100%; text-align: center; margin-bottom: 15px; margin-top: 30px;">
+  <div id="logo-emisora-caja" style="width: 100%; text-align: center; margin-bottom: 15px; margin-top: 30px;">
     <img id="logo-emisora" alt="Logo Emisora" style="height: 60px; object-fit: contain; transition: opacity 0.3s;">
   </div>
   
@@ -60,7 +65,7 @@
 
   <!-- Reproductor oculto -->
   <div id="live_news" hidden><audio id="radio_news" data-eq="true" style="display:none;"></audio></div>
-  <audio id="radio_prep" style="display:none;"></audio>
+  <audio id="radio_prep" data-eq="true" style="display:none;"></audio>
   <div id="live_music" hidden><audio id="radio_music" style="display:none"></audio></div>
 
   <!-- Sliders para el volumen -->
@@ -141,6 +146,7 @@
 
   const audio_news = document.getElementById('radio_news');
   const audio_prep = document.getElementById('radio_prep');
+  Ecualizador.preparar(audio_prep);   // los pines y cortinillas también pasan por el ecualizador
   const audio_music = document.getElementById('radio_music');
 
   const btn = document.getElementById('playButton');
@@ -165,9 +171,10 @@
   const card_news  = document.getElementById('live_news');
   const card_music = document.getElementById('live_music');
 
-  // La notificación solo puede reanudar el stream que toca ahora
-  const liveNews  = createLiveSound({ shouldResume: () => semaforo === true });
-  const liveMusic = createLiveSound({ shouldResume: () => !noticiasEnCurso && musicURL != "none" });
+  // La notificación solo puede reanudar el stream que toca ahora. El título y los botones
+  // de la notificación los pone esta página (actualizarNotificacion), no la librería.
+  const liveNews  = createLiveSound({ shouldResume: () => semaforo === true, notificacion: false });
+  const liveMusic = createLiveSound({ shouldResume: () => !noticiasEnCurso && musicURL != "none", notificacion: false });
 
   liveNews.bindAudioEvents(audio_news);
   liveMusic.bindAudioEvents(audio_music);
@@ -184,22 +191,55 @@
   const imgLogo_off = "../resources/live/off.png";
   imgLogo.src = imgLogo_off;
 
-  // Las noticias llevan data-eq="true" en su <audio> (ver script-ecualizador.js).
+  // Las noticias y los pines/cortinillas (radio_prep) llevan data-eq="true" en su <audio>
+  // (ver script-ecualizador.js). Los sonidos de ../sounds son del mismo origen: no hay CORS.
   // Emisoras de música seleccionables desde los botones ("1" = modo sin música).
   // eq: true pasa la emisora por el ecualizador; false sale directa (HitFM no envía CORS).
+  // nombre: el que sale en la notificación de Android.
   const EMISORAS_MUSICA = {
     "1": { url: "none", eq: false },
-    "2": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3", logo: "../resources/live/los40.png", eq: true },
-    "3": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3", logo: "../resources/live/classic.png", eq: true },
-    "4": { url: "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3", logo: "../resources/live/megastar.png", eq: true },
-    "5": { url: "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3", logo: "../resources/live/rockfm.png", eq: true },
-    "6": { url: "https://hitfm.kissfmradio.cires21.com/hitfm.mp3", logo: "../resources/live/hitfm.png", eq: false }
+    "2": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40.mp3", logo: "../resources/live/los40.png", eq: true, nombre: "LOS40" },
+    "3": { url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CLASSIC.mp3", logo: "../resources/live/classic.png", eq: true, nombre: "LOS40 CLASSIC" },
+    "4": { url: "https://megastar-cope-rrcast.flumotion.com/cope/megastar.mp3", logo: "../resources/live/megastar.png", eq: true, nombre: "MegaStar" },
+    "5": { url: "https://rockfm-cope-rrcast.flumotion.com/cope/rockfm.mp3", logo: "../resources/live/rockfm.png", eq: true, nombre: "RockFM" },
+    "6": { url: "https://hitfm.kissfmradio.cires21.com/hitfm.mp3", logo: "../resources/live/hitfm.png", eq: false, nombre: "HitFM" }
   };
+
+  // Emisoras que recorren los botones << y >> de la notificación (todas menos "solo noticias")
+  const IDS_MUSICA = Object.keys(EMISORAS_MUSICA).filter(id => EMISORAS_MUSICA[id].url != "none");
 
   let musicId = "1";        // emisora aplicada
   let musicIdPedido = "1";  // última emisora pedida (puede estar a media transición)
   let musicURL = "none";
   let imgLogo_music;
+
+  // Notificación de Android (RWFNotificacion, en script-interfaz.js).
+  //  - Toca boleto: "Boleto SER en directo", sin botones (no hay emisora que cambiar).
+  //  - Sin música: "Esperando boleto", sin botones.
+  //  - Con música: "<emisora> (modo noticias)", con << y >> para recorrer las emisoras de música.
+  // Usa la emisora pedida (musicIdPedido), así el título cambia en cuanto se pulsa.
+  function actualizarNotificacion() {
+    if (noticiasEnCurso) {
+      RWFNotificacion.poner({ titulo: "Boleto SER en directo", acciones: {} });
+      return;
+    }
+
+    const emisora = EMISORAS_MUSICA[musicIdPedido];
+
+    if (emisora.url == "none") {
+      RWFNotificacion.poner({ titulo: "Esperando boleto", acciones: {} });
+      return;
+    }
+
+    // Cíclico: tras la última se vuelve a la primera
+    const posicion = IDS_MUSICA.indexOf(musicIdPedido);
+    const irA = (salto) => () => cambiarMusica(IDS_MUSICA[(posicion + salto + IDS_MUSICA.length) % IDS_MUSICA.length]);
+
+    RWFNotificacion.poner({
+      titulo: `${emisora.nombre} (modo noticias)`,
+      acciones: { previoustrack: irA(-1), nexttrack: irA(1) }
+    });
+  }
 
   // Sustituye los <audio> de la música por uno nuevo, sin historial de ecualizador.
   // stop() cierra su sesión y libera los antiguos; startLive() abrirá otra con el nuevo.
@@ -254,6 +294,7 @@
   const musicInicial = new URLSearchParams(window.location.search).get("music");
   seleccionarMusica(EMISORAS_MUSICA[musicInicial] ? musicInicial : "1");
   musicIdPedido = musicId;
+  actualizarNotificacion();
 
   /*================*/
   /*==  HORARIOS  ==*/
@@ -522,6 +563,7 @@
       () => {
         // Llega la hora
         noticiasEnCurso = true;
+        actualizarNotificacion();
         pedirLogo(imgLogo_news);
         btn.style.background = 'green';
         btn.textContent = "Trasmitiendo noticias en directo";
@@ -541,6 +583,7 @@
   function stop_news(){
     cancelaEntradaNoticias();
     noticiasEnCurso = false;
+    actualizarNotificacion();
     clearInterval(fadeAudio_ID);
     fadeAudio_ID = setInterval(() => {fadeOutVol(liveNews, fadeAudio_ID);}, 150);
   }
@@ -577,6 +620,7 @@
       // Para con delay opcional
       setTimeout(() => {
         noticiasEnCurso = true;
+        actualizarNotificacion();
         cancelaEntradaMusica();
         quitarRebote();
         clearInterval(fadeMusic_ID);
@@ -589,6 +633,7 @@
   function cambiarMusica(id) {
     if (!EMISORAS_MUSICA[id] || id === musicIdPedido) return;
     musicIdPedido = id;
+    actualizarNotificacion();
 
     // Resalta ya el botón pulsado
     document.querySelectorAll('[data-music]').forEach(b => {
@@ -645,6 +690,8 @@
     // El ecualizador necesita arrancar dentro de este clic: las noticias y la música
     // se cargan después, por temporizadores, y ya no habría gesto del usuario.
     Ecualizador.iniciar();
+    // Los pines suenan a su hora sin gesto del usuario: se enganchan ya, dentro del clic.
+    Ecualizador.conectar(audio_prep);
 
     setTimeout(() => { setupVisualizer(); }, 0);
     setTimeout(() => { pin(); }, 0);

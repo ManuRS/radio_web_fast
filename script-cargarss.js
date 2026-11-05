@@ -6,12 +6,14 @@
  * ****************************************/
 // eq: true pasa los audios por el ecualizador (script-ecualizador.js); false suenan directos.
 // El servidor del archivo debe permitir CORS; si no, el audio se recarga solo sin ecualizador.
-async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo", eq=false) {
-  try {
+// tituloNotif: si se indica, es la primera línea de la notificación de Android para todos los audios
+// de la página (por defecto, el nombre que muestra la tarjeta).
+async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo", eq=false, tituloNotif=null) {
+  // Crear cascaron HTML
+  const listaDiv = document.getElementById("lista");
+  const contenedores = crearContenedoresPodcasts(numElems_arg , listaDiv);
 
-    // Crear cascaron HTML
-    const listaDiv = document.getElementById("lista");
-    const contenedores = crearContenedoresPodcasts(numElems_arg , listaDiv);
+  try {
 
     // Conseguir datos y extraer las N primeras entradas
     const feed = await descargarFeedRss(feedUrl_arg);
@@ -21,11 +23,14 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type
     const imagen_select = defineImagenPodcast (feed, imagen_type);
 
     // Rellenar cada contenedor con su audio
-    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select, eq) );
+    items.forEach((item, index) => construirUnCapitulo(item, contenedores[index], visual_arg, null, imagen_select, eq, tituloNotif) );
 
   } catch(e) {
     console.error("Error cargando RSS:", e);
   }
+
+  // Los huecos que se quedan sin capítulo (feed caído o con menos entradas) desaparecen
+  quitarHuecosVacios(contenedores);
 }
 
 /******************************************
@@ -98,6 +103,9 @@ async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedore
   } catch(e) {
     console.error("Error cargando RSS:", e);
   }
+
+  // Los huecos que se quedan sin capítulo (no aparece o el feed falla) desaparecen
+  quitarHuecosVacios(contenedores_arg);
 }
 
 /******************************************
@@ -119,7 +127,11 @@ function escaparHtml(texto) {
  * CONSTRUIR CAPITULO
  * 
  * ****************************************/
-function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select, eq=false){
+function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select, eq=false, tituloNotif=null){
+
+  // Ya no es un hueco en carga: sale el esqueleto y manda la altura real
+  contenedor.classList.remove("cargando");
+  contenedor.removeAttribute("aria-hidden");
 
   // Solo se activa si la página ha cargado script-ecualizador.js
   const conEq = eq === true && typeof Ecualizador !== "undefined";
@@ -188,6 +200,14 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
       <br>
     `;
     /*************************************************************/
+
+    // Primera línea de la notificación de Android (ver RWFNotificacion en script-interfaz.js):
+    // lo mismo que se ve como título en la tarjeta, sin la antigüedad. Es el nombre
+    // personalizado si la tarjeta lo muestra y, si no, el título del capítulo. Una página puede
+    // fijar el suyo para todos sus audios (tituloNotif).
+    const tituloCapitulo = item.querySelector("title")?.textContent?.trim() || "Sin título";
+    const nombreTarjeta = String(visual ?? "").startsWith("personalizado") ? String(personalizado ?? "").trim() : "";
+    contenedor.querySelector("audio").dataset.notifTitulo = tituloNotif || nombreTarjeta || tituloCapitulo;
 
     if (conEq) Ecualizador.vigilar(contenedor.querySelector("audio"));
 
@@ -261,13 +281,34 @@ function crearContenedoresPodcasts(podcasts, listaDiv) {
     ? podcasts
     : podcasts.reduce((suma, pod) => suma + (pod.ncaps ?? 1), 0);
 
-  // Crear los contenedores
+  // Crear los contenedores, con su esqueleto de carga (ver .cargando en theme-podcast.css).
+  // Reproduce la estructura de la tarjeta real: imagen, líneas de texto, audio y botones.
   return Array.from({ length: total }, () => {
     const div = document.createElement("div");
-    div.className = "podcast";
+    div.className = "podcast cargando";
+    div.setAttribute("aria-hidden", "true");
+    div.innerHTML = `
+      <div class="podcast-contenido">
+        <span class="esq-img"></span>
+        <div class="podcast-texto">
+          <div class="esq-lineas"><i></i><i></i><i></i><i></i></div>
+          <span class="esq-audio"></span>
+          <div class="controles">
+            <div class="botones-reproduccion esq-botones"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+      </div>
+      <br>
+    `;
     listaDiv.appendChild(div);
     return div;
   });
+}
+
+// Quita los contenedores que no se han llegado a rellenar: con su altura reservada
+// quedarían como tarjetas con el esqueleto puesto para siempre.
+function quitarHuecosVacios(contenedores) {
+  contenedores.forEach(c => { if (c.classList.contains("cargando")) c.remove(); });
 }
 
 /******************************************
