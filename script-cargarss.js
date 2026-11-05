@@ -9,11 +9,11 @@
 // tituloNotif: si se indica, es la primera línea de la notificación de Android para todos los audios
 // de la página (por defecto, el nombre que muestra la tarjeta).
 async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type="capitulo", eq=false, tituloNotif=null) {
-  try {
+  // Crear cascaron HTML
+  const listaDiv = document.getElementById("lista");
+  const contenedores = crearContenedoresPodcasts(numElems_arg , listaDiv);
 
-    // Crear cascaron HTML
-    const listaDiv = document.getElementById("lista");
-    const contenedores = crearContenedoresPodcasts(numElems_arg , listaDiv);
+  try {
 
     // Conseguir datos y extraer las N primeras entradas
     const feed = await descargarFeedRss(feedUrl_arg);
@@ -28,6 +28,9 @@ async function cargaRSS_nlast(feedUrl_arg, numElems_arg, visual_arg, imagen_type
   } catch(e) {
     console.error("Error cargando RSS:", e);
   }
+
+  // Los huecos que se quedan sin capítulo (feed caído o con menos entradas) desaparecen
+  quitarHuecosVacios(contenedores);
 }
 
 /******************************************
@@ -100,6 +103,9 @@ async function cargarRSS_onecap(feedUrl_arg, name_arg, capitulo_arg, contenedore
   } catch(e) {
     console.error("Error cargando RSS:", e);
   }
+
+  // Los huecos que se quedan sin capítulo (no aparece o el feed falla) desaparecen
+  quitarHuecosVacios(contenedores_arg);
 }
 
 /******************************************
@@ -278,6 +284,12 @@ function crearContenedoresPodcasts(podcasts, listaDiv) {
     listaDiv.appendChild(div);
     return div;
   });
+}
+
+// Quita los contenedores que no se han llegado a rellenar: con su altura reservada
+// (.podcast:empty en theme-podcast.css) quedarían como tarjetas en blanco.
+function quitarHuecosVacios(contenedores) {
+  contenedores.forEach(c => { if (!c.hasChildNodes()) c.remove(); });
 }
 
 /******************************************

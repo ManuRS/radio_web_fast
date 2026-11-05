@@ -18,6 +18,40 @@
   gap: 40px; /* espacio entre imagen y contenido */
 }
 
+/* Hueco reservado mientras el capítulo se descarga: tiene ya su altura final y la página no
+   pega saltos al rellenarse. Solo vale mientras está vacío (:empty); al rellenarse manda la
+   altura real. Alturas medidas en el navegador, con imagen y botones, según las líneas de texto
+   que se esperan en móvil (escritorio entre paréntesis). La página elige su caso con una clase
+   en #lista; sin clase: un título de 1 línea. */
+#lista {
+  --hueco-movil: 349px;          /* título de 1 línea */
+  --hueco-escritorio: 244px;
+}
+
+#lista.hueco-titulo2 {           /* título de 2 líneas (prensa escrita) */
+  --hueco-movil: 369px;
+}
+
+#lista.hueco-subtitulo1 {        /* título + subtítulo de 1 línea (boletines, mediodía y noche) */
+  --hueco-movil: 389px;
+  --hueco-escritorio: 284px;
+}
+
+#lista.hueco-subtitulo3 {        /* título + subtítulo de 3 líneas en móvil (entretenimiento) */
+  --hueco-movil: 429px;
+  --hueco-escritorio: 284px;
+}
+
+.podcast:empty {
+  min-height: var(--hueco-movil);
+}
+
+@media (min-width: 601px) {
+  .podcast:empty {
+    min-height: var(--hueco-escritorio);
+  }
+}
+
 .podcast-texto {
   flex: 1;
   min-width: 0;  /**/
