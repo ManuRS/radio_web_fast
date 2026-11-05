@@ -32,7 +32,7 @@ Reproductor de radio *vibecodeado* con...
 
 ## Libre de rastreos
 
-- El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica: 1) Con los servidores de emisión de audio 2) Con los feeds de podcast 3) Con time.now en la página de conexión automática a los boletos de la SER 4) Con el feed RSS de El País en la página correspondiente 5) Con las librerías de visualización de mapas en la página de las emisoras de la SER
+- El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica: 1) Con los servidores de emisión de audio 2) Con los feeds de podcast 3) Con time.now en la página de conexión automática a los boletos de la SER 4) Con el feed RSS de El País en la página correspondiente 5) Con las librerías de visualización de mapas en la página de las emisoras de la SER.
 
 - La radio en directo usa HLS.js cuando es necesario. Es una librería de código abierto y el estándar de la industria para reproducir HLS, un formato desarrollado por Apple que usan los medios que ofrecen mejor calidad y latencia en su stream. No está soportado por defecto por los navegadores. No se descarga siempre, la versión utilizada se almacena en la cache del sitio.
 
@@ -42,4 +42,4 @@ Reproductor de radio *vibecodeado* con...
 
 - La web descarga en la primera apertura unos ~8MB que se guardan como cache del sitio. Incluye el código propio para funcionar (HTML, CSS y JavaScript), la librería externa HLS.js, los sonidos de transición y las imágenes que se usan en el menú y para seleccionar emisoras en el reproductor en directo.
 
-- Los anuncios al escuchar un audio están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o el podcast
+- Los anuncios al escuchar un audio están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o el podcast.
