@@ -40,7 +40,7 @@ const EQ_AJUSTES = {
 // Los realces hacen que algunos picos pasen de 1,0 (saturación al salir). El limitador solo
 // actúa en esos picos: por debajo del umbral no cambia ni el sonido ni el volumen.
 const EQ_LIMITADOR = {
-  threshold: -2,   // dB desde donde empieza a frenar
+  threshold: -1,   // dB desde donde empieza a frenar
   knee: 0,         // 0 = cambio brusco en el umbral
   ratio: 20,       // casi un tope
   attack: 0.002,   // s

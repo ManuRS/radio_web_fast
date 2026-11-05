@@ -60,7 +60,7 @@
 
   <!-- Reproductor oculto -->
   <div id="live_news" hidden><audio id="radio_news" data-eq="true" style="display:none;"></audio></div>
-  <audio id="radio_prep" style="display:none;"></audio>
+  <audio id="radio_prep" data-eq="true" style="display:none;"></audio>
   <div id="live_music" hidden><audio id="radio_music" style="display:none"></audio></div>
 
   <!-- Sliders para el volumen -->
@@ -141,6 +141,7 @@
 
   const audio_news = document.getElementById('radio_news');
   const audio_prep = document.getElementById('radio_prep');
+  Ecualizador.preparar(audio_prep);   // los pines y cortinillas también pasan por el ecualizador
   const audio_music = document.getElementById('radio_music');
 
   const btn = document.getElementById('playButton');
@@ -185,7 +186,8 @@
   const imgLogo_off = "../resources/live/off.png";
   imgLogo.src = imgLogo_off;
 
-  // Las noticias llevan data-eq="true" en su <audio> (ver script-ecualizador.js).
+  // Las noticias y los pines/cortinillas (radio_prep) llevan data-eq="true" en su <audio>
+  // (ver script-ecualizador.js). Los sonidos de ../sounds son del mismo origen: no hay CORS.
   // Emisoras de música seleccionables desde los botones ("1" = modo sin música).
   // eq: true pasa la emisora por el ecualizador; false sale directa (HitFM no envía CORS).
   // nombre: el que sale en la notificación de Android.
@@ -683,6 +685,8 @@
     // El ecualizador necesita arrancar dentro de este clic: las noticias y la música
     // se cargan después, por temporizadores, y ya no habría gesto del usuario.
     Ecualizador.iniciar();
+    // Los pines suenan a su hora sin gesto del usuario: se enganchan ya, dentro del clic.
+    Ecualizador.conectar(audio_prep);
 
     setTimeout(() => { setupVisualizer(); }, 0);
     setTimeout(() => { pin(); }, 0);
