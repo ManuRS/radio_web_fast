@@ -14,41 +14,32 @@ Reproductor de radio *vibecodeado* con...
 
 ### Puntos de instalación como Aplicación Web Progresiva (PWA)
 
-- Radio en directo (la más recomendable): https://manurs.github.io/radio_web_fast/live
+- [Radio en directo](https://manurs.github.io/radio_web_fast/live/) es la versión más recomendable para escuchar en directo el catálogo de emisoras disponible
 
-- Aplicación completa (adaptada a mi uso personal): https://manurs.github.io/radio_web_fast
+- [La aplicación completa](https://manurs.github.io/radio_web_fast/) está adaptada a mi uso personal con las listas de podcast, el visor de El País y el mapa de la SER
 
-- Modo sencillo (solo un botón con la SER): https://manurs.github.io/radio_web_fast/live_ser
+- [Modo sencillo](https://manurs.github.io/radio_web_fast/live_ser/) proporciona un solo botón con el directo de la SER. Fue el germen de esta aplicación: acercar la radio a quien no puede manejar aplicaciones repletas de anuncios y menús pero tampoco radios convencionales
 
 ## Hitos
 
-- Programado en septiembre de 2025, utilizando las versiones gratuitas de Gemini y ChatGPT a través de la web (sin emplear paradigmas estilo Claude Code / OpenAI Codex). Se utilizaron únicamente *prompts* contra los modelos de lenguaje y sus respuestas en formato de texto (sin que los modelos tuvieran acceso a entornos ni capacidad de ejecutar comandos)
+- Septiembre de 2025: Desarrollo de la primera versión utilizando las opciones gratuitas de Gemini y ChatGPT a través de la web (sin emplear paradigmas estilo Claude Code / OpenAI Codex). Se utilizaron únicamente *prompts* contra los modelos de lenguaje y sus respuestas en formato de texto, sin que los modelos tuvieran acceso a entornos ni capacidad de ejecutar comandos.
 
-- Abril y mayo de 2026: mejora profunda de los permisos de audio en segundo plano, automatización de la reproducción de noticias cada hora y optimización del comportamiento como Aplicación Web Progresiva (PWA) que puede ser instalada en un teléfono móvil. Todo sin modificar la arquitectura general
+- Abril y mayo de 2026: Mejora profunda de los permisos de audio en segundo plano, automatización de la reproducción de noticias cada hora y optimización del comportamiento como Aplicación Web Progresiva (PWA) que puede ser instalada en un teléfono móvil. Todo sin modificar la arquitectura general.
 
-### Problemas
+- Octubre de 2026 (Fase 1): Refactorización del código, modo oscuro y librería de audio. Inicialmente el proyecto no estaba pensado para ser alojado en un servidor; el objetivo era crear un archivo HTML guardado en el dispositivo. Creció poco a poco y gran parte del código se repetía en muchas de las páginas. La refactorización se realizó con mis ideas y esfuerzo, con la conversación con ChatGPT como ayudante y tester de los cambios. Es mi último gran homenaje a la programación tradicional. Migración con la librería de audio a un modelo algo más desatendido de desarrollo.
 
-- Código repetido: Inicialmente este proyecto no estaba pensado para ser alojado en un servidor; el objetivo era crear un arhivo HTML guardado en la memoria del dispositivo. Como resultado, gran parte del código se repite en muchas de las páginas. Esto supone un problema a la hora de realizar cambios, ya que es necesario aplicarlos en múltiples archivos
-
-- Sin grandes protecciones contra las conexiones inestables o intermitentes (por ejemplo, no gestiona reconexiones y apenas compensa el *delay* en la reproducción)
-
-### Estado del proyecto
-
-- Base de código madura y que funciona correctamente para mis casos de uso
-- Sería necesario refactorizar el código si se desea ampliar significativamente su funcionalidad
-
-### Aportaciones
-
-- Abierto a solicitudes para añadir streams de emisoras. Mensajes a través de LinkedIn o mediante Issues / Pull Request de GitHub
-- Normas: se añaden solo streams oficiales y siempre intentando usar los enlaces canónicos pre-balanceo de servidores
+- Octubre de 2026 (Fase 2): Migración completa a un desarrollo desatendido usando Claude (Sonnet 5.5 en esfuerzo alto) para mejorar aún más la librería de audio, creando una aplicación aún más profesional y que cuenta con reconexión automática al recuperar una conexión a internet perdida. Mejoró también la gestión de las notificaciones en Android (no probado en iOS), el cálculo del *delay* de emisión online y el aspecto visual.
 
 ## Libre de rastreos
 
-- El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica con los servidores de emisión de audio y con los feeds de podcast
-- La web descarga una sola menos de 7MB que se guardan como cache del sitio. Son las imágenes que se usan en el menú y para seleccionar emisoras
-- Los anuncios al escuchar están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o el podcast
+- El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica: 1) Con los servidores de emisión de audio 2) Con los feeds de podcast 3) Con time.now en la página de conexión automática a los boletos de la SER 4) Con el feed RSS de El País en la página correspondiente 5) Con las librerías de visualización de mapas en la página de las emisoras de la SER
 
-### Librería de terceros
+- La radio en directo usa HLS.js cuando es necesario. Es una librería de código abierto y el estándar de la industria para reproducir HLS, un formato desarrollado por Apple que usan los medios que ofrecen mejor calidad y latencia en su stream. No está soportado por defecto por los navegadores. No se descarga siempre, la versión utilizada se almacena en la cache del sitio.
 
-- La radio en directo usa HLS.js cuando es necesario. Es una libreria que permite reproducir ciertos formatos de emisión no soportados por defecto por los navegadores
-- El mapa se produce utilizando la libreria leaflet.js así como su hoja de estilos estilos leaflet.css.
+- Mapa versión original: utiliza la librería Leaflet y su hoja de estilos así como las teselas de OpenStreetMap.
+
+- Mapa versión actual: utiliza Leaflet (librería y estilos), MapLibre (librería y estilos), el puente maplibre-gl-leaflet para unir ambas librerías así como las teselas positron y dark de OpenFreeMap.
+
+- La web descarga en la primera apertura unos ~8MB que se guardan como cache del sitio. Incluye el código propio para funcionar (HTML, CSS y JavaScript), la librería externa HLS.js, los sonidos de transición y las imágenes que se usan en el menú y para seleccionar emisoras en el reproductor en directo.
+
+- Los anuncios al escuchar un audio están siempre controlados y añadidos por la empresa que envía el correspondiente stream de audio o el podcast
