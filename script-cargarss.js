@@ -129,6 +129,10 @@ function escaparHtml(texto) {
  * ****************************************/
 function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_select, eq=false, tituloNotif=null){
 
+  // Ya no es un hueco en carga: sale el esqueleto y manda la altura real
+  contenedor.classList.remove("cargando");
+  contenedor.removeAttribute("aria-hidden");
+
   // Solo se activa si la página ha cargado script-ecualizador.js
   const conEq = eq === true && typeof Ecualizador !== "undefined";
   if (eq === true && !conEq) console.warn("eq=true, pero esta página no carga script-ecualizador.js.");
@@ -277,19 +281,34 @@ function crearContenedoresPodcasts(podcasts, listaDiv) {
     ? podcasts
     : podcasts.reduce((suma, pod) => suma + (pod.ncaps ?? 1), 0);
 
-  // Crear los contenedores
+  // Crear los contenedores, con su esqueleto de carga (ver .cargando en theme-podcast.css).
+  // Reproduce la estructura de la tarjeta real: imagen, líneas de texto, audio y botones.
   return Array.from({ length: total }, () => {
     const div = document.createElement("div");
-    div.className = "podcast";
+    div.className = "podcast cargando";
+    div.setAttribute("aria-hidden", "true");
+    div.innerHTML = `
+      <div class="podcast-contenido">
+        <span class="esq-img"></span>
+        <div class="podcast-texto">
+          <div class="esq-lineas"><i></i><i></i><i></i><i></i></div>
+          <span class="esq-audio"></span>
+          <div class="controles">
+            <div class="botones-reproduccion esq-botones"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </div>
+      </div>
+      <br>
+    `;
     listaDiv.appendChild(div);
     return div;
   });
 }
 
 // Quita los contenedores que no se han llegado a rellenar: con su altura reservada
-// (.podcast:empty en theme-podcast.css) quedarían como tarjetas en blanco.
+// quedarían como tarjetas con el esqueleto puesto para siempre.
 function quitarHuecosVacios(contenedores) {
-  contenedores.forEach(c => { if (!c.hasChildNodes()) c.remove(); });
+  contenedores.forEach(c => { if (c.classList.contains("cargando")) c.remove(); });
 }
 
 /******************************************
