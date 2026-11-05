@@ -44,56 +44,111 @@ if (news_volume) {
 /******************************
   MODAL DE SALIDA
 *******************************/
+// Una vez que ha sonado algo, el primer gesto atrás no saca de la página: abre un modal, y
+// el segundo gesto sale. Antes de dar a play, el gesto atrás funciona con normalidad.
+//
+// Con CloseWatcher (Chrome y Edge 126, Firefox 149) el navegador avisa de la petición de
+// cierre sin tocar el historial: no se añaden entradas fantasma y no hay nada que Android
+// pueda previsualizar de una navegación que no va a ocurrir. En los navegadores que no lo
+// soportan se usa el truco clásico de añadir una entrada al historial.
 const exitModal = document.getElementById("exit-modal");
 const stayBtn = document.getElementById("stay-btn");
 
 if (exitModal && stayBtn) {
-  let scrollPosition = 0;
   let modalAbierto = false;
-  let audioIniciado = false;
 
-  // Detectar reproducciones, incluidos los audios creados dinámicamente
-  document.addEventListener("play", event => {
-    if (event.target instanceof HTMLAudioElement) {
-      audioIniciado = true;
-    }
-  }, true);
-
-  // Crear una entrada para interceptar el primer gesto atrás
-  history.pushState({ exitModal: true }, "", location.href);
-
-  window.addEventListener("popstate", () => {
-    // Sin audio previo: no interceptar la navegación
-    if (!audioIniciado) {
-      history.back();
-      return;
-    }
-
-    // Si el modal está abierto, el siguiente gesto permite salir
-    if (modalAbierto) {
-      exitModal.style.display = "none";
-      modalAbierto = false;
-      return;
-    }
-
-    // Mostrar el modal
-    scrollPosition = window.scrollY;
+  const mostrarModal = () => {
     modalAbierto = true;
     exitModal.style.display = "flex";
+  };
 
-    // Mantener una entrada para el siguiente gesto atrás
+  const ocultarModal = () => {
+    modalAbierto = false;
+    exitModal.style.display = "none";
+  };
+
+  stayBtn.addEventListener("click", ocultarModal);
+
+  /* --- Con CloseWatcher --- */
+  const vigilarAtrasConCloseWatcher = () => {
+    let vigilante = null;
+
+    const armar = () => {
+      if (vigilante) return;
+      vigilante = new CloseWatcher();
+
+      // Primer gesto atrás: preguntar. El navegador solo permite cancelarlo si el usuario ha
+      // tocado la página desde el último gesto; si no, salta directo a "close" para que
+      // nadie quede atrapado.
+      vigilante.addEventListener("cancel", event => {
+        if (modalAbierto || !event.cancelable) return;
+        event.preventDefault();
+        mostrarModal();
+      });
+
+      // Segundo gesto atrás: salir de la página
+      vigilante.addEventListener("close", () => {
+        vigilante = null;
+        ocultarModal();
+        history.back();
+      });
+    };
+
+    // Armarlo con la primera reproducción, incluidos los audios creados dinámicamente
+    document.addEventListener("play", event => {
+      if (event.target instanceof HTMLAudioElement) armar();
+    }, true);
+  };
+
+  /* --- Respaldo: navegadores sin CloseWatcher --- */
+  const vigilarAtrasConHistorial = () => {
+    let scrollPosition = 0;
+    let audioIniciado = false;
+
+    document.addEventListener("play", event => {
+      if (event.target instanceof HTMLAudioElement) {
+        audioIniciado = true;
+      }
+    }, true);
+
+    // Crear una entrada para interceptar el primer gesto atrás
     history.pushState({ exitModal: true }, "", location.href);
 
-    requestAnimationFrame(() => {
+    window.addEventListener("popstate", () => {
+      // Sin audio previo: no interceptar la navegación
+      if (!audioIniciado) {
+        history.back();
+        return;
+      }
+
+      // Si el modal está abierto, el siguiente gesto permite salir
+      if (modalAbierto) {
+        ocultarModal();
+        return;
+      }
+
+      // Mostrar el modal
+      scrollPosition = window.scrollY;
+      mostrarModal();
+
+      // Mantener una entrada para el siguiente gesto atrás
+      history.pushState({ exitModal: true }, "", location.href);
+
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPosition);
+      });
+    });
+
+    stayBtn.addEventListener("click", () => {
       window.scrollTo(0, scrollPosition);
     });
-  });
+  };
 
-  stayBtn.addEventListener("click", () => {
-    exitModal.style.display = "none";
-    modalAbierto = false;
-    window.scrollTo(0, scrollPosition);
-  });
+  if ("CloseWatcher" in window) {
+    vigilarAtrasConCloseWatcher();
+  } else {
+    vigilarAtrasConHistorial();
+  }
 }
   
 /******************************
