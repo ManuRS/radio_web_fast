@@ -48,9 +48,11 @@ if (news_volume) {
 // el segundo gesto sale. Antes de dar a play, el gesto atrás funciona con normalidad.
 //
 // Con CloseWatcher (Chrome y Edge 126, Firefox 149) el navegador avisa de la petición de
-// cierre sin tocar el historial: no se añaden entradas fantasma y no hay nada que Android
-// pueda previsualizar de una navegación que no va a ocurrir. En los navegadores que no lo
-// soportan se usa el truco clásico de añadir una entrada al historial.
+// cierre sin tocar el historial: no se añaden entradas fantasma. Solo se vigila el primer
+// gesto: al abrir el modal se deja de vigilar, así el segundo gesto es un atrás normal del
+// navegador, con su vista previa de la página anterior. "Seguir en la página" vuelve a vigilar
+// (un vigilante nuevo por cada pregunta: Chrome solo deja cancelar un par de veces el mismo).
+// En los navegadores que no lo soportan se usa el truco clásico de añadir una entrada al historial.
 const exitModal = document.getElementById("exit-modal");
 const stayBtn = document.getElementById("stay-btn");
 
@@ -74,22 +76,25 @@ if (exitModal && stayBtn) {
     let vigilante = null;
 
     const armar = () => {
-      if (vigilante) return;
-      vigilante = new CloseWatcher();
+      // Con el modal abierto no se vigila: el siguiente gesto debe ser un atrás normal
+      if (vigilante || modalAbierto) return;
+      const watcher = new CloseWatcher();
+      vigilante = watcher;
 
-      // Primer gesto atrás: preguntar. El navegador solo permite cancelarlo si el usuario ha
-      // tocado la página desde el último gesto; si no, salta directo a "close" para que
-      // nadie quede atrapado.
-      vigilante.addEventListener("cancel", event => {
-        if (modalAbierto || !event.cancelable) return;
+      // Primer gesto atrás: abrir el modal y dejar de vigilar. El navegador solo permite
+      // cancelarlo si el usuario ha tocado la página desde el último gesto; si no, salta
+      // directo a "close" para que nadie quede atrapado.
+      watcher.addEventListener("cancel", event => {
+        if (!event.cancelable) return;
         event.preventDefault();
+        watcher.destroy();
+        vigilante = null;
         mostrarModal();
       });
 
-      // Segundo gesto atrás: salir de la página
-      vigilante.addEventListener("close", () => {
+      // Cierre que no se ha podido preguntar: salir de la página
+      watcher.addEventListener("close", () => {
         vigilante = null;
-        ocultarModal();
         history.back();
       });
     };
@@ -98,6 +103,9 @@ if (exitModal && stayBtn) {
     document.addEventListener("play", event => {
       if (event.target instanceof HTMLAudioElement) armar();
     }, true);
+
+    // Seguir en la página: volver a vigilar el gesto atrás
+    stayBtn.addEventListener("click", armar);
   };
 
   /* --- Respaldo: navegadores sin CloseWatcher --- */
