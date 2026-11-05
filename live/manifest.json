@@ -2,7 +2,7 @@
   "name": "Radio Web Fast Live",
   "short_name": "Radio WF Live",
 
-  "version": "95",
+  "version": "96",
 
   "start_url": "./",
   "display": "standalone",
@@ -32,26 +32,26 @@
 
   "screenshots": [
     {
-      "src": "../capturas/cap1.png",
-      "type": "image/png",
+      "src": "../capturas/cap1.webp",
+      "type": "image/webp",
       "sizes": "485x958",
       "form_factor": "narrow"
     },
     {
-      "src": "../capturas/cap3.png",
-      "type": "image/png",
+      "src": "../capturas/cap3.webp",
+      "type": "image/webp",
       "sizes": "485x958",
       "form_factor": "narrow"
     },
     {
-      "src": "../capturas/wide2.png",
-      "type": "image/png",
+      "src": "../capturas/wide2.webp",
+      "type": "image/webp",
       "sizes": "1024x593",
       "form_factor": "wide"
     },
     {
-      "src": "../capturas/wide3.png",
-      "type": "image/png",
+      "src": "../capturas/wide3.webp",
+      "type": "image/webp",
       "sizes": "1024x593",
       "form_factor": "wide"
     }
