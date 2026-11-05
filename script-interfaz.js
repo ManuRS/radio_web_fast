@@ -361,6 +361,9 @@ window.addEventListener('resize', actualizarEspacioInferior);
  * CATEGORIAS - Filtrar emisoras y separadores
  * *****************************/
 function filterStations(category, btn) {
+  // live/index.html oculta la otra categoría desde el primer pintado con este atributo
+  document.documentElement.dataset.cat = category;
+
   // Seleccionamos tanto las tarjetas como los separadores
   const items = document.querySelectorAll('.card, .category-separator');
   const buttons = document.querySelectorAll('.category-btn');

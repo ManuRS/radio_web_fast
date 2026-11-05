@@ -14,6 +14,13 @@
 
   <script src="../script-fastload.js"></script>
 
+  <!-- Categoría guardada, antes del primer pintado: las tarjetas de la otra categoría nacen
+       ocultas (regla de abajo) y no hay un "golpe" cuando script-interfaz.js las oculta. -->
+  <script>
+    try { document.documentElement.dataset.cat = localStorage.getItem('selectedCategory') || 'general'; }
+    catch (error) { document.documentElement.dataset.cat = 'general'; }
+  </script>
+
   <link rel="stylesheet" href="../theme-colors.css">
   <link rel="stylesheet" href="../theme-podcast.css">
   <link rel="stylesheet" href="../theme-aux.css">
@@ -24,6 +31,10 @@
   <script src="../hls.min-173.js"></script>
 
   <style>
+    /* Solo se ve la categoría elegida desde el primer pintado (filterStations mantiene data-cat) */
+    html[data-cat="general"] :is(.card, .category-separator).musical,
+    html[data-cat="musical"] :is(.card, .category-separator).general { display: none; }
+
     /* Fondos personalizados */
     .cadena-ser::before { background-image: url('../resources/micro.jpg'); }
     .cope::before { background-image: url('../resources/cope.jpg'); }
@@ -79,6 +90,14 @@
   <button class="category-btn active" onclick="filterStations('general', this)">Generalistas</button>
   <button class="category-btn" onclick="filterStations('musical', this)">Musicales</button>
 </div>
+<script>
+  // El botón de la categoría guardada ya sale marcado (sin esperar a script-interfaz.js)
+  if (document.documentElement.dataset.cat === 'musical') {
+    const botones = document.querySelectorAll('.category-btn');
+    botones[0].classList.remove('active');
+    botones[1].classList.add('active');
+  }
+</script>
 
 <!-- Control de volumen, define su posición -->
 <div class="volume-control">

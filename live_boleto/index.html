@@ -22,6 +22,11 @@
 
     html, body { overflow: hidden; touch-action: none; }
 
+    /* Sitio reservado desde el primer pintado: el logo (60 px) y las 3 líneas de hora ya
+       ocupan lo que ocuparán, y no se mueve todo lo de debajo cuando se rellenan. */
+    #logo-emisora-caja { display: flex; justify-content: center; align-items: flex-start; height: 64px; }
+    .time { min-height: 1lh; }
+
     /* Emisora de música seleccionada: su texto en negrita */
     .buttonExtraBol[data-music] { font-weight: 400; }
     .buttonExtraBol[data-music][aria-pressed="true"] { font-weight: 700; }
@@ -51,7 +56,7 @@
   </div>
 
   <!-- Imagen emisora sonando -->
-  <div style="width: 100%; text-align: center; margin-bottom: 15px; margin-top: 30px;">
+  <div id="logo-emisora-caja" style="width: 100%; text-align: center; margin-bottom: 15px; margin-top: 30px;">
     <img id="logo-emisora" alt="Logo Emisora" style="height: 60px; object-fit: contain; transition: opacity 0.3s;">
   </div>
   
