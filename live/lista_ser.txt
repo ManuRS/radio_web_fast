@@ -1,5 +1,5 @@
 
-ICECAST SER - PARECE DESMONTADO A SEPTIEMBRE DE 2026
+ICECAST SER - DESMONTADO A SEPTIEMBRE DE 2026
 
 <audio data-src="https://emisoras.cadenaser.com/CADENASER"></audio>
 
@@ -56,9 +56,35 @@ MP3 SER - 128 KB/S y 96 KB/S (SEPTIEMBRE DE 2026)
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_BARCELONA.mp3"></audio>
 <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3"></audio>
 
+---------------
+
+LOS40
+
+https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_MADRID.mp3
+https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CAT.mp3
+
+https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_ASO_ZAMORA.mp3
+https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_ASO_BENAVENTE.mp3
+
 ----------------
 
-OTRAS COSAS - ITALIA
+OTRAS
+
+DIAL Latino
+https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL_02.mp3
+
+DIAL Baladas
+https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL_03.mp3
+
+LOS40 México
+https://26143.live.streamtheworld.com/LOS40_MEXICO.mp3
+
+LOS40 Argentina
+https://edge02.radiohdvivo.com/los40
+
+----------------
+
+OTRAS - ITALIA
 
 Rai Radio 1
 http://icestreaming.rai.it/1.mp3
@@ -80,7 +106,7 @@ https://kisskiss.fluidstream.eu/KissKiss.aac
 
 ----------------
 
-OTRAS - TV
+OTRAS - TV INTER
 
 24H
 https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr_720.m3u8

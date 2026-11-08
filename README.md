@@ -2,13 +2,13 @@
 
 Reproductor de radio *vibecodeado* con...
 
-- Una lista actualizada de emisiones de radio en directo, que incluye enlaces oficiales a las principales emisoras españolas (más de 10 cadenas generalistas y más de 15 emisoras musicales)
+- Una lista de emisiones de radio en directo, que incluye enlaces oficiales a las principales cadenas españolas (más de 10 generalistas y más de 15 musicales)
 
 - Una página que reproduce una emisión musical (o permanece en silencio) con conexión automática durante el día (de 8 a 20) a los boletines de la Cadena SER
 
 - Siete listas de podcast: Algunas son simples visores de un feed xml, otras son selecciones curadas para mi uso personal
 
-- Visor del RSS oficial de la portada de El País: Las mismas noticias de la web de inicio del periódico, pero sin distintos pesos visuales y con sus títulos completos (no los usados en la portada)
+- Visor del RSS oficial de la portada de El País: Las mismas noticias de la web del periódico, pero sin pesos visuales y con sus títulos completos (no los usados en la portada)
 
 - Mapa de emisoras de la SER: No se garantiza que la información sea correcta o este 100% actualizada
 
@@ -30,11 +30,19 @@ Reproductor de radio *vibecodeado* con...
 
 - Octubre de 2026 (Fase 2): Migración completa a un desarrollo desatendido usando Claude (Sonnet 5.5 en esfuerzo alto) para mejorar aún más la librería de audio, creando una aplicación aún más profesional y que cuenta con reconexión automática al recuperar una conexión a internet perdida. Mejoró también la gestión de las notificaciones en Android (no probado en iOS), el cálculo del *delay* de emisión online y el aspecto visual.
 
+## Limitaciones
+
+1. La selección de cadenas abarca prácticamente la totalidad de la audiencia según el EGM, pero no es una lista exhaustiva. Esta aplicación busca contención y no intenta vender que cuenta con cientos de radios. Eso provoca que no se incluyan algunas cadenas minoritarias aceptables. Tampoco hay emisoras locales y apenas hay cadenas autonómicas.
+
+2. Tampoco permite seleccionar la emisora de una cadena. Es decir, se emite la desconexión realizada desde los estudios desde donde se realiza la emisión en cadena (generalmente Madrid).
+
+NOTA: Aunque en España las propias radios y los medios usan indistintamente ambos términos, una cadena y una emisora de radio no son lo mismo. 
+
 ## Libre de rastreos
 
 - El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica: 1) Con los servidores de emisión de audio 2) Con los feeds de podcast 3) Con time.now en la página de conexión automática a los boletos de la SER 4) Con el feed RSS de El País en la página correspondiente 5) Con las librerías de visualización de mapas en la página de las emisoras de la SER.
 
-- La radio en directo usa HLS.js cuando es necesario. Es una librería de código abierto y el estándar de la industria para reproducir HLS, un formato desarrollado por Apple que usan los medios que ofrecen mejor calidad y latencia en su stream. No está soportado por defecto por los navegadores. No se descarga siempre, la versión utilizada se almacena en la cache del sitio.
+- La radio en directo usa HLS.js cuando es necesario. Es una librería de código abierto y el estándar de la industria para reproducir HLS, un formato desarrollado por Apple que usan los medios que ofrecen mejor calidad y latencia en su stream. No está incluido por defecto por los navegadores. No se descarga siempre, la versión utilizada se almacena en la cache del sitio.
 
 - Mapa versión original: utiliza la librería Leaflet y su hoja de estilos así como las teselas de OpenStreetMap.
 
