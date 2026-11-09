@@ -38,6 +38,9 @@ Reproductor de radio *vibecodeado* con...
 
 NOTA: Aunque en España las propias radios y los medios usan indistintamente ambos términos, una cadena y una emisora de radio no son lo mismo. 
 
+> [!NOTE]
+> Si quieres una aplicación más completa (ecualización personalizada, visualizador de la señal o posibilidad de buscar y añadir emisoras) mira [Radio Web Neo](https://manurs.github.io/radio_web_neo)
+
 ## Libre de rastreos
 
 - El código no incluye cookies ni ningún otro tipo de rastreo. Solo se comunica: 1) Con los servidores de emisión de audio 2) Con los feeds de podcast 3) Con time.now en la página de conexión automática a los boletos de la SER 4) Con el feed RSS de El País en la página correspondiente 5) Con las librerías de visualización de mapas en la página de las emisoras de la SER.

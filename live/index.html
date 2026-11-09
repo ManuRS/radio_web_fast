@@ -112,6 +112,16 @@
     .rac105::before { background-image: url('../resources/rac105.png'); }
     .radiole::before { background-image: url('../resources/radiole.jpg'); }
     .fiestaradio::before { background-image: url('../resources/fiestaradio.webp'); }
+
+    .canalsurradio::before { background-image: url('../resources/canalsur.webp'); }
+    .radioeuskadi::before { background-image: url('../resources/radioeuskadi.webp'); }
+    .ondamadrid::before { background-image: url('../resources/ondamadrid.webp'); }
+
+    .esencia::before { background-image: url('../resources/esencia.webp'); }
+    .gaztea::before { background-image: url('../resources/gaztea.webp'); }
+    .diallatino::before { background-image: url('../resources/latino.webp'); }
+    .dialbaladas::before { background-image: url('../resources/dialbaladas.webp'); }
+    
   </style>
 
 </head>
@@ -183,8 +193,6 @@
     </div>
     <audio data-src="https://atres-live.ondacero.es/live/ondacero/bitrate_1.m3u8" data-eq="true"></audio>
   </div>
-
-  <!-- <div class="category-separator general">Test</div> -->
 
   <!-- RNE -->
   <div class="card rne general" onclick="playPause(this)">
@@ -267,6 +275,8 @@
     <audio data-src="https://rtvelivestream.rtve.es/rtvesec/rne/rne_re_main_dvr.m3u8" data-eq="true"></audio>
   </div>
 
+  <div class="category-separator general">Autonómicas y televisión</div>
+
   <!-- SER Catalunya -->
   <div class="card sercat general" onclick="playPause(this)">
     <div class="card-content">
@@ -293,6 +303,43 @@
     </div>
     <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high" data-eq="true"></audio>
   </div>  
+
+  <!-- Canal Sur Radio -->
+  <div class="card canalsurradio general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Canal Sur Radio</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://rtva-live-radio.flumotion.com/rtva/csrcor.mp3" data-eq="true"></audio>
+    <!-- <audio data-src="https://rtva-live-radio.flumotion.com/rtva/csrgra.mp3" data-eq="true"></audio> -->
+  </div>
+
+  <!-- Radio Galega
+  <div class="card radiogalega general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio Galega</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://crtvg-radiogalega-hls.flumotion.cloud/playlist.m3u8" data-eq="true"></audio>
+  </div> -->
+
+  <!-- Radio Euskadi -->
+  <div class="card radioeuskadi general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio Euskadi</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://multimedia.eitb.eus/live-content/radioeuskadi-hls/master.m3u8" data-eq="true"></audio>
+  </div>
+
+  <!-- Onda Madrid -->
+  <div class="card ondamadrid general" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Onda Madrid</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://live.telemadrid.cross-media.es/6389770485112/eu-central-1/6416060453001/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJob3N0IjoiajI5YjgyLmVncmVzcy5haGc3NmwiLCJhY2NvdW50X2lkIjoiNjQxNjA2MDQ1MzAwMSIsImVobiI6ImxpdmUudGVsZW1hZHJpZC5jcm9zcy1tZWRpYS5lcyIsImlzcyI6ImJsaXZlLXBsYXliYWNrLXNvdXJjZS1hcGkiLCJzdWIiOiJwYXRobWFwdG9rZW4iLCJhdWQiOlsiNjQxNjA2MDQ1MzAwMSJdLCJqdGkiOiI2Mzg5NzcwNDg1MTEyIn0.MZsybG7gZngXIa5TKgjC4kKqA5hzM_oyShyMLKKaohQ/playlist-hls.m3u8" data-eq="true"></audio>
+  </div>
 
   <!-- RTVE La1 -->
   <div class="card la1 general" onclick="playPause(this)">
@@ -413,6 +460,15 @@
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL.mp3" data-eq="true"></audio>
   </div>
 
+  <!-- LOS40 URBAN -->
+  <div class="card los40-urban musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">LOS40 URBAN</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_URBAN.mp3" data-eq="true"></audio>
+  </div>
+
   <!-- LOS40 DANCE -->
   <div class="card los40-dance musical" onclick="playPause(this)">
     <div class="card-content">
@@ -422,13 +478,33 @@
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_DANCE.mp3" data-eq="true"></audio>
   </div>
 
-  <!-- LOS40 URBAN -->
-  <div class="card los40-urban musical" onclick="playPause(this)">
+  <div class="category-separator musical">Aún más música</div>
+
+  <!-- Gaztea -->
+  <div class="card gaztea musical" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">LOS40 URBAN</span>
+      <span class="station-name">Gaztea</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_URBAN.mp3" data-eq="true"></audio>
+    <audio data-src="https://multimedia.eitb.eus/live-content/gaztea-hls/master.m3u8" data-eq="true"></audio>
+  </div>
+
+  <!-- Radio 3 -->
+  <div class="card radio3 musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio 3</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high" data-eq="true"></audio>
+  </div>
+
+  <!-- Radio Clasica -->
+  <div class="card clasica musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio Clásica</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high" data-eq="true"></audio>
   </div>
 
   <!-- RAC105 -->
@@ -458,13 +534,22 @@
     <audio data-src="https://us-b4-p-e-qg12-audio.cdn.mdstrm.com/live-audio-aw/65afe517d47dc208abd053d2" data-eq="true"></audio>
   </div>
 
-  <!-- Radio Clasica -->
-  <div class="card clasica musical" onclick="playPause(this)">
+  <!-- esencia -->
+  <div class="card esencia musical" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">Radio Clásica</span>
+      <span class="station-name">EsenciaRadio</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high" data-eq="true"></audio>
+    <audio data-src="https://stream-285.surfernetwork.com/qaxnuxap0rquv" data-eq="true"></audio>
+  </div>
+
+  <!-- Canal Fiesta Radio -->
+  <div class="card fiestaradio musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Canal Fiesta Radio</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://rtva-live-radio.flumotion.com/rtva/cfr.mp3" data-eq="true"></audio>
   </div>
 
   <!-- Radiolé -->
@@ -476,13 +561,22 @@
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RADIOLE.mp3" data-eq="true"></audio>
   </div>
 
-  <!-- Canal Fiesta Radio -->
-  <div class="card fiestaradio musical" onclick="playPause(this)">
+  <!-- Cadena DIAL -->
+  <div class="card diallatino musical" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">Canal Fiesta Radio</span>
+      <span class="station-name">DIAL Latino</span>
       <span class="live-indicator">Escuchando</span>
     </div>
-    <audio data-src="https://rtva-live-radio.flumotion.com/rtva/cfr.mp3" data-eq="true"></audio>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL_02.mp3" data-eq="true"></audio>
+  </div>
+
+  <!-- Cadena DIAL -->
+  <div class="card dialbaladas musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">DIAL Baladas</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL_03.mp3" data-eq="true"></audio>
   </div>
 
 </div>

@@ -122,6 +122,15 @@ const FILES_TO_CACHE = [
   "./resources/radiole.jpg",
   "./resources/fiestaradio.webp",
 
+  "./resources/canalsur.webp",
+  "./resources/radioeuskadi.webp",
+  "./resources/ondamadrid.webp",
+
+  "./resources/esencia.png",
+  "./resources/gaztea.jpg",
+  "./resources/latino.webp",
+  "./resources/dialbaladas.webp",    
+
   "./resources/live/classic.png",
   "./resources/live/hitfm.png",
   "./resources/live/los40.png",

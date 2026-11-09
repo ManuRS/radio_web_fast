@@ -87,7 +87,7 @@ https://edge02.radiohdvivo.com/los40
 OTRAS - ITALIA
 
 Rai Radio 1
-http://icestreaming.rai.it/1.mp3
+https://icestreaming.rai.it/1.mp3
 
 Radio 24
 https://shoutcast3.radio24.ilsole24ore.com/stream.mp3
