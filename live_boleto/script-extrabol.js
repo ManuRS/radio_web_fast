@@ -28,7 +28,7 @@ async function obtenerHoraOficial() {
 
     } catch (err) {
         console.log("⚠️ No se pudo obtener la hora oficial", err);
-        document.getElementById("officialTime").innerText = "Hora oficial no disponible"
+        ponerReloj("officialTime", "Hora oficial no disponible");
     }
 }
 
@@ -126,20 +126,27 @@ function formatTime(date, timeZone) {
     });
 }
 
+// Escribe un reloj. La primera vez que se rellena aparece con fundido (.time.visible)
+function ponerReloj(id, texto) {
+    const el = document.getElementById(id);
+    el.innerText = texto;
+    el.classList.add("visible");
+}
+
 // Actualizar relojes
 function actualizarRelojes() {
     // Hora del dispositivo
     const nowDevice = new Date();
-    document.getElementById("deviceTime").innerText = "Hora dispositivo " + formatTime(nowDevice);
+    ponerReloj("deviceTime", "Hora dispositivo " + formatTime(nowDevice));
 
     // Hora oficial simulando avance real
     if (officialBaseTime && localBaseTime) {
         const elapsed = nowDevice - localBaseTime;
         const officialNow = new Date(officialBaseTime.getTime() + elapsed);
 
-        document.getElementById("officialTime").innerText = "Hora oficial " + formatTime(officialNow, ZONA_HORARIA);
+        ponerReloj("officialTime", "Hora oficial " + formatTime(officialNow, ZONA_HORARIA));
         const minus_time = new Date(officialNow.getTime() - RETRASO_STREAM_S * 1000);
-        document.getElementById("offsetTime").innerText = "Hora reproducción " + formatTime(minus_time, ZONA_HORARIA);
+        ponerReloj("offsetTime", "Hora reproducción " + formatTime(minus_time, ZONA_HORARIA));
     }
 
 }
@@ -198,12 +205,27 @@ function quitarRebote() {
   if (logoIntencion) logoIntencion = { ...logoIntencion, bounce: false };
 }
 
+// Cambia el logo con fundido: queda transparente, carga el nuevo y entra
+// (la transición de opacidad está en el CSS de la página). Sin esto, el logo cambia "a golpe".
+function ponerLogo(src) {
+  imgLogo.style.transition = 'none';
+  imgLogo.style.opacity = '0';
+  imgLogo.src = src;
+  void imgLogo.offsetWidth;          // aplica ya la transparencia, sin transición
+  imgLogo.style.transition = '';     // vuelve a mandar la transición del CSS
+
+  const mostrar = () => { imgLogo.style.opacity = ''; };
+  imgLogo.addEventListener('load', mostrar, { once: true });
+  imgLogo.addEventListener('error', mostrar, { once: true });
+  if (imgLogo.complete && imgLogo.naturalWidth) mostrar();
+}
+
 function pintarLogo(sonando) {
   if (logoIntencion && logoIntencion.valido && !logoIntencion.valido()) logoIntencion = null;
 
   const { src, bounce } = (sonando && logoIntencion) ? logoIntencion : { src: imgLogo_off, bounce: false };
 
-  if (imgLogo.getAttribute('src') !== src) imgLogo.src = src;
+  if (imgLogo.getAttribute('src') !== src) ponerLogo(src);
   imgLogo.classList.toggle('logo-sonando', bounce);
 }
 
