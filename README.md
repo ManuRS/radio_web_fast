@@ -39,7 +39,7 @@ Reproductor de radio *vibecodeado* con...
 NOTA: Aunque en España las propias radios y los medios usan indistintamente ambos términos, una cadena y una emisora de radio no son lo mismo. 
 
 > [!NOTE]
-> Si quieres una aplicación más completa (ecualización personalizada, visualizador de la señal o posibilidad de buscar y añadir emisoras) mira [Radio Web Neo](https://manurs.github.io/radio_web_neo)
+> Si quieres una aplicación más completa (ecualización personalizada, visualizador de la señal o posibilidad de buscar y añadir emisoras) mejor pasate por [Radio Web Neo](https://github.com/ManuRS/radio_web_neo)
 
 ## Libre de rastreos
 
