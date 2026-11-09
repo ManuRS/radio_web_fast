@@ -1,8 +1,8 @@
 {
-  "name": "Radio Web Fast Live",
-  "short_name": "Radio WF Live",
+  "name": "Radio Fast Live",
+  "short_name": "Radio Fast Live",
 
-  "version": "101",
+  "version": "103",
 
   "start_url": "./",
   "display": "standalone",
