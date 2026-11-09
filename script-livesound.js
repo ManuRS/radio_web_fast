@@ -37,6 +37,11 @@ const BUFFER_CHECK_INTERVAL_MS = 10000;
 // y vuelve a empezar cuando el sonido se recupera
 const RECONNECT_BACKOFF_MS = [2000, 4000, 8000, 10000];
 
+// Tras una reconexión, la espera creciente solo se reinicia cuando la emisora lleva este tiempo
+// sonando seguido. Si suena un instante y vuelve a caerse, el contador sigue donde estaba (si no,
+// una emisora que se cae cada pocos segundos reconectaría cada ~6 s para siempre).
+const STABLE_PLAY_MS = 10000;
+
 const RECONNECT_WATCHDOG_MS = 15000;
 
 // Cada STALL_CHECK_INTERVAL_MS se comprueba si currentTime avanza.
@@ -53,6 +58,10 @@ const BUFFER_GRACE_PERIOD_MS = 30000;
 // libera pasado este tiempo, para que Android registre ya el reproductor nuevo
 // antes de que desaparezca el viejo.
 const HANDOVER_RELEASE_DELAY_MS = 1500;
+
+// Al cambiar a otra emisora, la anterior sigue sonando hasta que la nueva suena. Si la nueva
+// no suena en este tiempo (URL caída, servidor colgado), se descarta y se vuelve a la anterior.
+const SWITCH_TIMEOUT_MS = 15000;
 
 /********************************
  * Instancias y notificación (comunes a todas)
@@ -100,6 +109,8 @@ function createLiveSound(options = {}) {
   let lastPlayingAt = 0;           // momento del último evento "playing"
   let reconnectAttempts = 0;       // intentos fallidos seguidos (para la espera creciente)
   let attemptInFlight = false;     // hay un intento de reconexión en curso (ya lanzado)
+  let stableTimer = null;          // reinicia reconnectAttempts tras STABLE_PLAY_MS sonando seguido
+  let reconnectEpoch = 0;          // cuenta los cortes: anula el temporizador de estabilidad pendiente
 
   // Emisora en pausa por un motivo externo (notificación, sistema...).
   // Sigue cargada en su elemento <audio> para que la notificación permanezca,
@@ -111,6 +122,9 @@ function createLiveSound(options = {}) {
   // el elemento anterior queda aquí como "relevo saliente" sin tocarlo.
   let retiringAudio = null;
   let retiringHls = null;
+  let retiringCard = null;          // tarjeta a la que pertenece el relevo saliente
+  let retiringWasPaused = false;    // el relevo saliente ya estaba en pausa antes del cambio
+  let switchTimer = null;           // límite de espera de un cambio de emisora (SWITCH_TIMEOUT_MS)
 
   // Elementos ya silenciados que se liberarán tras HANDOVER_RELEASE_DELAY_MS.
   let pendingReleases = [];
@@ -342,6 +356,8 @@ function createLiveSound(options = {}) {
 
     retiringAudio = audio;
     retiringHls = currentHls;
+    retiringCard = currentCard;
+    retiringWasPaused = false;
     currentHls = null;
 
     if (!audio.paused && audio.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
@@ -369,6 +385,9 @@ function createLiveSound(options = {}) {
 
     retiringAudio = null;
     retiringHls = null;
+    retiringCard = null;
+    retiringWasPaused = false;
+    clearSwitchTimer();
 
     audio.muted = false;
 
@@ -390,10 +409,14 @@ function createLiveSound(options = {}) {
 
     let keep = null;
     let keepHls = null;
+    let keepCard = null;
+    let keepPaused = false;
 
     if (retiringAudio) {
       keep = retiringAudio;
       keepHls = retiringHls;
+      keepCard = retiringCard;
+      keepPaused = retiringWasPaused;
 
       if (currentAudio && currentAudio !== keep) {
         currentCard?.classList.remove("playing");
@@ -402,10 +425,13 @@ function createLiveSound(options = {}) {
     } else if (currentAudio && (currentAudio.src || currentHls)) {
       keep = currentAudio;
       keepHls = currentHls;
+      keepCard = currentCard;
       currentCard?.classList.remove("playing");
     } else if (pausedAudio) {
       keep = pausedAudio;
       keepHls = currentHls;
+      keepCard = pausedCard;
+      keepPaused = true;
     }
 
     if (!keep) return false;
@@ -425,10 +451,83 @@ function createLiveSound(options = {}) {
 
     retiringAudio = keep;
     retiringHls = keepHls;
+    retiringCard = keepCard;
+    retiringWasPaused = keepPaused;
 
     console.log("Cambio de emisora: la anterior se retiene hasta que suene la nueva.");
 
     return true;
+  }
+
+  // Límite de espera de un cambio de emisora: si la nueva no suena a tiempo, se descarta y
+  // vuelve la anterior (que seguía sonando) con su tarjeta marcada.
+  function clearSwitchTimer() {
+    if (switchTimer !== null) {
+      clearTimeout(switchTimer);
+      switchTimer = null;
+    }
+  }
+
+  function armSwitchTimeout() {
+    clearSwitchTimer();
+    switchTimer = setTimeout(abortCardSwitch, SWITCH_TIMEOUT_MS);
+  }
+
+  function abortCardSwitch() {
+    switchTimer = null;
+
+    // Solo vale mientras el cambio siga a medias y sea a otra tarjeta.
+    if (!retiringAudio || !currentAudio || !retiringCard || retiringCard === currentCard) return;
+
+    console.warn("La nueva emisora no ha sonado a tiempo. Se vuelve a la anterior.");
+
+    clearBufferMonitor();
+    clearStallWatchdog();
+    clearReconnectTimer();
+
+    const failedAudio = currentAudio;
+    const failedCard = currentCard;
+    const failedHls = currentHls;
+
+    const oldAudio = retiringAudio;
+    const oldHls = retiringHls;
+    const oldCard = retiringCard;
+    const oldWasPaused = retiringWasPaused;
+
+    retiringAudio = null;
+    retiringHls = null;
+    retiringCard = null;
+    retiringWasPaused = false;
+
+    currentAudio = null;
+    currentCard = null;
+    currentHls = null;
+    reconnecting = false;
+    attemptInFlight = false;
+    reconnectAttempts = 0;
+
+    failedCard.classList.remove("playing");
+    releaseAudioElement(failedAudio, failedHls);
+
+    if (oldWasPaused) {
+      // La anterior estaba en pausa: vuelve a estar en pausa.
+      pausedAudio = oldAudio;
+      pausedCard = oldCard;
+      currentHls = oldHls;
+      setMediaSessionState("paused");
+      return;
+    }
+
+    // La anterior seguía sonando: vuelve a ser la activa. Su "playing" ya pasó, así que
+    // el periodo de gracia y los vigilantes se rearman a mano.
+    currentAudio = oldAudio;
+    currentCard = oldCard;
+    currentHls = oldHls;
+    oldCard.classList.add("playing");
+    lastPlayingAt = Date.now();
+    startBufferMonitor(oldAudio);
+    startStallWatchdog(oldAudio);
+    setMediaSessionState("playing");
   }
 
   /********************************
@@ -453,6 +552,9 @@ function createLiveSound(options = {}) {
     const retiringHlsInstance = retiringHls;
     retiringAudio = null;
     retiringHls = null;
+    retiringCard = null;
+    retiringWasPaused = false;
+    clearSwitchTimer();
     flushPendingReleases();
 
     // Desactivamos primero la sesión para impedir
@@ -498,8 +600,12 @@ function createLiveSound(options = {}) {
 
     // Si la pausa llega en pleno traspaso, se queda en pausa el
     // reproductor antiguo (el que tiene la notificación) y se descarta el nuevo.
+    // Si el traspaso era un cambio a otra emisora, el reproductor antiguo es el de la
+    // tarjeta anterior: la pausa queda en esa tarjeta, no en la nueva (si no, al reanudar
+    // sonaría la emisora vieja bajo la tarjeta nueva).
     let held = audio;
     let heldHls = currentHls;
+    let heldCard = card;
     let discarded = null;
     let discardedHls = null;
 
@@ -508,12 +614,17 @@ function createLiveSound(options = {}) {
       discardedHls = currentHls;
       held = retiringAudio;
       heldHls = retiringHls;
+      heldCard = retiringCard || card;
       retiringAudio = null;
       retiringHls = null;
+      retiringCard = null;
+      retiringWasPaused = false;
     }
 
+    clearSwitchTimer();
+
     pausedAudio = held;
-    pausedCard = card;
+    pausedCard = heldCard;
     currentHls = heldHls;
 
     currentAudio = null;
@@ -669,6 +780,8 @@ function createLiveSound(options = {}) {
     applyCurrentVolume(audio);
 
     startStream(audio, src);
+
+    if (retenida) armSwitchTimeout();
   }
 
 
@@ -928,11 +1041,37 @@ function createLiveSound(options = {}) {
    * Reconexión automática
    ********************************/
 
+  // La espera creciente se reinicia solo si, tras volver a sonar, no hay ningún corte
+  // nuevo durante STABLE_PLAY_MS y la emisora sigue siendo la activa y sonando.
+  function clearStableTimer() {
+    if (stableTimer !== null) {
+      clearTimeout(stableTimer);
+      stableTimer = null;
+    }
+  }
+
+  function armStableReset(audio) {
+    clearStableTimer();
+
+    if (reconnectAttempts === 0) return;
+
+    const epoch = reconnectEpoch;
+
+    stableTimer = setTimeout(() => {
+      stableTimer = null;
+
+      if (epoch === reconnectEpoch && audio === currentAudio && !audio.paused && !reconnecting) {
+        reconnectAttempts = 0;
+      }
+    }, STABLE_PLAY_MS);
+  }
+
   // Espera creciente entre intentos.
   function getReconnectDelay() {
     const index = Math.min(reconnectAttempts, RECONNECT_BACKOFF_MS.length - 1);
 
     reconnectAttempts++;
+    reconnectEpoch++;
 
     return RECONNECT_BACKOFF_MS[index];
   }
@@ -978,6 +1117,8 @@ function createLiveSound(options = {}) {
     clearBufferMonitor();
     clearStallWatchdog();
     clearReconnectTimer();
+
+    reconnectEpoch++;
 
     if (resetBackoff) {
       reconnectAttempts = 0;
@@ -1130,8 +1271,8 @@ function createLiveSound(options = {}) {
       clearReconnectTimer();
       reconnecting = false;
       attemptInFlight = false;
-      reconnectAttempts = 0;
       lastPlayingAt = Date.now();
+      armStableReset(audio);
 
       // Iniciar el monitor únicamente para MP3/AAC.
       startBufferMonitor(audio);
