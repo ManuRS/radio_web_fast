@@ -336,9 +336,15 @@
   /*== FUNCIONES AUXILIARES SONIDO ==*/
   /*=================================*/
 
+  // Los fundidos mueven el volumen en pasos pequeños y frecuentes (cada FADE_TICK_MS) en vez
+  // de en escalones grandes. La velocidad es la de siempre: FADE_PASO de volumen cada
+  // "msPorPaso" ms (100, 150 o 300 según el fundido), pero sin saltos que se oigan.
+  const FADE_TICK_MS = 30;
+  const FADE_PASO = 0.06;
+
   // Fade in
-  function fadeInVol(audioToFade, interval_ID, max_volume) {
-    let suma = 0.06
+  function fadeInVol(audioToFade, interval_ID, max_volume, msPorPaso) {
+    let suma = FADE_PASO * FADE_TICK_MS / msPorPaso;
     if (audioToFade.volume+suma < max_volume){
       audioToFade.volume += suma;
     }else{
@@ -349,8 +355,8 @@
   }
 
   // Fade out
-  function fadeOutVol(audioToFade, interval_ID, alTerminar) {
-    let resta = 0.06
+  function fadeOutVol(audioToFade, interval_ID, alTerminar, msPorPaso) {
+    let resta = FADE_PASO * FADE_TICK_MS / msPorPaso;
     if (audioToFade.volume-resta > 0.0){
       audioToFade.volume -= resta;
     }else{
@@ -587,7 +593,7 @@
         // Ya suena: fade in
         noticiasAudibles = true;
         clearInterval(fadeAudio_ID);
-        fadeAudio_ID = setInterval(() => {fadeInVol(liveNews, fadeAudio_ID, max_news_volume);}, 100);
+        fadeAudio_ID = setInterval(() => {fadeInVol(liveNews, fadeAudio_ID, max_news_volume, 100);}, FADE_TICK_MS);
       }
     );
 
@@ -599,7 +605,7 @@
     noticiasEnCurso = false;
     actualizarNotificacion();
     clearInterval(fadeAudio_ID);
-    fadeAudio_ID = setInterval(() => {fadeOutVol(liveNews, fadeAudio_ID);}, 150);
+    fadeAudio_ID = setInterval(() => {fadeOutVol(liveNews, fadeAudio_ID, null, 150);}, FADE_TICK_MS);
   }
 
   /* Logo de lo que suena en el turno de la música */
@@ -622,7 +628,7 @@
         () => {
           musicaAudible = true;
           clearInterval(fadeMusic_ID);
-          fadeMusic_ID = setInterval(() => {fadeInVol(liveMusic, fadeMusic_ID, max_music_volume);}, 300);
+          fadeMusic_ID = setInterval(() => {fadeInVol(liveMusic, fadeMusic_ID, max_music_volume, 300);}, FADE_TICK_MS);
         }
       );
     }
@@ -638,7 +644,7 @@
         cancelaEntradaMusica();
         quitarRebote();
         clearInterval(fadeMusic_ID);
-        fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID);}, 100);
+        fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, null, 100);}, FADE_TICK_MS);
       }, delay);
     }
   }
@@ -671,7 +677,7 @@
     if (habia_musica) {
       quitarRebote();
       clearInterval(fadeMusic_ID);
-      fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, aplicar);}, 100);
+      fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, aplicar, 100);}, FADE_TICK_MS);
     } else {
       aplicar();
     }
