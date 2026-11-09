@@ -5,11 +5,19 @@
 let officialBaseTime = null;
 let localBaseTime = null;
 
+// Una medida que tarda más que esto en responder no es fiable: la hora oficial se fechó en
+// algún punto del viaje de ida y vuelta y el error puede ser de varios segundos. Se descarta
+// y se vuelve a intentar enseguida (hasta REINTENTOS_HORA_OFICIAL veces; además se repite cada 2 minutos).
+const MAX_RESPUESTA_HORA_MS = 3000;
+const REINTENTOS_HORA_OFICIAL = 3;
+const ESPERA_REINTENTO_HORA_MS = 20000;
+let reintentosHoraOficial = 0;
+
 // Obtener hora oficial desde internet
 async function obtenerHoraOficial() {
     try {
         const t0 = Date.now();
-        const response = await fetch("https://time.now/developer/api/timezone/Europe/Madrid");
+        const response = await fetch("https://time.now/developer/api/timezone/Europe/Madrid", { cache: "no-store" });
         const t1 = Date.now();
 
         if (!response.ok) throw new Error("HTTP " + response.status);
@@ -21,14 +29,25 @@ async function obtenerHoraOficial() {
         // nunca es horario de noticias (y cortaría las que estén sonando).
         if (Number.isNaN(oficial.getTime())) throw new Error("fecha no válida");
 
+        if (t1 - t0 > MAX_RESPUESTA_HORA_MS) throw new Error("respuesta lenta (" + (t1 - t0) + " ms)");
+
         officialBaseTime = oficial;
 
         // El servidor fechó la respuesta a mitad del viaje de ida y vuelta, no cuando llegó.
         localBaseTime = new Date((t0 + t1) / 2);
 
+        reintentosHoraOficial = 0;
+
     } catch (err) {
         console.log("⚠️ No se pudo obtener la hora oficial", err);
-        ponerReloj("officialTime", "Hora oficial no disponible");
+
+        // Con una medida buena anterior se sigue con ella; el aviso solo sale si no hay ninguna.
+        if (!officialBaseTime) ponerReloj("officialTime", "Hora oficial no disponible");
+
+        if (reintentosHoraOficial < REINTENTOS_HORA_OFICIAL) {
+            reintentosHoraOficial++;
+            setTimeout(obtenerHoraOficial, ESPERA_REINTENTO_HORA_MS);
+        }
     }
 }
 
