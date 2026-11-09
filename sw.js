@@ -1,10 +1,10 @@
 
-const CACHE_NAME = "radio-full-cache-v105";
+const CACHE_NAME = "radio-full-cache-v106";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
-  "./hls.min-173.js",
+  "./hls.light.min-174.js",
 
   "./radio_boletos",
   "./radio_daily",
@@ -124,7 +124,6 @@ const FILES_TO_CACHE = [
 
   "./resources/canalsur.webp",
   "./resources/radioeuskadi.webp",
-  "./resources/ondamadrid.webp",
 
   "./resources/esencia.webp",
   "./resources/gaztea.webp",
