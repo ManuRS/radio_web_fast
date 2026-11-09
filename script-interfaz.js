@@ -394,6 +394,20 @@ function filterStations(category, btn) {
 }
 
 /********************************
+ * IMAGENES - Entrada con fundido al terminar de cargar (ver img.img-fundido en theme-aux.css)
+ * *****************************/
+// Las imágenes que ya están cargadas (de la caché) se dejan como están.
+function fundirImagenes(contenedor) {
+  contenedor.querySelectorAll("img").forEach(img => {
+    if (img.complete) return;
+    img.classList.add("img-fundido");
+    const mostrar = () => img.classList.add("img-visible");
+    img.addEventListener("load", mostrar, { once: true });
+    img.addEventListener("error", mostrar, { once: true });
+  });
+}
+
+/********************************
  * CATEGORIAS - Mostrar la categoría guardada (o "general" por defecto)
  * *****************************/
 window.addEventListener("DOMContentLoaded", () => {
