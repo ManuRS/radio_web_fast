@@ -1,4 +1,28 @@
 /******************************
+  ENTRADA SUAVE (FUNDIDO)
+*******************************/
+
+/* Fundido corto y solo de opacidad (nada se mueve) para que lo que aparece, al cargar la
+   página o al rellenarse con datos, no lo haga "a golpe". Las reglas lo usan con
+   animation: var(--entra). Con "reducir movimiento" no hay animación. */
+:root { --entra: entra 0.2s ease-out backwards; }
+
+@keyframes entra { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --entra: none; }
+}
+
+/* Imágenes que llegan de internet: entran con fundido cuando terminan de cargar
+   (fundirImagenes() en script-interfaz.js pone las clases) */
+img.img-fundido { opacity: 0; transition: opacity 0.2s ease-out; }
+img.img-fundido.img-visible { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  img.img-fundido { transition: none; }
+}
+
+/******************************
   SIN "TIRAR PARA RECARGAR"
 *******************************/
 
@@ -175,6 +199,7 @@ html, body {
 
 @media (prefers-reduced-motion: reduce) {
   .theme-toggle { transition: none; }
+  #playButton { transition: none; }
 }
 
 @media (max-width: 42em) {
@@ -207,6 +232,7 @@ html, body {
   color: white;
   margin-top: 30px;
   margin-bottom: 15px;
+  transition: background 0.3s ease;   /* los cambios de estado cambian de color con suavidad */
 }
 
 /* Responsive */

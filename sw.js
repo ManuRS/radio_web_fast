@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v103";
+const CACHE_NAME = "radio-full-cache-v105";
 
 const FILES_TO_CACHE = [
   "./",
@@ -126,8 +126,8 @@ const FILES_TO_CACHE = [
   "./resources/radioeuskadi.webp",
   "./resources/ondamadrid.webp",
 
-  "./resources/esencia.png",
-  "./resources/gaztea.jpg",
+  "./resources/esencia.webp",
+  "./resources/gaztea.webp",
   "./resources/latino.webp",
   "./resources/dialbaladas.webp",    
 

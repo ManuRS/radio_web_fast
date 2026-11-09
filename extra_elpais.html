@@ -52,6 +52,9 @@
       flex-direction: column;
     }
 
+    /* Entrada suave de cada noticia al llegar el feed (ver --entra en theme-aux.css) */
+    .rss-item { animation: var(--entra); }
+
     .rss-item img {
       width: 100%;
       height: 160px;
@@ -206,6 +209,7 @@
           `;
 
           container.appendChild(card);
+          fundirImagenes(card);   // la imagen entra con fundido al cargar (script-interfaz.js)
         });
       } catch (e) {
         console.error("Error al cargar el feed:", e);

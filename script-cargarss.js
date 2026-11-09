@@ -1,4 +1,3 @@
-
 /******************************************
  * 
  * CARGAR ULTIMOS N AUDIOS DE UN FEED
@@ -208,6 +207,9 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
     const tituloCapitulo = item.querySelector("title")?.textContent?.trim() || "Sin título";
     const nombreTarjeta = String(visual ?? "").startsWith("personalizado") ? String(personalizado ?? "").trim() : "";
     contenedor.querySelector("audio").dataset.notifTitulo = tituloNotif || nombreTarjeta || tituloCapitulo;
+
+    // La imagen entra con fundido cuando termina de cargar (ver fundirImagenes en script-interfaz.js)
+    if (typeof fundirImagenes === "function") fundirImagenes(contenedor);
 
     if (conEq) Ecualizador.vigilar(contenedor.querySelector("audio"));
 
