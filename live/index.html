@@ -69,12 +69,6 @@
     html[data-cat="general"] :is(.card, .category-separator).musical,
     html[data-cat="musical"] :is(.card, .category-separator).general { display: none; }
 
-    /* Entrada suave de las tarjetas, al cargar y al cambiar de categoría: solo opacidad (nada se mueve).
-       Al pasar de display:none a visible la animación arranca sola; las tarjetas que ya se veían no se repiten. */
-    #lista > :is(.card, .category-separator) { animation: tarjeta-entra 0.2s ease-out backwards; }
-    @keyframes tarjeta-entra { from { opacity: 0; } }
-    @media (prefers-reduced-motion: reduce) { #lista > :is(.card, .category-separator) { animation: none; } }
-
     /* Fondos personalizados */
     .cadena-ser::before { background-image: url('../resources/micro.jpg'); }
     .cope::before { background-image: url('../resources/cope.jpg'); }
