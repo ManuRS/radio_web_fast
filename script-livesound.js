@@ -63,6 +63,14 @@ const HANDOVER_RELEASE_DELAY_MS = 1500;
 // no suena en este tiempo (URL caída, servidor colgado), se descarta y se vuelve a la anterior.
 const SWITCH_TIMEOUT_MS = 15000;
 
+// Al cambiar a otra emisora, cuando la nueva suena las dos se oyen a la vez: una sale y la otra
+// entra (fundido cruzado de potencia constante, como en Neo) durante este tiempo. Con 0 el cambio
+// es el de siempre: la anterior se corta en seco y la nueva entra de golpe.
+const CROSSFADE_MS = 1200;
+
+// Si la anterior estaba en pausa no hay nada con lo que cruzar: la nueva solo sube durante este tiempo.
+const FADE_IN_MS = 500;
+
 /********************************
  * Instancias y notificación (comunes a todas)
  ********************************/
@@ -232,21 +240,89 @@ function createLiveSound(options = {}) {
   // Volumen fijado desde fuera con setVolume(). Si es null, se usa el slider #volume-slider.
   let volumeOverride = null;
 
-  function applyCurrentVolume(audio) {
-    if (volumeOverride !== null) {
-      audio.volume = volumeOverride;
-      return;
-    }
+  // Volumen de referencia (0-1): el fijado con setVolume() o, si no, el del slider.
+  // Devuelve null si no hay ninguno de los dos.
+  function baseVolume() {
+    if (volumeOverride !== null) return volumeOverride;
 
     const slider = document.getElementById("volume-slider");
 
-    if (!slider) return;
+    if (!slider) return null;
 
     const volume = Number(slider.value);
 
-    if (Number.isFinite(volume)) {
-      audio.volume = Math.max(0, Math.min(1, volume));
+    return Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : null;
+  }
+
+  function applyCurrentVolume(audio) {
+    // Una emisora que esperaba en silencio para entrar con fundido recupera su volumen.
+    const estabaEnSilencio = audio.__entraConFundido === true;
+    audio.__entraConFundido = false;
+
+    const volume = baseVolume();
+
+    if (volume !== null) audio.volume = volume;
+    else if (estabaEnSilencio) audio.volume = 1;
+  }
+
+  /********************************
+   * Fundido cruzado al cambiar de emisora
+   ********************************/
+
+  // Fundidos en marcha por elemento <audio>: el que sale y el que entra comparten el mismo registro.
+  const crossfades = new Map();
+
+  // Un elemento que se libera deja su fundido. Si es el que entra, no queda nada que fundir;
+  // si es el que sale, el que entra termina de subir por su cuenta.
+  function cancelCrossfade(audio) {
+    const fade = crossfades.get(audio);
+
+    if (!fade) return;
+
+    crossfades.delete(audio);
+
+    if (audio === fade.entering) {
+      clearInterval(fade.timer);
+      if (fade.leaving) crossfades.delete(fade.leaving);
+    } else {
+      fade.leaving = null;
     }
+  }
+
+  // leaving puede ser null: entonces solo sube la que entra.
+  function startCrossfade(leaving, entering, ms) {
+    if (leaving) cancelCrossfade(leaving);
+    cancelCrossfade(entering);
+
+    if (leaving) leaving.__volumenAlterado = true;
+    entering.__volumenAlterado = true;
+
+    const from = leaving ? leaving.volume : 1;
+    const start = performance.now();
+    const fade = { leaving, entering, timer: null };
+
+    const step = () => {
+      const k = Math.min(1, (performance.now() - start) / ms);
+      const target = baseVolume() ?? from;
+
+      // Potencia constante: la suma de los dos no se hunde en el centro del fundido.
+      entering.volume = Math.max(0, Math.min(1, target * Math.sin(k * Math.PI / 2)));
+
+      if (fade.leaving) {
+        fade.leaving.volume = Math.max(0, Math.min(1, from * Math.cos(k * Math.PI / 2)));
+      }
+
+      if (k >= 1) {
+        clearInterval(fade.timer);
+        crossfades.delete(entering);
+        if (fade.leaving) crossfades.delete(fade.leaving);
+      }
+    };
+
+    if (leaving) crossfades.set(leaving, fade);
+    crossfades.set(entering, fade);
+    fade.timer = setInterval(step, 40);
+    step();
   }
 
   /********************************
@@ -274,10 +350,19 @@ function createLiveSound(options = {}) {
 
     if (!audio) return;
 
+    cancelCrossfade(audio);
+    audio.__entraConFundido = false;
+
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
     audio.muted = false;
+
+    // El elemento se reutilizará: si un fundido le dejó el volumen a medias, vuelve al de referencia.
+    if (audio.__volumenAlterado) {
+      audio.__volumenAlterado = false;
+      audio.volume = baseVolume() ?? 1;
+    }
   }
 
   function isAudioInUse(audio) {
@@ -289,7 +374,7 @@ function createLiveSound(options = {}) {
   }
 
   // Programa la liberación de un elemento ya silenciado.
-  function scheduleRelease(audio, hls) {
+  function scheduleRelease(audio, hls, delay = HANDOVER_RELEASE_DELAY_MS) {
     const entry = { audio, hls, timer: null };
 
     entry.timer = setTimeout(() => {
@@ -298,7 +383,7 @@ function createLiveSound(options = {}) {
       if (!isAudioInUse(audio)) {
         releaseAudioElement(audio, hls);
       }
-    }, HANDOVER_RELEASE_DELAY_MS);
+    }, delay);
 
     pendingReleases.push(entry);
   }
@@ -382,6 +467,9 @@ function createLiveSound(options = {}) {
   function completeHandover(audio) {
     const old = retiringAudio;
     const oldHls = retiringHls;
+    const oldCard = retiringCard;
+    const oldWasPaused = retiringWasPaused;
+    const estabaEnSilencio = audio.__entraConFundido === true;
 
     retiringAudio = null;
     retiringHls = null;
@@ -390,6 +478,24 @@ function createLiveSound(options = {}) {
     clearSwitchTimer();
 
     audio.muted = false;
+    audio.__entraConFundido = false;
+
+    // Cambio a otra emisora (otra tarjeta). Si la anterior sonaba, las dos suenan a la vez mientras
+    // una sale y la otra entra; si estaba en pausa, la nueva solo sube. Una reconexión de la misma
+    // emisora (misma tarjeta) no se toca: la anterior casi siempre ya está cortada.
+    const cambioDeTarjeta = CROSSFADE_MS > 0 && old && oldCard && oldCard !== currentCard;
+    const solape = cambioDeTarjeta && !oldWasPaused && !old.paused && !old.muted;
+
+    if (solape) {
+      startCrossfade(old, audio, CROSSFADE_MS);
+      scheduleRelease(old, oldHls, CROSSFADE_MS + 500);
+      return;
+    }
+
+    if (estabaEnSilencio) {
+      if (cambioDeTarjeta) startCrossfade(null, audio, FADE_IN_MS);
+      else applyCurrentVolume(audio);
+    }
 
     if (old) {
       old.muted = true;
@@ -778,6 +884,14 @@ function createLiveSound(options = {}) {
     card.classList.add("playing");
     audio.muted = false; 
     applyCurrentVolume(audio);
+
+    // La nueva espera en silencio y entra con fundido cuando suene (completeHandover): cruzado con
+    // la anterior si sonaba o solo subiendo si estaba en pausa. Así no se oye ni un golpe al empezar.
+    if (retenida && CROSSFADE_MS > 0) {
+      audio.volume = 0;
+      audio.__entraConFundido = true;
+      audio.__volumenAlterado = true;
+    }
 
     startStream(audio, src);
 
