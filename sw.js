@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v113";
+const CACHE_NAME = "radio-full-cache-v114";
 
 const FILES_TO_CACHE = [
   "./",
