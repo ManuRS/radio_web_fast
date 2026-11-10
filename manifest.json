@@ -2,12 +2,12 @@
   "name": "Radio Fast",
   "short_name": "Radio Fast",
 
-  "version": "110",
+  "version": "111",
 
   "start_url": "./",
   "display": "standalone",
   "background_color": "#111827",
-  "theme_color": "#1a237e",
+  "theme_color": "#111827",
   "icons": [
     {
       "src": "resources/icon2-192.png",
