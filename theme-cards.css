@@ -96,7 +96,10 @@ body {
  * Estilo de la imagen de
  * la card y su filtro
  * ***************************/
+/* Las imágenes de fondo se piden cuando la página ya ha cargado (script-fastload.js pone la
+   clase "fondos" en <html>): así no alargan la carga, que es lo que dura la barrita de Chrome. */
 .card::before {
+  display: none;
   content: "";
   position: absolute;
   inset: 0;
@@ -104,6 +107,11 @@ body {
   background-position: center;
   filter: brightness(0.75) blur(2px);
   transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+html.fondos .card::before {
+  display: block;
+  animation: var(--entra);
 }
 
 /* Overlay oscuro */

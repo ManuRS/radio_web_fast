@@ -15,6 +15,11 @@ try {
 }
 
 
+// Imágenes de fondo de las tarjetas: se activan tras la carga (ver theme-cards.css).
+window.addEventListener('load', () => {
+  requestAnimationFrame(() => setTimeout(() => document.documentElement.classList.add('fondos'), 0));
+});
+
 // TEMPORAL (v112): diagnóstico de la barrita de carga. Enseña unos segundos, abajo, cuánto
 // tarda en cargar la página y qué recursos van más lentos. Para quitarlo, borrar este bloque.
 (function () {
