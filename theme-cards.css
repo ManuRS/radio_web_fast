@@ -240,7 +240,6 @@ body {
   cursor: pointer;
   background: var(--category-button-background);
   color: var(--category-button-color);
-  transition: background 0.3s ease;
 }
 
 .category-btn:hover {
