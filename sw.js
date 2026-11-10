@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v115";
+const CACHE_NAME = "radio-full-cache-v116";
 
 const FILES_TO_CACHE = [
   "./",
@@ -247,8 +247,7 @@ self.addEventListener('fetch', (event) => {
 
 
   event.respondWith(
-    // ignoreSearch solo si la URL lleva parámetros: live_boleto/index.html?music=2 debe encontrar
-    // live_boleto/index.html. Sin parámetros se busca por coincidencia exacta, que es más rápido.
-    caches.match(req, url.search ? { ignoreSearch: true } : undefined).then((response) => response || fetch(req))
+    // ignoreSearch: live_boleto/index.html?music=2 debe encontrar live_boleto/index.html
+    caches.match(req, { ignoreSearch: true }).then((response) => response || fetch(req))
   );
 });
