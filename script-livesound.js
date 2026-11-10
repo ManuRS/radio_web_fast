@@ -915,8 +915,9 @@ function createLiveSound(options = {}) {
     audio.removeAttribute("src");
     audio.load();
 
-    // Si la emisora lleva ecualizador, se engancha a la cadena antes de cargar el stream.
-    if (typeof Ecualizador !== "undefined") Ecualizador.conectar(audio);
+    // Si la emisora lleva ecualizador, se engancha a la cadena antes de cargar el stream
+    // (con normalización del volumen: la radio en directo llega a niveles muy distintos).
+    if (typeof Ecualizador !== "undefined") Ecualizador.conectar(audio, { normalizar: true });
 
     /*********** HLS ***********/
 

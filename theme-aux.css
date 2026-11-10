@@ -5,7 +5,9 @@
 /* Fundido corto y solo de opacidad (nada se mueve) para que lo que aparece, al cargar la
    página o al rellenarse con datos, no lo haga "a golpe". Las reglas lo usan con
    animation: var(--entra). Con "reducir movimiento" no hay animación. */
-:root { --entra: entra 0.2s ease-out backwards; }
+/* PRUEBA (v109): sin fundido de entrada, para ver si la barrita bajo la barra de estado viene de ahí.
+   Para volver al fundido: :root { --entra: entra 0.2s ease-out backwards; } */
+:root { --entra: none; }
 
 @keyframes entra { from { opacity: 0; } }
 

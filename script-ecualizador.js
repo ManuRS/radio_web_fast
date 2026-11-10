@@ -18,6 +18,15 @@
  * Todos los <audio> con ecualizador comparten una sola cadena:
  *    audio -> entrada -> graves -> medios -> agudos -> limitador -> altavoces
  *
+ * Normalización del volumen (solo radio en directo): cada emisora llega a un nivel distinto.
+ * Se mide el nivel medio (RMS) de lo que llega, y se aplica la ganancia (subida o bajada,
+ * con topes) que lo lleva a EQ_NORMALIZACION.objetivo, de forma suave. La ganancia va en el
+ * propio <audio>, antes de entrar en la cadena común:
+ *    audio -> ganancia -> entrada -> ...        (el analizador mide aparte, antes de la ganancia)
+ * El nivel de cada emisora se recuerda en este navegador solo como punto de partida: la
+ * medición no se detiene y lo recordado se va sustituyendo por lo medido. El limitador
+ * final evita que se sature al subir.
+ *
  * Un <audio> que ya ha pasado por el ecualizador no puede volver a sonar directo, y si
  * luego carga una emisora sin CORS se queda mudo. Quien cambie de emisora sobre el mismo
  * <audio> (live_boleto) debe sustituirlo por uno nuevo: estaConectado(audio) lo indica.
@@ -47,6 +56,15 @@ const EQ_LIMITADOR = {
   release: 0.15    // s
 };
 
+// Normalización del volumen entre emisoras (ver arriba).
+const EQ_NORMALIZACION = {
+  objetivo: -16,   // dB (RMS): nivel al que se lleva todo lo que llega
+  subidaMax: 24,   // dB: lo máximo que se sube una emisora floja
+  bajadaMax: 8,    // dB: lo máximo que se baja una emisora muy alta
+  tau: 8,          // s: lo que tarda en adaptarse el nivel medido
+  silencio: -55    // dB: por debajo de esto se considera silencio y no cuenta
+};
+
 /********************************
  * Cadena de audio compartida
  ********************************/
@@ -57,6 +75,126 @@ const Ecualizador = (() => {
 
   // Un <audio> solo puede engancharse una vez a un contexto de Web Audio.
   const conectados = new WeakSet();
+
+  /********************************
+   * Normalización del volumen
+   ********************************/
+
+  const NIVELES_KEY = "rwf_niveles";   // emisora -> último nivel medido (dB)
+  const NORM_KEY = "rwf_norm";         // "0" la desactiva (para pruebas)
+
+  let normActiva = true;
+  try { normActiva = localStorage.getItem(NORM_KEY) !== "0"; } catch (_) {}
+
+  let niveles = {};
+  try { niveles = JSON.parse(localStorage.getItem(NIVELES_KEY)) || {}; } catch (_) {}
+
+  const normalizados = new Map();   // <audio> -> { analizador, ganancia, norm }
+  let normTimer = null;
+  let nivelesGuardados = 0;
+  const bufNivel = new Float32Array(2048);
+  const aDb = p => 10 * Math.log10(p);
+
+  // Nombre con el que se recuerda la emisora: el de su tarjeta (el <audio> de relevo
+  // está en la misma tarjeta) o, si no hay, la URL del stream sin parámetros.
+  function claveDe(audio) {
+    const nombre = audio.closest?.(".card")?.querySelector(".station-name")?.textContent?.trim();
+    if (nombre) return nombre;
+    return (audio.getAttribute("data-src") || "").split("?")[0];
+  }
+
+  function gananciaDb(nivel) {
+    const { objetivo, subidaMax, bajadaMax } = EQ_NORMALIZACION;
+    return Math.min(subidaMax, Math.max(-bajadaMax, objetivo - nivel));
+  }
+
+  // Empieza la medición de esta emisora desde el nivel recordado, si lo hay. Si lo hay,
+  // la ganancia se aplica ya, antes de que suene nada.
+  function sembrar(nodos, clave) {
+    const memoria = niveles[clave];
+    const recordado = typeof memoria === "number";
+    nodos.norm = {
+      clave,
+      pow: recordado ? Math.pow(10, memoria / 10) : null,
+      cuenta: 0,
+      seguro: recordado,
+      ultimo: 0,
+      registrado: 0
+    };
+    if (recordado && normActiva && ctx) {
+      const db = gananciaDb(memoria);
+      nodos.ganancia.gain.cancelScheduledValues(ctx.currentTime);
+      nodos.ganancia.gain.value = Math.pow(10, db / 20);
+    }
+  }
+
+  function normTick() {
+    if (!ctx || ctx.state !== "running") return;
+
+    for (const [audio, nodos] of normalizados) {
+      if (!audio.isConnected) { normalizados.delete(audio); continue; }
+
+      if (!normActiva) continue;
+
+      // Solo se mide lo que está sonando de verdad
+      if (audio.paused || audio.muted || audio.readyState < 2) continue;
+
+      // El volumen del <audio> (deslizador, fundidos) se aplica antes de entrar en la
+      // cadena: se deshace al medir, para que la normalización no lo corrija.
+      const volumen = audio.volume;
+      if (volumen < 0.05) continue;
+
+      const clave = claveDe(audio);
+      if (!nodos.norm || nodos.norm.clave !== clave) sembrar(nodos, clave);
+      const n = nodos.norm;
+
+      nodos.analizador.getFloatTimeDomainData(bufNivel);
+      let suma = 0;
+      for (let i = 0; i < bufNivel.length; i++) suma += bufNivel[i] * bufNivel[i];
+      const p = suma / bufNivel.length / (volumen * volumen);
+
+      if (aDb(p) >= EQ_NORMALIZACION.silencio) {
+        const ahora = performance.now();
+        const dt = n.ultimo ? (ahora - n.ultimo) / 1000 : 0.25;
+        n.ultimo = ahora;
+        n.cuenta++;
+        n.pow = n.pow === null
+          ? p
+          : n.pow + (p - n.pow) * Math.max(Math.min(dt / EQ_NORMALIZACION.tau, 1), 1 / (n.cuenta + 1));
+        if (n.cuenta >= 12) n.seguro = true;   // unos 3 s de audio medido
+      }
+
+      if (!n.seguro || n.pow === null) continue;
+
+      const nivel = aDb(n.pow);
+      const db = gananciaDb(nivel);
+      nodos.ganancia.gain.setTargetAtTime(Math.pow(10, db / 20), ctx.currentTime, 0.5);
+      nodos.nivel = nivel;
+      nodos.db = db;
+
+      if (Math.abs(db - n.registrado) >= 2) {
+        n.registrado = db;
+        console.log(`Normalización en ${clave}: nivel ${nivel.toFixed(0)} dB, ganancia ${db > 0 ? "+" : ""}${db.toFixed(0)} dB`);
+      }
+
+      if (Date.now() - nivelesGuardados > 10000) {
+        nivelesGuardados = Date.now();
+        niveles[clave] = Math.round(nivel * 10) / 10;
+        try { localStorage.setItem(NIVELES_KEY, JSON.stringify(niveles)); } catch (_) {}
+      }
+    }
+  }
+
+  function normalizacion(activa) {
+    normActiva = !!activa;
+    try { localStorage.setItem(NORM_KEY, normActiva ? "1" : "0"); } catch (_) {}
+    if (!normActiva && ctx) {
+      for (const nodos of normalizados.values()) {
+        nodos.ganancia.gain.setTargetAtTime(1, ctx.currentTime, 0.3);
+      }
+    }
+    console.log("Normalización del volumen: " + (normActiva ? "activada" : "desactivada"));
+  }
 
   function quiere(audio) {
     return audio?.dataset?.eq === "true";
@@ -129,7 +267,9 @@ const Ecualizador = (() => {
 
   // Se llama justo antes de cargar el stream (dentro del clic del usuario la primera vez).
   // Si algo falla, el <audio> vuelve a su comportamiento normal y la radio sigue sonando.
-  function conectar(audio) {
+  // Con { normalizar: true } (la radio en directo) el <audio> lleva además la normalización
+  // del volumen. Solo se decide la primera vez: un <audio> ya conectado no cambia de cadena.
+  function conectar(audio, { normalizar = false } = {}) {
 
     // El atributo data-eq puede cambiar entre una emisora y otra sobre el mismo <audio>.
     if (!quiere(audio)) {
@@ -146,7 +286,24 @@ const Ecualizador = (() => {
 
       if (conectados.has(audio)) return;
 
-      ctx.createMediaElementSource(audio).connect(entrada);
+      const fuente = ctx.createMediaElementSource(audio);
+
+      if (normalizar) {
+        const analizador = ctx.createAnalyser();   // mide la emisora tal como llega
+        analizador.fftSize = 2048;
+        const ganancia = ctx.createGain();
+        fuente.connect(analizador);
+        fuente.connect(ganancia);
+        ganancia.connect(entrada);
+
+        const nodos = { analizador, ganancia, norm: null, nivel: null, db: null };
+        normalizados.set(audio, nodos);
+        sembrar(nodos, claveDe(audio));
+        if (!normTimer) normTimer = setInterval(normTick, 250);
+      } else {
+        fuente.connect(entrada);
+      }
+
       conectados.add(audio);
 
     } catch (error) {
@@ -189,6 +346,8 @@ const Ecualizador = (() => {
     conectar,
     vigilar,
     estaConectado,
+    normalizacion,
+    nivelDe(audio) { const n = normalizados.get(audio); return n ? { nivel: n.nivel, ganancia: n.db } : null; },   // depuración
     get contexto() { return ctx; },   // para depuración y pruebas
     get salida() { return salida; }
   };
