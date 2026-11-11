@@ -62,7 +62,8 @@
   <link rel="stylesheet" href="../theme-cards.css">
 
   <!--<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>-->
-  <script src="../hls.light.min-174.js"></script>
+  <!-- defer: no frena el primer pintado; script-livesound.js solo lo necesita al dar a play en una emisora HLS -->
+  <script defer src="../hls.light.min-174.js"></script>
 
   <style>
     /* Solo se ve la categoría elegida desde el primer pintado (filterStations mantiene data-cat) */
