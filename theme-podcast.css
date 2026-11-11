@@ -210,20 +210,28 @@ audio {
     display: none !important;
   }
 
-  /* Como el reproductor ya no enseña el tiempo, lo da la tarjeta: "actual / duración" en la
-     esquina superior izquierda (la rellena actualizarTiempoPodcast en script-cargarss.js).
-     Cabe en el margen superior de la tarjeta, sin tocar la altura. En escritorio no se ve:
-     ahí el reproductor ya lo trae. */
+  /* Como el reproductor ya no enseña el tiempo, lo da la tarjeta en una píldora, arriba a la
+     derecha (la rellena actualizarTiempoPodcast en script-cargarss.js): la duración antes del
+     play y "actual / duración" desde que empieza. Cabe en el margen superior de la tarjeta,
+     sin tocar su altura. En escritorio no se ve: ahí el reproductor ya lo trae. */
   .tiempo-podcast {
     display: block;
     position: absolute;
-    top: 9px;
-    left: 14px;
-    font-size: 0.8em;
-    line-height: 1;
-    color: var(--secondary-text);
+    top: 8px;
+    right: 12px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--control-background);
+    color: var(--control-text);
+    font-size: 0.75em;
+    line-height: 1.2;
     font-variant-numeric: tabular-nums; /* las cifras no bailan al avanzar */
     pointer-events: none;
+  }
+
+  /* Sin duración conocida no hay nada que enseñar: ni la píldora vacía */
+  .tiempo-podcast:empty {
+    display: none;
   }
 
 }

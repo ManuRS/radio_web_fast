@@ -183,15 +183,16 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
     // en la página eran 30 peticiones (y unos 2,4 MB) solo por abrirla. A cambio, la duración
     // no se ve hasta que empieza a sonar.
     /*************************************************************/
-    // Tiempo "actual / duración" en la esquina de la tarjeta (solo se ve en móvil, donde el
-    // reproductor del navegador no lo enseña; ver .tiempo-podcast). Con preload="none" la
+    // Píldora de tiempo en la esquina de la tarjeta (solo se ve en móvil, donde el reproductor
+    // del navegador no lo enseña; ver .tiempo-podcast): antes de darle al play solo la
+    // duración y, una vez empezado, "actual / duración". Con preload="none" la
     // duración real no llega hasta el play: mientras tanto se usa la del feed, si la trae, y
     // si no la trae la etiqueta queda vacía (no se enseña nada hasta conocerla).
     const duracionFeed = duracionDelFeed(item.getElementsByTagName("itunes:duration")[0]?.textContent);
     const duracionFeedAttr = Number.isFinite(duracionFeed) ? ` data-duracion-feed="${duracionFeed}"` : "";
 
     contenedor.innerHTML = `
-      <span class="tiempo-podcast" aria-hidden="true"${duracionFeedAttr}>${textoTiempo(0, duracionFeed)}</span>
+      <span class="tiempo-podcast" aria-hidden="true"${duracionFeedAttr}>${textoTiempo(0, duracionFeed, false)}</span>
       <div class="podcast-contenido">
         ${imagen_select}
         <div class="podcast-texto">
@@ -270,10 +271,12 @@ function formatearTiempo(segundos) {
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
 }
 
-// "actual / duración". Sin duración conocida (aún sin cargar, o un directo con Infinity)
-// no se enseña nada: es mejor una etiqueta vacía que un "--:--".
-function textoTiempo(actual, duracion) {
-  return Number.isFinite(duracion) ? `${formatearTiempo(actual)} / ${formatearTiempo(duracion)}` : "";
+// Texto de la píldora: solo la duración si el capítulo no ha empezado y "actual / duración"
+// si ya sí. Sin duración conocida (aún sin cargar, o un directo con Infinity) no se enseña
+// nada: es mejor una píldora vacía (oculta) que un "--:--".
+function textoTiempo(actual, duracion, empezado) {
+  if (!Number.isFinite(duracion)) return "";
+  return empezado ? `${formatearTiempo(actual)} / ${formatearTiempo(duracion)}` : formatearTiempo(duracion);
 }
 
 // <itunes:duration> puede venir en segundos ("1234") o como "mm:ss" / "hh:mm:ss".
@@ -285,8 +288,8 @@ function duracionDelFeed(texto) {
   return total > 0 ? total : NaN;
 }
 
-// La etiqueta de la tarjeta sigue al audio (avance, saltos de ±10 s, barra, carga de la
-// duración). Los eventos de audio no burbujean: captura en document, como arriba. Solo se
+// La píldora de la tarjeta sigue al audio (play, avance, saltos de ±10 s, barra, carga de la
+// duración). Se amplía al darle al play y ya no se encoge, aunque se pause. Los eventos de audio no burbujean: captura en document, como arriba. Solo se
 // toca el DOM cuando cambia el texto (timeupdate llega unas 4 veces por segundo).
 function actualizarTiempoPodcast(event) {
   const audio = event.target;
@@ -296,11 +299,12 @@ function actualizarTiempoPodcast(event) {
   if (!etiqueta) return;
 
   const duracion = Number.isFinite(audio.duration) ? audio.duration : Number(etiqueta.dataset.duracionFeed);
-  const texto = textoTiempo(audio.currentTime, duracion);
+  const empezado = !audio.paused || audio.currentTime > 0;
+  const texto = textoTiempo(audio.currentTime, duracion, empezado);
   if (etiqueta.textContent !== texto) etiqueta.textContent = texto;
 }
 
-["timeupdate", "loadedmetadata", "durationchange", "seeked", "emptied"].forEach(nombre => document.addEventListener(nombre, actualizarTiempoPodcast, true));
+["play", "pause", "timeupdate", "loadedmetadata", "durationchange", "seeked", "emptied"].forEach(nombre => document.addEventListener(nombre, actualizarTiempoPodcast, true));
 
 /******************************************
  * 
