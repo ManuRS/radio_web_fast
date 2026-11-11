@@ -2,7 +2,8 @@
  * DEFINICIONES GENERALES
  * **************************/
 
-.podcast { 
+.podcast {
+  position: relative; /* ancla de .tiempo-podcast */
   margin-bottom: 20px;
   padding: 30px 2em 20px;
   border-bottom: none;
@@ -197,12 +198,32 @@ audio {
   --audio-background: #e5e7b;
 }
 
+.tiempo-podcast {
+  display: none;
+}
+
 @media (max-width: 42em) {
 
   audio::-webkit-media-controls-play-button,
   audio::-webkit-media-controls-current-time-display,
   audio::-webkit-media-controls-time-remaining-display {
     display: none !important;
+  }
+
+  /* Como el reproductor ya no enseña el tiempo, lo da la tarjeta: "actual / duración" en la
+     esquina superior izquierda (la rellena actualizarTiempoPodcast en script-cargarss.js).
+     Cabe en el margen superior de la tarjeta, sin tocar la altura. En escritorio no se ve:
+     ahí el reproductor ya lo trae. */
+  .tiempo-podcast {
+    display: block;
+    position: absolute;
+    top: 9px;
+    left: 14px;
+    font-size: 0.8em;
+    line-height: 1;
+    color: var(--secondary-text);
+    font-variant-numeric: tabular-nums; /* las cifras no bailan al avanzar */
+    pointer-events: none;
   }
 
 }

@@ -183,7 +183,15 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
     // en la página eran 30 peticiones (y unos 2,4 MB) solo por abrirla. A cambio, la duración
     // no se ve hasta que empieza a sonar.
     /*************************************************************/
+    // Tiempo "actual / duración" en la esquina de la tarjeta (solo se ve en móvil, donde el
+    // reproductor del navegador no lo enseña; ver .tiempo-podcast). Con preload="none" la
+    // duración real no llega hasta el play: mientras tanto se usa la del feed, si la trae, y
+    // si no la trae la etiqueta queda vacía (no se enseña nada hasta conocerla).
+    const duracionFeed = duracionDelFeed(item.getElementsByTagName("itunes:duration")[0]?.textContent);
+    const duracionFeedAttr = Number.isFinite(duracionFeed) ? ` data-duracion-feed="${duracionFeed}"` : "";
+
     contenedor.innerHTML = `
+      <span class="tiempo-podcast" aria-hidden="true"${duracionFeedAttr}>${textoTiempo(0, duracionFeed)}</span>
       <div class="podcast-contenido">
         ${imagen_select}
         <div class="podcast-texto">
@@ -252,6 +260,47 @@ function actualizarBotonPlay(event) {
 }
 
 ["play", "pause", "ended"].forEach(nombre => document.addEventListener(nombre, actualizarBotonPlay, true));
+
+// Segundos -> "m:ss" (o "h:mm:ss" si pasa de una hora).
+function formatearTiempo(segundos) {
+  const total = Math.floor(Math.max(0, segundos));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = String(total % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
+}
+
+// "actual / duración". Sin duración conocida (aún sin cargar, o un directo con Infinity)
+// no se enseña nada: es mejor una etiqueta vacía que un "--:--".
+function textoTiempo(actual, duracion) {
+  return Number.isFinite(duracion) ? `${formatearTiempo(actual)} / ${formatearTiempo(duracion)}` : "";
+}
+
+// <itunes:duration> puede venir en segundos ("1234") o como "mm:ss" / "hh:mm:ss".
+function duracionDelFeed(texto) {
+  if (!texto) return NaN;
+  const partes = texto.trim().split(":").map(Number);
+  if (partes.length > 3 || partes.some(n => !Number.isFinite(n) || n < 0)) return NaN;
+  const total = partes.reduce((suma, n) => suma * 60 + n, 0);
+  return total > 0 ? total : NaN;
+}
+
+// La etiqueta de la tarjeta sigue al audio (avance, saltos de ±10 s, barra, carga de la
+// duración). Los eventos de audio no burbujean: captura en document, como arriba. Solo se
+// toca el DOM cuando cambia el texto (timeupdate llega unas 4 veces por segundo).
+function actualizarTiempoPodcast(event) {
+  const audio = event.target;
+  if (!(audio instanceof HTMLAudioElement)) return;
+
+  const etiqueta = audio.closest(".podcast")?.querySelector(".tiempo-podcast");
+  if (!etiqueta) return;
+
+  const duracion = Number.isFinite(audio.duration) ? audio.duration : Number(etiqueta.dataset.duracionFeed);
+  const texto = textoTiempo(audio.currentTime, duracion);
+  if (etiqueta.textContent !== texto) etiqueta.textContent = texto;
+}
+
+["timeupdate", "loadedmetadata", "durationchange", "seeked", "emptied"].forEach(nombre => document.addEventListener(nombre, actualizarTiempoPodcast, true));
 
 /******************************************
  * 
