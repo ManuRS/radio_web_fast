@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v132";
+const CACHE_NAME = "radio-full-cache-v133";
 
 const FILES_TO_CACHE = [
   "./",
@@ -17,6 +17,7 @@ const FILES_TO_CACHE = [
   "./extra_elpais",
   "./extra_mapaser",
   
+  "./script-app.js",
   "./script-cargarss.js",
   "./script-ecualizador.js",
   "./script-eventos.js",
