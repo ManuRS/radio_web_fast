@@ -179,18 +179,21 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
 
   if (audioUrl) {
 
+    // preload="none": el audio no pide nada al servidor hasta darle a play. Con 30 capítulos
+    // en la página eran 30 peticiones (y unos 2,4 MB) solo por abrirla. A cambio, la duración
+    // no se ve hasta que empieza a sonar.
     /*************************************************************/
     contenedor.innerHTML = `
       <div class="podcast-contenido">
         ${imagen_select}
         <div class="podcast-texto">
           ${text_p}
-          <audio controls style="background-color: var(--audio-background, #f1f3f4);"${conEq ? ' data-eq="true" crossorigin="anonymous"' : ''} src="${audioUrl}"></audio>
+          <audio controls preload="none" style="background-color: var(--audio-background, #f1f3f4);"${conEq ? ' data-eq="true" crossorigin="anonymous"' : ''} src="${audioUrl}"></audio>
           <div class="controles">
             <div class="botones-reproduccion">
               <button class="boton-play" onclick="let a=this.closest('.podcast-texto').querySelector('audio'); if(a.paused){ a.play(); } else { a.pause(); } ">🟢 Play</button>
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
-              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
+              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration||Infinity,a.currentTime+10)">⏩ +10s</button>
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏩ x1':'⏩ x2'">⏩ x2</button>
             </div>
           </div>
