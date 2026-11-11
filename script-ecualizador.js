@@ -91,7 +91,6 @@ const Ecualizador = (() => {
 
   const normalizados = new Map();   // <audio> -> { analizador, ganancia, norm }
   let normTimer = null;
-  let nivelesGuardados = 0;
   const bufNivel = new Float32Array(2048);
   const aDb = p => 10 * Math.log10(p);
 
@@ -119,7 +118,8 @@ const Ecualizador = (() => {
       cuenta: 0,
       seguro: recordado,
       ultimo: 0,
-      registrado: 0
+      registrado: 0,
+      guardado: 0    // cada emisora lleva su cuenta: con una común, de dos que suenan a la vez solo se guardaba la primera
     };
     if (recordado && normActiva && ctx) {
       const db = gananciaDb(memoria);
@@ -177,8 +177,8 @@ const Ecualizador = (() => {
         console.log(`Normalización en ${clave}: nivel ${nivel.toFixed(0)} dB, ganancia ${db > 0 ? "+" : ""}${db.toFixed(0)} dB`);
       }
 
-      if (Date.now() - nivelesGuardados > 10000) {
-        nivelesGuardados = Date.now();
+      if (Date.now() - n.guardado > 10000) {
+        n.guardado = Date.now();
         niveles[clave] = Math.round(nivel * 10) / 10;
         try { localStorage.setItem(NIVELES_KEY, JSON.stringify(niveles)); } catch (_) {}
       }
