@@ -2,7 +2,7 @@
   "name": "La SER en directo",
   "short_name": "SER Live",
 
-  "version": "116",
+  "version": "117",
 
   "start_url": "./",
   "display": "standalone",

@@ -636,17 +636,18 @@
 
   /* Parar música */
   function stop_music(delay=0) {
-    if (musicURL != "none"){
-      // Para con delay opcional
-      setTimeout(() => {
-        noticiasEnCurso = true;
-        actualizarNotificacion();
-        cancelaEntradaMusica();
-        quitarRebote();
-        clearInterval(fadeMusic_ID);
-        fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, null, 100);}, FADE_TICK_MS);
-      }, delay);
-    }
+    // Para con delay opcional. Si hay música o no se mira al dispararse, no al programarse:
+    // entre medias (hasta 90 s) se puede haber elegido una emisora desde "solo noticias",
+    // y sin este corte seguiría sonando encima del boleto.
+    setTimeout(() => {
+      noticiasEnCurso = true;
+      actualizarNotificacion();
+      if (musicURL == "none") return;
+      cancelaEntradaMusica();
+      quitarRebote();
+      clearInterval(fadeMusic_ID);
+      fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, null, 100);}, FADE_TICK_MS);
+    }, delay);
   }
 
   /* Cambiar de emisora de música sin recargar: fade out, cambio de stream y fade in */
