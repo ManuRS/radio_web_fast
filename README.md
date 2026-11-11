@@ -2,11 +2,11 @@
 
 Reproductor de radio *vibecodeado* con...
 
-- Una lista de emisiones de radio en directo, que incluye enlaces oficiales a las principales cadenas españolas (más de 10 generalistas y más de 15 musicales)
+- Una lista de emisiones en directo de las principales cadenas españolas (+10 generalistas y +15 musicales)
 
-- Una página que reproduce una emisión musical (o permanece en silencio) con conexión automática durante el día (de 8 a 20) a los boletines de la Cadena SER
+- Una página que reproduce una emisión musical o nada con conexión automática de 8 a 20 horas a los boletines de la SER
 
-- Siete listas de podcast: Algunas son simples visores de un feed xml, otras son selecciones curadas para mi uso personal
+- Siete listas de podcast: Algunas son simples visores de un feed xml, otras son selecciones para mi uso personal
 
 - Visor del RSS oficial de la portada de El País: Las mismas noticias de la web del periódico, pero sin pesos visuales y con sus títulos completos (no los usados en la portada)
 
@@ -14,11 +14,11 @@ Reproductor de radio *vibecodeado* con...
 
 ### Puntos de instalación como Aplicación Web Progresiva (PWA)
 
-- [Radio en directo](https://manurs.github.io/radio_web_fast/live/) es la versión más recomendable para escuchar en directo el catálogo de emisoras disponible
+- [Radio en directo](https://manurs.github.io/radio_web_fast/live/): La versión más recomendable para escuchar el catálogo de emisoras disponible
 
-- [La aplicación completa](https://manurs.github.io/radio_web_fast/) está adaptada a mi uso personal con las listas de podcast, el visor de El País y el mapa de la SER
+- [Aplicación completa](https://manurs.github.io/radio_web_fast/): Adaptada para mi con las listas de podcast, el visor de El País y el mapa de la SER
 
-- [Modo sencillo](https://manurs.github.io/radio_web_fast/live_ser/) proporciona un solo botón con el directo de la SER. Fue el germen de esta aplicación: acercar la radio a quien no puede manejar aplicaciones repletas de anuncios y menús pero tampoco radios convencionales
+- [Modo sencillo](https://manurs.github.io/radio_web_fast/live_ser/): Un solo botón con el directo de la SER. Fue el germen de esta aplicación, acercar la radio a quien no puede manejar aplicaciones repletas de anuncios y menús pero tampoco radios convencionales
 
 ## Hitos
 
@@ -26,17 +26,17 @@ Reproductor de radio *vibecodeado* con...
 
 - Abril y mayo de 2026: Mejora profunda de los permisos de audio en segundo plano, automatización de la reproducción de noticias cada hora y optimización del comportamiento como Aplicación Web Progresiva (PWA) que puede ser instalada en un teléfono móvil. Todo sin modificar la arquitectura general.
 
-- Octubre de 2026 (Fase 1): Refactorización del código, modo oscuro y librería de audio. Inicialmente el proyecto no estaba pensado para ser alojado en un servidor; el objetivo era crear un archivo HTML guardado en el dispositivo. Creció poco a poco y gran parte del código se repetía en muchas de las páginas. La refactorización se realizó con mis ideas y esfuerzo, con la conversación con ChatGPT como ayudante y tester de los cambios. Es mi último gran homenaje a la programación tradicional. Migración con la librería de audio a un modelo algo más desatendido de desarrollo.
+- Octubre de 2026 (Fase 1): Refactorización del código, modo oscuro y librería de audio. El proyecto no estaba pensado para ser alojado en un servidor, creció poco a poco y gran parte del código se repetía en muchas de las páginas. La refactorización se realizó con mis ideas y esfuerzo, con la conversación con ChatGPT como ayudante y tester de los cambios. Es mi último gran homenaje a la programación tradicional. Migración con la librería de audio a un modelo algo más desatendido de desarrollo.
 
 - Octubre de 2026 (Fase 2): Migración completa a un desarrollo desatendido usando Claude (Sonnet 5.5 en esfuerzo alto) para mejorar aún más la librería de audio, creando una aplicación aún más profesional y que cuenta con reconexión automática al recuperar una conexión a internet perdida. Mejoró también la gestión de las notificaciones en Android (no probado en iOS), el cálculo del *delay* de emisión online y el aspecto visual.
 
 ## Limitaciones
 
-1. La selección de cadenas abarca prácticamente la totalidad de la audiencia según el EGM, pero no es una lista exhaustiva. Esta aplicación busca contención y no intenta vender que cuenta con cientos de radios. Eso provoca que no se incluyan algunas cadenas minoritarias aceptables. Tampoco hay emisoras locales y apenas hay cadenas autonómicas.
+1. La selección de cadenas abarca prácticamente la totalidad de la audiencia según el EGM, pero no es una lista exhaustiva. Esta aplicación busca contención y no cuenta con cientos de radios. Eso provoca que no se incluyan algunas cadenas minoritarias aceptables. Tampoco hay emisoras locales y apenas hay cadenas autonómicas.
 
 2. Tampoco permite seleccionar la emisora de una cadena. Es decir, se emite la desconexión realizada desde los estudios desde donde se realiza la emisión en cadena (generalmente Madrid).
 
-NOTA: Aunque en España las propias radios y los medios usan indistintamente ambos términos, una cadena y una emisora de radio no son lo mismo. 
+Vocabulario: Aunque en España las propias radios y los medios usan indistintamente ambos términos, una cadena y una emisora de radio no son lo mismo. 
 
 > [!NOTE]
 > Si quieres una aplicación más completa (ecualización personalizada, visualizador de la señal o posibilidad de buscar y añadir emisoras) mejor pasate por [Radio Web Neo](https://github.com/ManuRS/radio_web_neo)
