@@ -4,7 +4,7 @@ Reproductor de radio *vibecodeado* con...
 
 - Una lista de emisiones en directo de las principales cadenas españolas (+10 generalistas y +15 musicales)
 
-- Una página que reproduce una emisión musical o nada con conexión automática de 8 a 20 horas a los boletines de la SER
+- Página con una emisión musical o silencio y conexión automática de 8 a 20 horas a los boletines de la SER
 
 - Siete listas de podcast: Algunas son simples visores de un feed xml, otras son selecciones para mi uso personal
 
