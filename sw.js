@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v127";
+const CACHE_NAME = "radio-full-cache-v128";
 
 const FILES_TO_CACHE = [
   "./",
@@ -176,10 +176,13 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('⌛ Descargando cache...');
 
-      // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan
+      // En lugar de addAll, usamos un bucle para que si uno falla, los demás sigan.
+      // cache: 'no-cache' pregunta siempre al servidor, pero si el navegador conserva su copia
+      // y el fichero no ha cambiado, el servidor responde 304 y no se vuelve a descargar
+      // (con 'reload' cada versión bajaba otra vez todos los ficheros, unos 7,4 MB).
       return Promise.allSettled(
         FILES_TO_CACHE.map(async (url) => {
-          const req = new Request(url, { cache: 'reload' });
+          const req = new Request(url, { cache: 'no-cache' });
           const res = await fetch(req);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           await cache.put(req, await limpiarRedireccion(res));
