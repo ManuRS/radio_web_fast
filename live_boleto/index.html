@@ -645,12 +645,17 @@
       if (musicURL == "none") return;
       cancelaEntradaMusica();
       quitarRebote();
+      // Si hay un cambio de emisora a medias, su fundido de salida (igual de rápido) sigue
+      // hasta el final y aplica la emisora nueva; cortarlo aquí dejaba marcada una emisora
+      // y aplicada otra.
+      if (cambioMusicaPendiente) return;
       clearInterval(fadeMusic_ID);
       fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, null, 100);}, FADE_TICK_MS);
     }, delay);
   }
 
   /* Cambiar de emisora de música sin recargar: fade out, cambio de stream y fade in */
+  let cambioMusicaPendiente = false;   // hay un fundido de salida que al terminar aplica otra emisora
   function cambiarMusica(id) {
     if (!EMISORAS_MUSICA[id] || id === musicIdPedido) return;
     musicIdPedido = id;
@@ -665,6 +670,7 @@
     cancelaEntradaMusica();
 
     const aplicar = () => {
+      cambioMusicaPendiente = false;
       seleccionarMusica(id);
       if (semaforo !== undefined && !noticiasEnCurso) {
         // Es el turno de la música: el logo cambia ya y entra la nueva (o silencio)
@@ -676,6 +682,7 @@
     };
 
     if (habia_musica) {
+      cambioMusicaPendiente = true;
       quitarRebote();
       clearInterval(fadeMusic_ID);
       fadeMusic_ID = setInterval(() => {fadeOutVol(liveMusic, fadeMusic_ID, aplicar, 100);}, FADE_TICK_MS);
