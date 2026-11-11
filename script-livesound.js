@@ -579,13 +579,17 @@ function createLiveSound(options = {}) {
     switchTimer = setTimeout(abortCardSwitch, SWITCH_TIMEOUT_MS);
   }
 
-  function abortCardSwitch() {
-    switchTimer = null;
+  // También lo llama playPause() (porUsuario = true) si se pulsa la emisora anterior antes de
+  // que suene la nueva.
+  function abortCardSwitch(porUsuario = false) {
+    clearSwitchTimer();
 
     // Solo vale mientras el cambio siga a medias y sea a otra tarjeta.
     if (!retiringAudio || !currentAudio || !retiringCard || retiringCard === currentCard) return;
 
-    console.warn("La nueva emisora no ha sonado a tiempo. Se vuelve a la anterior.");
+    console.warn(porUsuario === true
+      ? "Cambio de emisora cancelado. Se sigue con la anterior."
+      : "La nueva emisora no ha sonado a tiempo. Se vuelve a la anterior.");
 
     clearBufferMonitor();
     clearStallWatchdog();
@@ -844,6 +848,18 @@ function createLiveSound(options = {}) {
       return;
     }
 
+    // Pulsar la emisora anterior mientras la nueva aún conecta cancela el cambio: la anterior,
+    // que no ha dejado de sonar, sigue sin cortes (antes se cortaba y se volvía a conectar).
+    // Si estaba en pausa, se reanuda en directo como al pulsar cualquier emisora en pausa.
+    if (retiringAudio && card === retiringCard && currentCard && currentCard !== card) {
+      const estabaEnPausa = retiringWasPaused;
+
+      abortCardSwitch(true);
+
+      if (estabaEnPausa) resumeLive("tarjeta pulsada");
+      return;
+    }
+
     // La tarjeta puede tener dos elementos, y vale el que esté en uso.
     const audio = getCardAudio(card);
 
@@ -915,8 +931,9 @@ function createLiveSound(options = {}) {
     audio.removeAttribute("src");
     audio.load();
 
-    // Si la emisora lleva ecualizador, se engancha a la cadena antes de cargar el stream.
-    if (typeof Ecualizador !== "undefined") Ecualizador.conectar(audio);
+    // Si la emisora lleva ecualizador, se engancha a la cadena antes de cargar el stream
+    // (con normalización del volumen: la radio en directo llega a niveles muy distintos).
+    if (typeof Ecualizador !== "undefined") Ecualizador.conectar(audio, { normalizar: true });
 
     /*********** HLS ***********/
 
@@ -1546,6 +1563,21 @@ if (!window.__livesoundMediaSessionBound) {
         // Si no había ninguna en pausa pero el audio está parado o atascado,
         // se recupera igual que al volver la red.
         recoverAllIfStalled(reason);
+      });
+
+      // Botón de pausa de la notificación (o de unos auriculares). Con este manejador se sabe
+      // que la pausa la ha pedido el usuario y se respeta siempre, también en plena reconexión
+      // o sin red: antes, en esos casos, se tomaba por un corte y la radio volvía a sonar sola
+      // al recuperarse la conexión. Las pausas del sistema (una llamada, otra app) siguen
+      // llegando por el evento "pause" de cada <audio>, como siempre.
+      navigator.mediaSession.setActionHandler("pause", () => {
+        __liveInstances.forEach(item => item.hold());
+
+        // Lo demás que suene en la página (p. ej. un pin de live_boleto) también se para,
+        // como hacía el navegador por su cuenta.
+        document.querySelectorAll("audio").forEach(audio => {
+          if (!audio.paused) audio.pause();
+        });
       });
     } catch (error) {
       // Sin soporte: el navegador mantiene su comportamiento por defecto.

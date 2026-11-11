@@ -179,18 +179,21 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
 
   if (audioUrl) {
 
+    // preload="none": el audio no pide nada al servidor hasta darle a play. Con 30 capítulos
+    // en la página eran 30 peticiones (y unos 2,4 MB) solo por abrirla. A cambio, la duración
+    // no se ve hasta que empieza a sonar.
     /*************************************************************/
     contenedor.innerHTML = `
       <div class="podcast-contenido">
         ${imagen_select}
         <div class="podcast-texto">
           ${text_p}
-          <audio controls style="background-color: var(--audio-background, #f1f3f4);"${conEq ? ' data-eq="true" crossorigin="anonymous"' : ''} src="${audioUrl}"></audio>
+          <audio controls preload="none" style="background-color: var(--audio-background, #f1f3f4);"${conEq ? ' data-eq="true" crossorigin="anonymous"' : ''} src="${audioUrl}"></audio>
           <div class="controles">
             <div class="botones-reproduccion">
-              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); if(a.paused){ a.play(); this.textContent='🔴 Pausa'; } else { a.pause(); this.textContent='🟢 Play'; } ">🟢 Play</button>
+              <button class="boton-play" onclick="let a=this.closest('.podcast-texto').querySelector('audio'); if(a.paused){ a.play(); } else { a.pause(); } ">🟢 Play</button>
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
-              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
+              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration||Infinity,a.currentTime+10)">⏩ +10s</button>
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏩ x1':'⏩ x2'">⏩ x2</button>
             </div>
           </div>
@@ -220,6 +223,35 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
   return;
 }
 
+
+/******************************************
+ * 
+ * UN SOLO CAPITULO A LA VEZ Y BOTON PLAY/PAUSA AL DIA
+ * 
+ * ****************************************/
+// Los eventos de audio no burbujean: se escuchan en captura, una vez para toda la página.
+
+// Al empezar un capítulo se pausa el que estuviera sonando (antes sonaban los dos a la vez).
+document.addEventListener("play", event => {
+  const audio = event.target;
+  if (!(audio instanceof HTMLAudioElement) || !audio.closest(".podcast")) return;
+
+  document.querySelectorAll(".podcast audio").forEach(otro => {
+    if (otro !== audio && !otro.paused) otro.pause();
+  });
+}, true);
+
+// El texto del botón sigue al audio, se pare o arranque desde donde sea: el propio botón,
+// los controles del reproductor, la notificación o el final del capítulo.
+function actualizarBotonPlay(event) {
+  const audio = event.target;
+  if (!(audio instanceof HTMLAudioElement)) return;
+
+  const boton = audio.closest(".podcast-texto")?.querySelector(".boton-play");
+  if (boton) boton.textContent = audio.paused ? "🟢 Play" : "🔴 Pausa";
+}
+
+["play", "pause", "ended"].forEach(nombre => document.addEventListener(nombre, actualizarBotonPlay, true));
 
 /******************************************
  * 
@@ -326,6 +358,10 @@ function quitarHuecosVacios(contenedores) {
 // siendo siempre reciente.
 const feedsPedidos = new Map();
 
+// Un feed que no responde se da por caído pasado este tiempo: su hueco desaparece en vez de
+// quedarse con el esqueleto de carga para siempre.
+const FEED_TIEMPO_LIMITE_MS = 30000;
+
 function descargarFeedRss(url, antiCache=true){
   const clave = `${antiCache}|${url}`;
 
@@ -344,6 +380,11 @@ async function pedirFeedRss(url, antiCache=true){
 
   let res;
 
+  // AbortSignal.timeout no existe en navegadores antiguos: sin él, se espera como antes.
+  const signal = typeof AbortSignal !== "undefined" && AbortSignal.timeout
+    ? AbortSignal.timeout(FEED_TIEMPO_LIMITE_MS)
+    : undefined;
+
   if (antiCache) {
 
     // Mejora de la URL
@@ -353,6 +394,7 @@ async function pedirFeedRss(url, antiCache=true){
     // Fetch con mejoras
     res = await fetch(url, { 
       cache: 'no-store',
+      signal,
       //headers: {
       //  'Cache-Control': 'no-cache',
       //  'Pragma': 'no-cache'
@@ -361,7 +403,7 @@ async function pedirFeedRss(url, antiCache=true){
 
   } else {
     // Fetch simple
-    res = await fetch(url);
+    res = await fetch(url, { signal });
   }
 
   // Un error HTTP no se interpreta como un feed vacío (y así no se comparte como tal)

@@ -125,11 +125,22 @@
     const truncate = (str = "", n = MAX_CHARS) =>
       str.length > n ? str.slice(0, n - 3).trimEnd() + "..." : str;
 
-    const stripHTML = (html = "") => {
-      const tmp = document.createElement("div");
-      tmp.innerHTML = html;
-      return (tmp.textContent || tmp.innerText || "").trim();
-    };
+    // Quita las etiquetas de un texto del feed. Se analiza en un documento aparte, que no
+    // ejecuta ni descarga nada (un <div> con innerHTML sí cargaba sus <img> y ejecutaba su onerror).
+    const stripHTML = (html = "") =>
+      (new DOMParser().parseFromString(html, "text/html").body.textContent || "").trim();
+
+    // Lo que viene del feed se inserta como HTML: se escapa para que un "<" o un "&" del texto
+    // no rompa la página ni cuele etiquetas (igual que en script-cargarss.js).
+    const escaparHtml = (texto = "") => String(texto)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+    // Solo enlaces web normales
+    const urlSegura = (url = "") => /^https?:\/\//i.test(url.trim()) ? escaparHtml(url.trim()) : "";
 
     const formatDateES = (dateStr = "") => {
       const d = new Date(dateStr);
@@ -172,6 +183,7 @@
     async function loadRSS() {
       try {
         const res = await fetch(FEED_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const xmlText = await res.text();
 
         const parser = new DOMParser();
@@ -186,21 +198,21 @@
 
           let title = item.querySelector("title")?.textContent || "";
           let description = item.querySelector("description")?.textContent || "";
-          const link = item.querySelector("link")?.textContent || "#";
+          const link = urlSegura(item.querySelector("link")?.textContent) || "#";
           const pubDate = item.querySelector("pubDate")?.textContent || "";
 
           // Sanitizar y recortar
-          title = truncate(stripHTML(title));
-          description = truncate(stripHTML(description));
+          title = escaparHtml(truncate(stripHTML(title)));
+          description = escaparHtml(truncate(stripHTML(description)));
 
           const fecha = formatDateES(pubDate);
-          const imgUrl = getMediaImageUrl(item);
+          const imgUrl = urlSegura(getMediaImageUrl(item) || "");
 
           const card = document.createElement("div");
           card.className = "rss-item";
 
           card.innerHTML = `
-            ${imgUrl ? `<img src="${imgUrl}" alt="${title.replace(/"/g, '&quot;')}" onerror="this.style.display='none'">` : ""}
+            ${imgUrl ? `<img src="${imgUrl}" alt="${title}" onerror="this.style.display='none'">` : ""}
             <div class="rss-content">
               <h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2>
               <p>${description}</p>

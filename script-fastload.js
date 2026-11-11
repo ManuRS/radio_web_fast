@@ -13,4 +13,3 @@ try {
 } catch (error) {
   // Si el almacenamiento está bloqueado, la página funciona en modo claro.
 }
-
