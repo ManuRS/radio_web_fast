@@ -230,9 +230,18 @@
     // Parsear el json
     const emisoras = JSON.parse(textoLimpio);
 
-    // Tamaño de los marcadores en móviles
+    // Marcadores más grandes en móviles (1,5 veces el de Leaflet). Se hace con un icono de ese
+    // tamaño: escalar el elemento con transform no sirve, Leaflet lo reescribe al colocarlo.
     const esMovil = window.matchMedia('(max-width: 600px)').matches;
-    const escalaMarcador = esMovil ? 1.5 : 1;
+    const iconoMarcador = esMovil
+      ? new L.Icon.Default({
+          iconSize: [38, 62],
+          iconAnchor: [19, 62],
+          popupAnchor: [1, -51],
+          tooltipAnchor: [24, -42],
+          shadowSize: [62, 62]
+        })
+      : new L.Icon.Default();
 
     // Añadir marcadores y ventanas emergentes.
     emisoras.forEach(function(emisora) {
@@ -248,16 +257,7 @@
       document.createTextNode('Frecuencia: ' + emisora.frecuencia)
     );
 
-    const marcador = L.marker([emisora.lat, emisora.lon]).addTo(map);
-
-    if (escalaMarcador > 1) {
-      marcador.on('add', function() {
-        const icono = marcador.getElement();
-        if (icono) {
-          icono.style.transform += ' scale(' + escalaMarcador + ')';
-        }
-      });
-    }
+    const marcador = L.marker([emisora.lat, emisora.lon], { icon: iconoMarcador }).addTo(map);
 
     marcador.bindPopup(contenido);
 
