@@ -355,6 +355,10 @@ function quitarHuecosVacios(contenedores) {
 // siendo siempre reciente.
 const feedsPedidos = new Map();
 
+// Un feed que no responde se da por caído pasado este tiempo: su hueco desaparece en vez de
+// quedarse con el esqueleto de carga para siempre.
+const FEED_TIEMPO_LIMITE_MS = 30000;
+
 function descargarFeedRss(url, antiCache=true){
   const clave = `${antiCache}|${url}`;
 
@@ -373,6 +377,11 @@ async function pedirFeedRss(url, antiCache=true){
 
   let res;
 
+  // AbortSignal.timeout no existe en navegadores antiguos: sin él, se espera como antes.
+  const signal = typeof AbortSignal !== "undefined" && AbortSignal.timeout
+    ? AbortSignal.timeout(FEED_TIEMPO_LIMITE_MS)
+    : undefined;
+
   if (antiCache) {
 
     // Mejora de la URL
@@ -382,6 +391,7 @@ async function pedirFeedRss(url, antiCache=true){
     // Fetch con mejoras
     res = await fetch(url, { 
       cache: 'no-store',
+      signal,
       //headers: {
       //  'Cache-Control': 'no-cache',
       //  'Pragma': 'no-cache'
@@ -390,7 +400,7 @@ async function pedirFeedRss(url, antiCache=true){
 
   } else {
     // Fetch simple
-    res = await fetch(url);
+    res = await fetch(url, { signal });
   }
 
   // Un error HTTP no se interpreta como un feed vacío (y así no se comparte como tal)
