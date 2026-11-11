@@ -2,7 +2,7 @@
   "name": "Radio Fast Live",
   "short_name": "Radio Fast Live",
 
-  "version": "119",
+  "version": "120",
 
   "start_url": "./",
   "display": "standalone",

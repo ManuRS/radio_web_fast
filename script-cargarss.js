@@ -188,7 +188,7 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
           <audio controls style="background-color: var(--audio-background, #f1f3f4);"${conEq ? ' data-eq="true" crossorigin="anonymous"' : ''} src="${audioUrl}"></audio>
           <div class="controles">
             <div class="botones-reproduccion">
-              <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); if(a.paused){ a.play(); this.textContent='🔴 Pausa'; } else { a.pause(); this.textContent='🟢 Play'; } ">🟢 Play</button>
+              <button class="boton-play" onclick="let a=this.closest('.podcast-texto').querySelector('audio'); if(a.paused){ a.play(); } else { a.pause(); } ">🟢 Play</button>
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.max(0,a.currentTime-10)">⏪ -10s</button>
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.currentTime = Math.min(a.duration,a.currentTime+10)">⏩ +10s</button>
               <button onclick="let a=this.closest('.podcast-texto').querySelector('audio'); a.playbackRate=a.playbackRate===1?2:1;this.textContent=a.playbackRate===2?'⏩ x1':'⏩ x2'">⏩ x2</button>
@@ -220,6 +220,35 @@ function construirUnCapitulo(item, contenedor, visual, personalizado, imagen_sel
   return;
 }
 
+
+/******************************************
+ * 
+ * UN SOLO CAPITULO A LA VEZ Y BOTON PLAY/PAUSA AL DIA
+ * 
+ * ****************************************/
+// Los eventos de audio no burbujean: se escuchan en captura, una vez para toda la página.
+
+// Al empezar un capítulo se pausa el que estuviera sonando (antes sonaban los dos a la vez).
+document.addEventListener("play", event => {
+  const audio = event.target;
+  if (!(audio instanceof HTMLAudioElement) || !audio.closest(".podcast")) return;
+
+  document.querySelectorAll(".podcast audio").forEach(otro => {
+    if (otro !== audio && !otro.paused) otro.pause();
+  });
+}, true);
+
+// El texto del botón sigue al audio, se pare o arranque desde donde sea: el propio botón,
+// los controles del reproductor, la notificación o el final del capítulo.
+function actualizarBotonPlay(event) {
+  const audio = event.target;
+  if (!(audio instanceof HTMLAudioElement)) return;
+
+  const boton = audio.closest(".podcast-texto")?.querySelector(".boton-play");
+  if (boton) boton.textContent = audio.paused ? "🟢 Play" : "🔴 Pausa";
+}
+
+["play", "pause", "ended"].forEach(nombre => document.addEventListener(nombre, actualizarBotonPlay, true));
 
 /******************************************
  * 
