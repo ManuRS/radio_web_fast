@@ -390,7 +390,11 @@ function filterStations(category, btn) {
   }
 
   // Guardar categoría en localStorage
-  localStorage.setItem('selectedCategory', category);
+  try {
+    localStorage.setItem('selectedCategory', category);
+  } catch (error) {
+    // Con el almacenamiento bloqueado el filtro funciona igual; solo no se recuerda.
+  }
 }
 
 /********************************
@@ -415,7 +419,12 @@ window.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll('.category-btn');
   if (!buttons.length) return;
 
-  const savedCategory = localStorage.getItem("selectedCategory") || "general";
+  let savedCategory = "general";
+  try {
+    savedCategory = localStorage.getItem("selectedCategory") || "general";
+  } catch (error) {
+    // Almacenamiento bloqueado: se muestra la categoría por defecto.
+  }
 
   const btn = [...buttons].find(b =>
     b.getAttribute('onclick')?.includes(savedCategory)
