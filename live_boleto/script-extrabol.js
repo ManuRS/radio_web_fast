@@ -208,9 +208,15 @@ let dataArray = new Array(bufferLength).fill(0);
 // se calculan una vez y solo se repiten cuando de verdad cambian.
 let colorOnda = '';
 
+// Sin sonido las barras no se mueven: se pintan una vez y no se repinta hasta que vuelva
+// el sonido o cambie el tamaño del lienzo (antes se redibujaba 60 veces por segundo igual).
+let pintadoParado = false;    // lo que hay en el lienzo es ya el dibujo de "sin sonido"
+let lienzoPendiente = true;   // el lienzo se ha borrado y hay que pintarlo
+
 function ajustarLienzo() {
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
+  lienzoPendiente = true;   // cambiar el tamaño borra el lienzo
 }
 
 function leerColorOnda() {
@@ -308,6 +314,11 @@ function draw() {
 
     // Sin sonido las barras quedan quietas y en rojo, y el logo pasa a "off" (sin rebote)
     pintarLogo(playing);
+
+    // Parado y ya pintado: no hay nada nuevo que dibujar
+    if (!playing && pintadoParado && !lienzoPendiente) return;
+    pintadoParado = !playing;
+    lienzoPendiente = false;
 
     // Renderizado
     canvasCtx.fillStyle = playing ? colorOnda : '#e64c3c';
