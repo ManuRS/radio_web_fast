@@ -579,13 +579,17 @@ function createLiveSound(options = {}) {
     switchTimer = setTimeout(abortCardSwitch, SWITCH_TIMEOUT_MS);
   }
 
-  function abortCardSwitch() {
-    switchTimer = null;
+  // También lo llama playPause() (porUsuario = true) si se pulsa la emisora anterior antes de
+  // que suene la nueva.
+  function abortCardSwitch(porUsuario = false) {
+    clearSwitchTimer();
 
     // Solo vale mientras el cambio siga a medias y sea a otra tarjeta.
     if (!retiringAudio || !currentAudio || !retiringCard || retiringCard === currentCard) return;
 
-    console.warn("La nueva emisora no ha sonado a tiempo. Se vuelve a la anterior.");
+    console.warn(porUsuario === true
+      ? "Cambio de emisora cancelado. Se sigue con la anterior."
+      : "La nueva emisora no ha sonado a tiempo. Se vuelve a la anterior.");
 
     clearBufferMonitor();
     clearStallWatchdog();
@@ -841,6 +845,18 @@ function createLiveSound(options = {}) {
     // con traspaso, igual que el botón de la notificación.
     if (card === pausedCard && pausedAudio) {
       resumeLive("tarjeta pulsada");
+      return;
+    }
+
+    // Pulsar la emisora anterior mientras la nueva aún conecta cancela el cambio: la anterior,
+    // que no ha dejado de sonar, sigue sin cortes (antes se cortaba y se volvía a conectar).
+    // Si estaba en pausa, se reanuda en directo como al pulsar cualquier emisora en pausa.
+    if (retiringAudio && card === retiringCard && currentCard && currentCard !== card) {
+      const estabaEnPausa = retiringWasPaused;
+
+      abortCardSwitch(true);
+
+      if (estabaEnPausa) resumeLive("tarjeta pulsada");
       return;
     }
 
