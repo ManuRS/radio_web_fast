@@ -1548,6 +1548,21 @@ if (!window.__livesoundMediaSessionBound) {
         // se recupera igual que al volver la red.
         recoverAllIfStalled(reason);
       });
+
+      // Botón de pausa de la notificación (o de unos auriculares). Con este manejador se sabe
+      // que la pausa la ha pedido el usuario y se respeta siempre, también en plena reconexión
+      // o sin red: antes, en esos casos, se tomaba por un corte y la radio volvía a sonar sola
+      // al recuperarse la conexión. Las pausas del sistema (una llamada, otra app) siguen
+      // llegando por el evento "pause" de cada <audio>, como siempre.
+      navigator.mediaSession.setActionHandler("pause", () => {
+        __liveInstances.forEach(item => item.hold());
+
+        // Lo demás que suene en la página (p. ej. un pin de live_boleto) también se para,
+        // como hacía el navegador por su cuenta.
+        document.querySelectorAll("audio").forEach(audio => {
+          if (!audio.paused) audio.pause();
+        });
+      });
     } catch (error) {
       // Sin soporte: el navegador mantiene su comportamiento por defecto.
     }
