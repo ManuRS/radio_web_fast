@@ -13,6 +13,14 @@ const REINTENTOS_HORA_OFICIAL = 3;
 const ESPERA_REINTENTO_HORA_MS = 20000;
 let reintentosHoraOficial = 0;
 
+// De las medidas buenas se conserva la más rápida: cuanto menos tarda la respuesta, menor es
+// el error posible (la mitad del viaje de ida y vuelta). Sustituirla cada 2 minutos por la
+// última, aunque fuera peor, hacía bailar la hora oficial hasta ±1,5 s de una a otra.
+// Una medida se sustituye si llega otra igual o más rápida, si ya es vieja (el reloj del
+// dispositivo deriva) o si la nueva no encaja con ella (alguien ha cambiado la hora del dispositivo).
+const VIDA_MEDIDA_HORA_MS = 30 * 60000;
+let idaYVueltaBase = Infinity;
+
 // Obtener hora oficial desde internet
 async function obtenerHoraOficial() {
     try {
@@ -29,14 +37,30 @@ async function obtenerHoraOficial() {
         // nunca es horario de noticias (y cortaría las que estén sonando).
         if (Number.isNaN(oficial.getTime())) throw new Error("fecha no válida");
 
-        if (t1 - t0 > MAX_RESPUESTA_HORA_MS) throw new Error("respuesta lenta (" + (t1 - t0) + " ms)");
+        const idaYVuelta = t1 - t0;
 
-        officialBaseTime = oficial;
-
-        // El servidor fechó la respuesta a mitad del viaje de ida y vuelta, no cuando llegó.
-        localBaseTime = new Date((t0 + t1) / 2);
+        if (idaYVuelta > MAX_RESPUESTA_HORA_MS) throw new Error("respuesta lenta (" + idaYVuelta + " ms)");
 
         reintentosHoraOficial = 0;
+
+        // El servidor fechó la respuesta a mitad del viaje de ida y vuelta, no cuando llegó.
+        const mitad = (t0 + t1) / 2;
+
+        if (officialBaseTime && localBaseTime) {
+            const edad = mitad - localBaseTime.getTime();
+            const vigente = edad >= 0 && edad < VIDA_MEDIDA_HORA_MS;
+
+            // Dos medidas encajan si sus desfases difieren menos que la suma de sus errores posibles
+            const diferencia = Math.abs((oficial.getTime() - mitad) - desfaseRelojMs());
+            const encajan = diferencia <= (idaYVuelta + idaYVueltaBase) / 2 + 100;
+
+            // La que ya había es mejor: se sigue con ella
+            if (vigente && encajan && idaYVuelta > idaYVueltaBase) return;
+        }
+
+        officialBaseTime = oficial;
+        localBaseTime = new Date(mitad);
+        idaYVueltaBase = idaYVuelta;
 
     } catch (err) {
         console.log("⚠️ No se pudo obtener la hora oficial", err);
