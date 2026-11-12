@@ -32,17 +32,46 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Radio Web Fast",
-    "description": "Escucha la radio de manera sencilla y rápida, sin cookies, seguimientos ni anuncios",
-    "url": "https://radioes.pages.dev/",
-    "image": "https://radioes.pages.dev/resources/og-radio.jpg?v=3",
-    "applicationCategory": "MultimediaApplication",
-    "operatingSystem": "All",
-    "inLanguage": "es",
-    "browserRequirements": "Requiere JavaScript",
-    "isAccessibleForFree": true,
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://radioes.pages.dev/#website",
+        "name": "Radio Web Fast",
+        "alternateName": ["Radio Fast"],
+        "url": "https://radioes.pages.dev/",
+        "inLanguage": "es"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://radioes.pages.dev/#app",
+        "name": "Radio Web Fast",
+        "description": "Escucha la radio de manera sencilla y rápida, sin cookies, seguimientos ni anuncios",
+        "url": "https://radioes.pages.dev/",
+        "isPartOf": { "@id": "https://radioes.pages.dev/#website" },
+        "image": "https://radioes.pages.dev/resources/og-radio.jpg?v=4",
+        "screenshot": [
+          "https://radioes.pages.dev/capturas/wide1.webp",
+          "https://radioes.pages.dev/capturas/wide2.webp",
+          "https://radioes.pages.dev/capturas/wide3.webp"
+        ],
+        "featureList": [
+          "Radio en directo de las principales cadenas españolas",
+          "Conexión automática a los boletines de la SER",
+          "Listas de pódcast",
+          "Portada de El País",
+          "Mapa de emisoras de la SER",
+          "Sin cookies ni ningún otro tipo de rastreo"
+        ],
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "All",
+        "inLanguage": "es",
+        "browserRequirements": "Requiere JavaScript",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "author": { "@type": "Person", "name": "ManuRS", "url": "https://github.com/ManuRS" },
+        "license": "https://www.gnu.org/licenses/gpl-3.0.html"
+      }
+    ]
   }
   </script>
 
