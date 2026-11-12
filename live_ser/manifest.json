@@ -2,7 +2,7 @@
   "name": "La SER en directo",
   "short_name": "SER Live",
 
-  "version": "139",
+  "version": "140",
 
   "start_url": "./",
   "display": "standalone",
@@ -29,7 +29,7 @@
     }
   ],
 
-  "description": "Aplicación Web Progresiva para escuchar la SER.",
+  "description": "Aplicación web para escuchar la SER. El micro amarillo a un toque.",
 
   "categories": [
     "radio",

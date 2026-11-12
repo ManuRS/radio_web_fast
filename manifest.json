@@ -2,7 +2,7 @@
   "name": "Radio Fast",
   "short_name": "Radio Fast",
 
-  "version": "139",
+  "version": "140",
 
   "start_url": "./",
   "display": "standalone",
@@ -29,7 +29,7 @@
     }
   ],
 
-  "description": "Aplicación Web Progresiva para escuchar la radio española. Ligera y sencilla, sin cookies ni otros sistemas de seguimiento.",
+  "description": "Aplicación web para escuchar la radio española. Ligera y sencilla, sin cookies ni otros sistemas de seguimiento.",
 
   "categories": [
     "radio",
