@@ -121,6 +121,7 @@
 
     .esencia::before { background-image: url('../resources/esencia.webp'); }
     .gaztea::before { background-image: url('../resources/gaztea.webp'); }
+    .icat::before { background-image: url('../resources/icat.webp'); }
     .diallatino::before { background-image: url('../resources/latino.webp'); }
     .dialbaladas::before { background-image: url('../resources/dialbaladas.webp'); }
     
@@ -283,7 +284,7 @@
   <div class="card sercat general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">SER Catalunya</span>
-      <span class="live-indicator">Escuchando</span>
+      <span class="live-indicator">Escoltant</span>
     </div>
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/SER_CAT.mp3" data-eq="true"></audio>
   </div>
@@ -292,7 +293,7 @@
   <div class="card catradio general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">Catalunya Ràdio</span>
-      <span class="live-indicator">Escuchando</span>
+      <span class="live-indicator">Escoltant</span>
     </div>
     <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/catalunya-radio-hls/bitrate_1.m3u8" data-eq="true"></audio>
   </div>
@@ -301,7 +302,7 @@
   <div class="card radio4 general" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">Ràdio 4</span>
-      <span class="live-indicator">Escuchando</span>
+      <span class="live-indicator">Escoltant</span>
     </div>
     <audio data-src="https://dispatcher.rndfnk.com/crtve/rner4/main/mp3/high" data-eq="true"></audio>
   </div>  
@@ -482,15 +483,6 @@
 
   <div class="category-separator musical">Aún más música</div>
 
-  <!-- Gaztea -->
-  <div class="card gaztea musical" onclick="playPause(this)">
-    <div class="card-content">
-      <span class="station-name">Gaztea</span>
-      <span class="live-indicator">Escuchando</span>
-    </div>
-    <audio data-src="https://multimedia.eitb.eus/live-content/gaztea-hls/master.m3u8" data-eq="true"></audio>
-  </div>
-
   <!-- Radio 3 -->
   <div class="card radio3 musical" onclick="playPause(this)">
     <div class="card-content">
@@ -500,20 +492,29 @@
     <audio data-src="https://dispatcher.rndfnk.com/crtve/rner3/main/mp3/high" data-eq="true"></audio>
   </div>
 
-  <!-- Radio Clasica -->
-  <div class="card clasica musical" onclick="playPause(this)">
+  <!-- Gaztea -->
+  <div class="card gaztea musical" onclick="playPause(this)">
     <div class="card-content">
-      <span class="station-name">Radio Clásica</span>
-      <span class="live-indicator">Escuchando</span>
+      <span class="station-name">Gaztea</span>
+      <span class="live-indicator">Entzutea</span>
     </div>
-    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high" data-eq="true"></audio>
+    <audio data-src="https://multimedia.eitb.eus/live-content/gaztea-hls/master.m3u8" data-eq="true"></audio>
+  </div>
+
+  <!-- Gaztea -->
+  <div class="card icat musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">iCat</span>
+      <span class="live-indicator">Escoltant</span>
+    </div>
+    <audio data-src="https://directes-radio-int.3catdirectes.cat/live-content/icat-hls/master.m3u8" data-eq="true"></audio>
   </div>
 
   <!-- RAC105 -->
   <div class="card rac105 musical" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">RAC105</span>
-      <span class="live-indicator">Escuchando</span>
+      <span class="live-indicator">Escoltant</span>
     </div>
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/RAC105.mp3" data-eq="true"></audio>
   </div>
@@ -522,7 +523,7 @@
   <div class="card flaixfm musical" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">Flaix FM</span>
-      <span class="live-indicator">Escuchando</span>
+      <span class="live-indicator">Escoltant</span>
     </div>
     <audio data-src="https://us-b4-p-e-cg11-audio.cdn.mdstrm.com/live-audio-aw/65afe4a0357cec56667ac739" data-eq="true"></audio>
   </div>
@@ -531,7 +532,7 @@
   <div class="card flaixbac musical" onclick="playPause(this)">
     <div class="card-content">
       <span class="station-name">Flaixbac</span>
-      <span class="live-indicator">Escuchando</span>
+      <span class="live-indicator">Escoltant</span>
     </div>
     <audio data-src="https://us-b4-p-e-qg12-audio.cdn.mdstrm.com/live-audio-aw/65afe517d47dc208abd053d2" data-eq="true"></audio>
   </div>
@@ -579,6 +580,15 @@
       <span class="live-indicator">Escuchando</span>
     </div>
     <audio data-src="https://playerservices.streamtheworld.com/api/livestream-redirect/CADENADIAL_03.mp3" data-eq="true"></audio>
+  </div>
+
+  <!-- Radio Clasica -->
+  <div class="card clasica musical" onclick="playPause(this)">
+    <div class="card-content">
+      <span class="station-name">Radio Clásica</span>
+      <span class="live-indicator">Escuchando</span>
+    </div>
+    <audio data-src="https://dispatcher.rndfnk.com/crtve/rnerc/main/mp3/high" data-eq="true"></audio>
   </div>
 
 </div>
