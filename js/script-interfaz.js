@@ -257,7 +257,7 @@ const RWFNotificacion = (() => {
   );
 
   // Volver a la raíz desde las carpetas de reproducción
-  appBase = appBase.replace(/(?:live|live_boleto|live_ser)\/$/, '');
+  appBase = appBase.replace(/(?:live|live_boleto|live_ser|podcasts|extra)\/$/, '');
 
   // Lo que se ve ahora mismo en la notificación
   let tituloActual = SEGUNDA_LINEA;

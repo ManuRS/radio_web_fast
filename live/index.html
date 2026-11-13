@@ -47,7 +47,7 @@
   }
   </script>
 
-  <script src="../script-fastload.js"></script>
+  <script src="../js/script-fastload.js"></script>
 
   <!-- Categoría guardada, antes del primer pintado: las tarjetas de la otra categoría nacen
        ocultas (regla de abajo) y no hay un "golpe" cuando script-interfaz.js las oculta. -->
@@ -56,15 +56,15 @@
     catch (error) { document.documentElement.dataset.cat = 'general'; }
   </script>
 
-  <link rel="stylesheet" href="../theme-colors.css">
-  <link rel="stylesheet" href="../theme-podcast.css">
-  <link rel="stylesheet" href="../theme-aux.css">
+  <link rel="stylesheet" href="../css/theme-colors.css">
+  <link rel="stylesheet" href="../css/theme-podcast.css">
+  <link rel="stylesheet" href="../css/theme-aux.css">
 
-  <link rel="stylesheet" href="../theme-cards.css">
+  <link rel="stylesheet" href="../css/theme-cards.css">
 
   <!--<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>-->
   <!-- defer: no frena el primer pintado; script-livesound.js solo lo necesita al dar a play en una emisora HLS -->
-  <script defer src="../hls.light.min-174.js"></script>
+  <script defer src="../vendor/hls.light.min-174.js"></script>
 
   <style>
     /* Solo se ve la categoría elegida desde el primer pintado (filterStations mantiene data-cat) */
@@ -593,12 +593,12 @@
 
 </div>
 
-<script src="../script-interfaz.js"></script>
-<script src="../script-eventos.js"></script>
-<script src="../script-serviceworker.js"></script>
+<script src="../js/script-interfaz.js"></script>
+<script src="../js/script-eventos.js"></script>
+<script src="../js/script-serviceworker.js"></script>
 
-<script src="../script-ecualizador.js"></script>
-<script src="../script-livesound.js"></script>
+<script src="../js/script-ecualizador.js"></script>
+<script src="../js/script-livesound.js"></script>
 
 </body>
 </html>

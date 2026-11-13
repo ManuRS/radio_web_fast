@@ -11,7 +11,7 @@ if ('serviceWorker' in navigator) {
   );
 
   // Las páginas dentro de estas carpetas vuelven a la raíz
-  appBase = appBase.replace(/(?:live|live_boleto|live_ser)\/$/, '');
+  appBase = appBase.replace(/(?:live|live_boleto|live_ser|podcasts|extra)\/$/, '');
 
   const swPath = `${appBase}sw.js`;
 

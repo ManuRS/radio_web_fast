@@ -1,37 +1,37 @@
 
-const CACHE_NAME = "radio-full-cache-v148";
+const CACHE_NAME = "radio-full-cache-v200";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
-  "./hls.light.min-174.js",
+  "./vendor/hls.light.min-174.js",
 
-  "./radio_boletos",
-  "./radio_daily",
-  "./radio_extra",
-  "./radio_finde",
-  "./radio_fun",
-  "./radio_mañanas",
-  "./radio_programas",
+  "./podcasts/radio_boletos",
+  "./podcasts/radio_daily",
+  "./podcasts/radio_extra",
+  "./podcasts/radio_finde",
+  "./podcasts/radio_fun",
+  "./podcasts/radio_mañanas",
+  "./podcasts/radio_programas",
 
-  "./extra_elpais",
-  "./extra_mapaser",
+  "./extra/extra_elpais",
+  "./extra/extra_mapaser",
   
-  "./script-app.js",
-  "./script-cargarss.js",
-  "./script-ecualizador.js",
-  "./script-eventos.js",
-  "./script-fastload.js",
-  "./script-interfaz.js",
-  "./script-livesound.js",
-  "./script-serviceworker.js",
+  "./js/script-app.js",
+  "./js/script-cargarss.js",
+  "./js/script-ecualizador.js",
+  "./js/script-eventos.js",
+  "./js/script-fastload.js",
+  "./js/script-interfaz.js",
+  "./js/script-livesound.js",
+  "./js/script-serviceworker.js",
 
   "./live_boleto/script-extrabol.js",
 
-  "./theme-aux.css",
-  "./theme-cards.css",
-  "./theme-colors.css",
-  "./theme-podcast.css",
+  "./css/theme-aux.css",
+  "./css/theme-cards.css",
+  "./css/theme-colors.css",
+  "./css/theme-podcast.css",
 
   "./live/",
   "./live_boleto/",

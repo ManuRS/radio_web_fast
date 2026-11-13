@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css" />
 
-  <link rel="stylesheet" href="theme-colors.css">
-  <link rel="stylesheet" href="theme-aux.css">
+  <link rel="stylesheet" href="../css/theme-colors.css">
+  <link rel="stylesheet" href="../css/theme-aux.css">
 
   <style>
     body { margin: 0; padding: 0; }
@@ -160,7 +160,7 @@
   </button>
 
   <!-- Para el modo oscuro -->
-  <script src="script-interfaz.js"></script>
+  <script src="../js/script-interfaz.js"></script>
 
   <!-- El mapa -->
   <script type="module">
@@ -223,7 +223,7 @@
     });
 
     // Descargar el json eliminando los comentarios
-    const textoLimpio = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra_emisorasser.json')
+    const textoLimpio = await fetch('https://raw.githubusercontent.com/ManuRS/radio_web_fast/refs/heads/main/extra/extra_emisorasser.json')
     .then(r => r.text())
     .then(texto => texto.replace(/\/\/.*$/gm, '')); 
 
