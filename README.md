@@ -12,6 +12,9 @@ Reproductor de radio *vibecodeado* con...
 
 - Mapa de emisoras de la SER: No se garantiza que la información sea correcta o este 100% actualizada
 
+> [!NOTE]
+> Si quieres una aplicación más completa (ecualización personalizada, visualizador de la señal o posibilidad de buscar y añadir emisoras) mejor pasate por [Radio Web Neo](https://github.com/ManuRS/radio_web_neo). Quedate con Radio Web Fast si quieres algo directo, rápido y sin complicaciones.
+
 ### Puntos de instalación como Aplicación Web Progresiva (PWA)
 
 - [Radio en directo](https://manurs.github.io/radio_web_fast/live/): La versión más recomendable para escuchar el catálogo de emisoras disponible
@@ -34,12 +37,7 @@ Reproductor de radio *vibecodeado* con...
 
 1. La selección de cadenas abarca prácticamente la totalidad de la audiencia según el EGM, pero no es una lista exhaustiva. Esta aplicación busca contención y no cuenta con cientos de radios. Eso provoca que no se incluyan algunas cadenas minoritarias aceptables. Tampoco hay emisoras locales y apenas hay cadenas autonómicas.
 
-2. Tampoco permite seleccionar la emisora de una cadena. Es decir, se emite la desconexión realizada desde los estudios desde donde se realiza la emisión en cadena (generalmente Madrid).
-
-Vocabulario: Aunque en España las propias radios y los medios usan indistintamente ambos términos, una cadena y una emisora de radio no son lo mismo. 
-
-> [!NOTE]
-> Si quieres una aplicación más completa (ecualización personalizada, visualizador de la señal o posibilidad de buscar y añadir emisoras) mejor pasate por [Radio Web Neo](https://github.com/ManuRS/radio_web_neo)
+2. Tampoco permite seleccionar la emisora de una cadena. Es decir, se emite la desconexión realizada desde los estudios desde donde se produce la emisión en cadena (generalmente Madrid para las grandes cadenas). Una cadena y una emisora de radio no son lo mismo.
 
 ## Libre de rastreos
 
