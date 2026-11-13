@@ -1,5 +1,7 @@
 # radio_web_fast
 
+[![Radio Web Fast](resources/og-radio.jpg)](https://manurs.github.io/radio_web_fast/)
+
 Reproductor de radio *vibecodeado* con...
 
 - Una lista de emisiones en directo de las principales cadenas españolas (+15 generalistas y +20 musicales)
