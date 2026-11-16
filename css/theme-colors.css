@@ -69,6 +69,12 @@ h2 {
   --modal-button-background: #1a237e;
   --modal-button-text: #fff;
 
+  --info-strong: #1a237e;
+  --info-soft: #3f4a8a;
+  --info-muted: #5c6370;
+  --info-accent: #3949ab;
+  --info-link: #3949ab;
+
   --theme-color: #f6f6f6;
   --rss-link-color: #0077cc;
 
@@ -120,6 +126,12 @@ h2 {
   --modal-overlay: rgba(0, 0, 0, 0.75);
   --modal-button-background: #3949ab;
   --modal-button-text: #fff;
+
+  --info-strong: #e5e7eb;
+  --info-soft: #c7d2fe;
+  --info-muted: #9ca3af;
+  --info-accent: #a5b4fc;
+  --info-link: #dbe1ff;
 
   --theme-color: #111827;
   --rss-link-color: #7dbaff;

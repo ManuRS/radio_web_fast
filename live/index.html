@@ -159,6 +159,26 @@
   <span id="theme-icon" aria-hidden="true">🌙</span>
 </button>
 
+<!-- Botón de información (solo live): en PC va encima del de modo oscuro, en móvil debajo (ver script-info.js y theme-aux.css) -->
+<button class="theme-toggle info-toggle" id="info-toggle" type="button" aria-haspopup="dialog">
+  <span>Sobre el proyecto</span>
+  <span aria-hidden="true">📰</span>
+</button>
+
+<!-- Modal de información: las frases de arriba se alternan solas (script-info.js) -->
+<dialog id="info-modal" class="info-dialog" aria-labelledby="info-title">
+  <div class="modal-content info-content">
+    <button type="button" class="info-close" id="info-close" aria-label="Cerrar">✕</button>
+    <div class="info-head">
+      <img src="../resources/icon2-192.png" alt="" width="28" height="28">
+      <h2 id="info-title">Radio Web Fast</h2>
+    </div>
+    <p class="info-love" id="info-phrase"></p>
+    <p class="info-new"><a href="https://radioneo.pages.dev/" target="_blank" rel="noopener">Una versión actualizada está<br>disponible en Radio Web Neo</a></p>
+    <p class="info-credits"><a href="https://www.linkedin.com/in/manuelrs" target="_blank" rel="noopener">Manuel Reyes, 2026</a><span class="info-sep" aria-hidden="true">•</span><a href="https://github.com/ManuRS/radio_web_neo" target="_blank" rel="noopener">Proyecto en GitHub</a></p>
+  </div>
+</dialog>
+
 <!-- Modal salir, la posición no se define aquí -->
 <div id="exit-modal" class="modal">
   <div class="modal-content">
@@ -596,6 +616,7 @@
 </div>
 
 <script src="../js/script-interfaz.js"></script>
+<script src="../js/script-info.js"></script>
 <script src="../js/script-eventos.js"></script>
 <script src="../js/script-serviceworker.js"></script>
 

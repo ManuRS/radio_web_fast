@@ -209,6 +209,160 @@ html, body {
 }
 
 /******************************
+  INFORMACIÓN (solo live)
+*******************************/
+
+/* Botón: en PC fijo encima del de modo oscuro (18px + 48px de alto + 12px de hueco); en móvil va debajo de él */
+.info-toggle {
+  bottom: 78px;
+}
+
+@media (max-width: 42em) {
+  .info-toggle {
+    margin: 0 auto max(40px, env(safe-area-inset-bottom));
+  }
+  .theme-toggle:has(+ .info-toggle) {
+    margin-bottom: 24px;
+  }
+}
+
+/* Modal: un <dialog> (Esc y gesto atrás lo cierran antes que el modal de salida); la caja es .modal-content */
+.info-dialog {
+  width: min(88%, 400px);
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+
+.info-dialog::backdrop {
+  background: var(--modal-overlay);
+}
+
+.info-content {
+  position: relative;
+  width: 100%;
+  padding: 20px 20px 18px;
+  text-align: left;
+}
+
+.info-content .info-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--info-muted);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.info-content .info-close:focus-visible {
+  outline: 2px solid var(--info-accent);
+}
+
+@media (hover: hover) {
+  .info-content .info-close:hover { background: rgba(127, 127, 127, 0.18); }
+}
+
+.info-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin: 0 36px 22px 0;
+}
+
+.info-head img {
+  border-radius: 7px;
+}
+
+.info-head h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--info-strong);
+}
+
+/* Línea fuerte: las dos frases se cruzan cada pocos segundos (script-info.js); al aparecer, bote de los emojis o brillo en el texto */
+.info-content .info-love {
+  display: grid;
+  justify-items: start;
+  overflow: hidden;
+  margin: -10px 0 10px;
+  padding-top: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--info-strong);
+}
+
+.info-love > .fp { grid-area: 1 / 1; white-space: nowrap; }
+.info-love .fe { display: inline-block; }
+.info-love .fp.out { animation: info-fp-out 0.45s ease-in forwards; }
+.info-love .fp.in { animation: info-fp-in 0.5s ease-out both; }
+@keyframes info-fp-out { to { opacity: 0; transform: translateY(-70%); } }
+@keyframes info-fp-in { from { opacity: 0; transform: translateY(70%); } }
+.info-love .fp-emoji.play .fe { animation: info-fe-bounce 0.9s cubic-bezier(.3, .7, .4, 1) calc(var(--k) * 0.14s) both; }
+@keyframes info-fe-bounce { 0% { transform: none; } 25% { transform: translateY(-9px) scale(1.18); } 45% { transform: translateY(0) scale(.94, 1.06); } 62% { transform: translateY(-4px); } 80%, 100% { transform: none; } }
+.info-love .fp-text.play {
+  background: linear-gradient(100deg, var(--info-strong) 0 38%, var(--info-accent) 50%, var(--info-strong) 62% 100%) 100% 0 / 260% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: info-fp-shine 1.8s ease-in-out;
+}
+@keyframes info-fp-shine { 0% { background-position: 100% 0; text-shadow: none; } 50% { text-shadow: 0 0 14px color-mix(in srgb, var(--info-accent) 45%, transparent); } 100% { background-position: 0 0; text-shadow: none; } }
+
+/* Línea media: aviso de la versión nueva, con enlace */
+.info-content .info-new {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--info-soft);
+}
+
+/* Enlace sin subrayado: se distingue por el color de énfasis; al pasar el ratón o con el teclado, subrayado */
+.info-new a {
+  color: var(--info-link);
+  text-decoration: none;
+}
+
+.info-new a:focus-visible { text-decoration: underline; outline: 0; }
+@media (hover: hover) { .info-new a:hover { text-decoration: underline; text-underline-offset: 3px; } }
+
+/* Línea pequeña: créditos y enlaces */
+.info-content .info-credits {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--info-muted);
+}
+
+.info-credits a {
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.info-credits a:focus-visible { text-decoration: underline; outline: 0; }
+@media (hover: hover) { .info-credits a:hover { text-decoration: underline; text-underline-offset: 3px; } }
+
+.info-sep {
+  margin: 0 0.4em;
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info-love .fp.out, .info-love .fp.in, .info-love .fp-emoji.play .fe, .info-love .fp-text.play { animation: none; }
+}
+
+/******************************
   ESPECIFICOS MODO BOLETOS
 *******************************/
 

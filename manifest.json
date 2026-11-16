@@ -2,7 +2,7 @@
   "name": "Radio Fast",
   "short_name": "Radio Fast",
 
-  "version": "203",
+  "version": "204",
 
   "start_url": "./",
   "display": "standalone",
