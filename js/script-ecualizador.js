@@ -244,7 +244,43 @@ const Ecualizador = (() => {
       }
     });
 
+    // Un solo intento puede fallar (p. ej. con el contexto "interrumpido"): se insiste.
+    setInterval(vigilarContexto, 1000);
+
     console.log("Ecualizador: cadena de audio creada.");
+  }
+
+  /********************************
+   * Vigilante del contexto
+   ********************************/
+
+  // Contexto parado (suspendido o interrumpido) con algún <audio> de la cadena sonando: no se
+  // oye nada y ese <audio> deja de avanzar. Se intenta reanudar cada segundo mientras dure.
+  // script-livesound.js lo consulta (parado, paradoMs) para no tomarlo por un corte de red.
+  let paradoDesde = 0;
+
+  function parado() {
+    return !!ctx && ctx.state !== "running" && ctx.state !== "closed";
+  }
+
+  function haySonando() {
+    return [...document.querySelectorAll("audio")].some(audio =>
+      conectados.has(audio) && !audio.paused && !!(audio.currentSrc || audio.src));
+  }
+
+  function vigilarContexto() {
+    if (!parado() || !haySonando()) {
+      if (paradoDesde && !parado()) console.log("Ecualizador: el audio del navegador vuelve a estar en marcha.");
+      paradoDesde = 0;
+      return;
+    }
+
+    if (!paradoDesde) {
+      paradoDesde = Date.now();
+      console.warn(`Ecualizador: el audio del navegador está parado (${ctx.state}) con algo sonando. Se intenta reanudar.`);
+    }
+
+    ctx.resume().catch(() => {});
   }
 
   // Se llama al enlazar el <audio>, antes de cargar ningún stream: el atributo
@@ -346,6 +382,8 @@ const Ecualizador = (() => {
     conectar,
     vigilar,
     estaConectado,
+    parado,                                                          // el contexto existe y no está en marcha
+    paradoMs() { return paradoDesde ? Date.now() - paradoDesde : 0; },   // cuánto lleva parado con algo sonando
     normalizacion,
     nivelDe(audio) { const n = normalizados.get(audio); return n ? { nivel: n.nivel, ganancia: n.db } : null; },   // depuración
     get contexto() { return ctx; },   // para depuración y pruebas

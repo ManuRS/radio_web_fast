@@ -720,6 +720,9 @@
     Ecualizador.iniciar();
     // Los pines suenan a su hora sin gesto del usuario: se enganchan ya, dentro del clic.
     Ecualizador.conectar(audio_prep);
+    // Ancla de la notificación (Android): suena desde ya, también mientras se espera el boleto
+    // sin música, para que la página siga viva con la pantalla apagada.
+    RWFAncla.forzar(true);
 
     setTimeout(() => { setupVisualizer(); }, 0);
     setTimeout(() => { pin(); }, 0);

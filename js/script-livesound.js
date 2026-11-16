@@ -23,6 +23,9 @@
  * Ecualizador: los <audio> con data-eq="true" pasan por script-ecualizador.js, que debe
  * cargarse antes que este fichero. Si no está cargado, todo suena como siempre.
  *
+ * Ancla (solo Android): un <audio> en silencio que suena mientras haya una emisora pedida,
+ * también en los huecos en que el reproductor retenido está parado (ver RWFAncla).
+ *
  * Todo el estado de una instancia vive en createLiveSound() y lo comparten sus partes
  * (reconexión, traspaso, pausa y eventos), por eso va en un único bloque.
  ********************************/
@@ -71,6 +74,11 @@ const CROSSFADE_MS = 1200;
 // Si la anterior estaba en pausa no hay nada con lo que cruzar: la nueva solo sube durante este tiempo.
 const FADE_IN_MS = 500;
 
+// Emisora con ecualizador y el audio del navegador (Web Audio) parado: el <audio> no avanza, pero
+// reconectar no arregla nada. El ecualizador intenta reanudarlo; si pasado este tiempo sigue
+// parado, la emisora queda en pausa (con su notificación) en vez de aparentar que suena.
+const EQ_PARADO_LIMIT_MS = 10000;
+
 /********************************
  * Instancias y notificación (comunes a todas)
  ********************************/
@@ -80,7 +88,122 @@ const FADE_IN_MS = 500;
 // al final del fichero; live_boleto crea dos (noticias y música).
 const __liveInstances = [];
 
+/********************************
+ * Ancla de la notificación (solo Android)
+ ********************************/
+
+// En Android, la notificación y el permiso para seguir sonando con la pantalla apagada dependen
+// de que haya un <audio> sonando. El traspaso mantiene siempre un reproductor, pero mientras
+// se reconecta o se reanuda ese reproductor está parado. El ancla es un <audio> en silencio y
+// en bucle que suena mientras haya una emisora pedida (aunque esté reconectando), se pausa con
+// la pausa retenida y se vacía al parar. No está en el documento: no le afectan los listeners
+// ni los querySelectorAll("audio") de las páginas. Si falla, todo sigue como antes.
+//   RWFAncla.forzar(true)   la página la mantiene sonando aunque no suene ninguna emisora
+//                           (live_boleto, mientras espera el boleto)
+const RWFAncla = (() => {
+  const ok = typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
+  const SEGUNDOS = 12;   // Chrome no muestra la notificación con audios de menos de 5 s
+  const FRECUENCIA = 8000;
+
+  let el = null;
+  let url = "";
+  let estado = "off";      // "on" (sonando), "paused" (la notificación se queda) u "off" (sin sesión)
+  let forzada = false;
+  let bloqueada = false;   // el navegador no la dejó arrancar (faltaba un gesto): se reintenta al tocar la página
+
+  // WAV en silencio (8 bits, mono), hecho aquí para no descargar nada
+  function wavEnSilencio() {
+    const n = SEGUNDOS * FRECUENCIA;
+    const b = new Uint8Array(44 + n);
+    const v = new DataView(b.buffer);
+    const txt = (o, s) => { for (let i = 0; i < s.length; i++) b[o + i] = s.charCodeAt(i); };
+
+    txt(0, "RIFF"); v.setUint32(4, 36 + n, true); txt(8, "WAVEfmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, FRECUENCIA, true); v.setUint32(28, FRECUENCIA, true);
+    v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+    txt(36, "data"); v.setUint32(40, n, true);
+    b.fill(128, 44);   // en 8 bits el silencio es 128
+
+    return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+  }
+
+  function arrancar() {
+    if (!el) {
+      el = new Audio();
+      el.loop = true;
+    }
+
+    if (!el.getAttribute("src")) el.src = url || (url = wavEnSilencio());
+
+    const p = el.play();
+
+    if (p && typeof p.catch === "function") {
+      p.catch(error => {
+        if (estado !== "on" || error?.name === "AbortError") return;
+        bloqueada = error?.name === "NotAllowedError";
+        console.warn("Ancla de audio: no se pudo iniciar.", error);
+      });
+    }
+
+    // Es un directo: sin duración, para que la notificación no pinte la barra de progreso del bucle.
+    try {
+      navigator.mediaSession.setPositionState({ duration: Infinity, playbackRate: 1, position: 0 });
+    } catch (error) {
+      // Sin soporte: no pasa nada.
+    }
+  }
+
+  function poner(nuevo) {
+    if (!ok) return;
+    if (forzada && nuevo !== "on") nuevo = "on";
+    if (nuevo === estado) return;
+
+    estado = nuevo;
+    bloqueada = false;
+
+    if (nuevo === "on") { arrancar(); return; }
+    if (!el) return;
+
+    try { el.pause(); } catch (error) { /* sin consecuencias */ }
+
+    // Sin fuente, la notificación desaparece.
+    if (nuevo === "off") {
+      el.removeAttribute("src");
+      try { el.load(); } catch (error) { /* sin consecuencias */ }
+    }
+  }
+
+  // Si debería sonar y está parada (la pausó el sistema u otra app), se reanuda.
+  function despertar() {
+    if (estado === "on" && el && el.paused) arrancar();
+  }
+
+  if (ok && typeof document !== "undefined") {
+    document.addEventListener("pointerdown", () => {
+      if (bloqueada) { bloqueada = false; despertar(); }
+    }, true);
+  }
+
+  return {
+    poner,
+    despertar,
+    forzar(valor) { forzada = !!valor; refreshAnchor(); },
+    get estado() { return estado; }   // para depuración y pruebas
+  };
+})();
+
+// El ancla sigue al conjunto de las instancias: suena si alguna tiene una emisora pedida,
+// se pausa si solo hay emisoras en pausa retenida y se apaga si no hay ninguna.
+function refreshAnchor() {
+  const estados = __liveInstances.map(item => item.getAnchorState());
+
+  RWFAncla.poner(estados.includes("on") ? "on" : estados.includes("paused") ? "paused" : "off");
+}
+
 function refreshMediaSessionState() {
+  refreshAnchor();
+
   if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
 
   const states = __liveInstances.map(item => item.getMediaState());
@@ -165,6 +288,14 @@ function createLiveSound(options = {}) {
       currentCard !== null &&
       currentCard.classList.contains("playing")
     );
+  }
+
+  // La emisora pasa por el ecualizador y el audio del navegador (Web Audio) está parado.
+  function eqParado(audio) {
+    return typeof Ecualizador !== "undefined" &&
+      typeof Ecualizador.parado === "function" &&
+      Ecualizador.estaConectado(audio) &&
+      Ecualizador.parado();
   }
 
   function clearBufferMonitor() {
@@ -688,6 +819,7 @@ function createLiveSound(options = {}) {
       if (audio) releaseAudioElement(audio, audio === retiring ? retiringHlsInstance : null);
     });
 
+    refreshAnchor();
   }
 
   /********************************
@@ -784,6 +916,9 @@ function createLiveSound(options = {}) {
 
     card.classList.add("playing");
     applyCurrentVolume(audio);
+
+    // Antes de tocar el reproductor en pausa: la notificación no se queda sin nadie.
+    refreshAnchor();
 
     reconnectNow(audio, reason, true);
 
@@ -908,6 +1043,9 @@ function createLiveSound(options = {}) {
       audio.__entraConFundido = true;
       audio.__volumenAlterado = true;
     }
+
+    // Dentro del gesto del usuario: el ancla ya suena mientras conecta la emisora.
+    refreshAnchor();
 
     startStream(audio, src);
 
@@ -1037,8 +1175,16 @@ function createLiveSound(options = {}) {
 
       // No repetir intentos automáticos si el navegador
       // exige una nueva interacción del usuario.
+      // Si ya había un reproductor (reconexión o cambio de emisora), no se cierra la sesión:
+      // eso quitaría la notificación y, con la pantalla apagada, no quedaría forma de volver.
       if (error?.name === "NotAllowedError") {
-        stopCurrentPlayback();
+        if (retiringAudio && retiringCard && retiringCard !== currentCard) {
+          abortCardSwitch();            // cambio a otra emisora: se sigue con la anterior
+        } else if (retiringAudio) {
+          enterPausedState(audio);      // reconexión: queda en pausa, con su botón de reproducir
+        } else {
+          stopCurrentPlayback();
+        }
         return;
       }
 
@@ -1076,7 +1222,8 @@ function createLiveSound(options = {}) {
       if (
         !isPlaybackRequested(audio) ||
         audio.paused ||
-        reconnecting
+        reconnecting ||
+        eqParado(audio)   // con el audio del navegador parado el búfer crece, pero no es retraso
       ) {
         return;
       }
@@ -1145,6 +1292,20 @@ function createLiveSound(options = {}) {
       if (audio.paused) {
         lastPlaybackTime = audio.currentTime;
         lastProgressAt = Date.now();
+        return;
+      }
+
+      // Audio del navegador parado (emisoras con ecualizador): el <audio> no avanza, pero no es
+      // un corte y reconectar no lo arregla (se reconectaría una y otra vez). El ecualizador
+      // intenta reanudarlo; si no vuelve, la emisora queda en pausa en vez de aparentar que suena.
+      if (eqParado(audio)) {
+        lastPlaybackTime = audio.currentTime;
+        lastProgressAt = Date.now();
+
+        if (Ecualizador.paradoMs() >= EQ_PARADO_LIMIT_MS) {
+          console.warn("El audio del navegador no se reanuda. La emisora queda en pausa.");
+          enterPausedState(audio);
+        }
         return;
       }
 
@@ -1489,6 +1650,9 @@ function createLiveSound(options = {}) {
     recoverIfStalled, reconnectNow, reconnectAudio, startStream, isPlaybackRequested,
     getStreamSrc, isHlsSource, shouldResume,
     getMediaState: () => mediaState,
+    // Para el ancla: "on" con una emisora pedida (suene o esté reconectando), "paused" en pausa retenida.
+    getAnchorState: () => (currentAudio && currentCard && currentCard.classList.contains("playing")) ? "on"
+                        : pausedAudio ? "paused" : "off",
     get currentAudio() { return currentAudio; },
     get currentCard()  { return currentCard; },
     get pausedAudio()  { return pausedAudio; },
@@ -1529,8 +1693,15 @@ if (!window.__livesoundNetworkBound) {
   // los temporizadores pueden haberse congelado.
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
+      RWFAncla.despertar();
       recoverAllIfStalled("pestaña visible de nuevo");
     }
+  });
+
+  // El navegador congeló la página en segundo plano y la despierta (puede seguir oculta):
+  // los temporizadores han estado parados.
+  document.addEventListener("resume", () => {
+    recoverAllIfStalled("página descongelada");
   });
 
   // Página restaurada desde la caché de ida y vuelta del navegador.
@@ -1552,6 +1723,8 @@ if (!window.__livesoundMediaSessionBound) {
       navigator.mediaSession.setActionHandler("play", () => {
         const reason = "botón de reproducir de la notificación";
         let resumed = false;
+
+        RWFAncla.despertar();
 
         // Emisoras en pausa: se salta al directo (si su página lo permite).
         __liveInstances.forEach(item => {
