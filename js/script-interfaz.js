@@ -219,6 +219,17 @@ if (toggle) {
   });
 }
 
+/* Sin tema elegido por el usuario, la app sigue al del dispositivo también cuando este cambia */
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+  try {
+    const guardado = localStorage.getItem('radio-page-theme');
+    if (guardado === 'dark' || guardado === 'light') return;
+  } catch (error) {
+    // Sin almacenamiento no hay elección guardada: se sigue al dispositivo.
+  }
+  applyTheme(event.matches ? 'dark' : 'light');
+});
+
 /* Sincronizar los cambios procedentes de otras pestañas */
 window.addEventListener('storage', event => {
   if (event.key === 'radio-page-theme' && event.newValue !== null) {

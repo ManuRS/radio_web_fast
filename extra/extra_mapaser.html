@@ -175,13 +175,15 @@
       dark:  'https://tiles.openfreemap.org/styles/dark'
     };
 
-    // Tema guardado por el resto de la web.
+    // Tema guardado por el resto de la web; si no hay, el del dispositivo.
     function obtenerTemaGuardado() {
       try {
-        return localStorage.getItem('radio-page-theme') === 'dark' ? 'dark' : 'light';
+        const guardado = localStorage.getItem('radio-page-theme');
+        if (guardado === 'dark' || guardado === 'light') return guardado;
       } catch (error) {
-        return 'light';
+        // Sin almacenamiento: se usa el del dispositivo.
       }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
     let temaActual = obtenerTemaGuardado();
