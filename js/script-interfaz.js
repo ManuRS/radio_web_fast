@@ -50,7 +50,7 @@ if (news_volume) {
 // Con CloseWatcher (Chrome y Edge 126, Firefox 149) el navegador avisa de la petición de
 // cierre sin tocar el historial: no se añaden entradas fantasma. Solo se vigila el primer
 // gesto: al abrir el modal se deja de vigilar, así el segundo gesto es un atrás normal del
-// navegador, con su vista previa de la página anterior. "Seguir en la página" vuelve a vigilar
+// navegador, con su vista previa de la página anterior. "Seguir aquí" vuelve a vigilar
 // (un vigilante nuevo por cada pregunta: Chrome solo deja cancelar un par de veces el mismo).
 // En los navegadores que no lo soportan se usa el truco clásico de añadir una entrada al historial.
 const exitModal = document.getElementById("exit-modal");
@@ -104,7 +104,7 @@ if (exitModal && stayBtn) {
       if (event.target instanceof HTMLAudioElement) armar();
     }, true);
 
-    // Seguir en la página: volver a vigilar el gesto atrás
+    // Seguir aquí: volver a vigilar el gesto atrás
     stayBtn.addEventListener("click", armar);
   };
 
