@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "radio-full-cache-v209";
+const CACHE_NAME = "radio-full-cache-v210";
 
 const FILES_TO_CACHE = [
   "./",
@@ -26,6 +26,7 @@ const FILES_TO_CACHE = [
   "./js/script-interfaz.js",
   "./js/script-livesound.js",
   "./js/script-serviceworker.js",
+  "./js/script-stats.js",
 
   "./live_boleto/script-extrabol.js",
 
