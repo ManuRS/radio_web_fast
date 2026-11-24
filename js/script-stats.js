@@ -2,12 +2,12 @@
  * script-stats.js
  *
  * Estadística anónima: cuenta cuántos dispositivos distintos usan la app y cuánto escuchan, sin datos
- * personales. Un identificador aleatorio por navegador (sin IP, sin cuenta, sin relación con nada más)
- * y los segundos de escucha; cada dispositivo cuenta como un usuario.
+ * personales. Un identificador aleatorio por navegador (sin IP, sin cuenta, sin relación con nada más),
+ * los segundos de escucha y si se usa instalada (PWA) o en el navegador; cada dispositivo cuenta como un usuario.
  *
  * Solo se manda cuando hace falta: al abrir una página (una vez al día), al dejar de sonar y al cerrarla.
- * Mientras suena, los segundos se apuntan en el propio aparato y, si la página se cierra sin avisar
- * (Android la mata), salen en la siguiente apertura.
+ * Mientras suena, los segundos se apuntan en el propio aparato en el día en que se escuchan (hora de España)
+ * y, si la página se cierra sin avisar (Android la mata), salen en la siguiente apertura con su día.
  *
  * Lo recibe functions/api/stat.js (base de datos D1, variable STATS). Sin él (otra web, en local, sin red)
  * no pasa nada: lo pendiente se guarda y se reintenta. En http no se cuenta.
@@ -23,6 +23,7 @@
   const TICK_MS = 30000;      // cada cuánto se apuntan en el aparato los segundos escuchados (sin red)
   const MAX_GAP_S = 300;      // un salto mayor entre dos medidas es que el aparato durmió o la página estuvo congelada: no se cuenta
   const SILENCIO_MS = 4000;   // un corte de menos que esto (reconexión, traspaso) no corta la escucha
+  const DIA = /^\d{4}-\d{2}-\d{2}$/;
 
   if (location.protocol !== "https:") return;   // en local y sin https no se cuenta
 
@@ -34,7 +35,8 @@
     set: (k, v) => localStorage.setItem(k, v)
   };
   const rand = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), x => x.toString(16).padStart(2, "0")).join("");
-  const today = () => new Date().toLocaleDateString("en-CA");
+  const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Madrid" });   // el mismo día que usa el servidor
+  const pwa = () => matchMedia("(display-mode: standalone), (display-mode: minimal-ui)").matches || navigator.standalone === true;   // instalada (navigator.standalone: iOS)
   const now = () => performance.now();
 
   function send(body, beacon) {
@@ -59,36 +61,50 @@
   } catch { id = null; }   // sin almacenamiento no hay manera de reconocer al usuario: no se cuenta (cada apertura parecería uno nuevo)
   if (!id) return;
 
-  let st = { d: "", s: 0 };   // d: último día avisado; s: segundos de escucha aún sin enviar
+  let st = { d: "", p: {} };   // d: último día avisado; p: segundos de escucha aún sin enviar, por día
   try {
     const v = JSON.parse(store.get(KEY_ST) || "null");
-    if (v && typeof v.d === "string" && typeof v.s === "number" && v.s >= 0 && Number.isFinite(v.s)) st = { d: v.d, s: v.s };
+    const ok = n => typeof n === "number" && Number.isFinite(n) && n >= 0;
+    if (v && typeof v.d === "string") {
+      st.d = v.d;
+      if (v.p && typeof v.p === "object") { for (const [k, n] of Object.entries(v.p)) if (DIA.test(k) && ok(n)) st.p[k] = n; }
+      else if (ok(v.s) && v.s > 0) st.p[today()] = v.s;   // formato anterior (sin día): al de hoy, como antes
+    }
   } catch {}
 
   let since = null, timer = null, busy = false;
   const save = () => { try { store.set(KEY_ST, JSON.stringify(st)); } catch {} };
 
-  // Pasa lo escuchado desde la última medida a "pendiente"
+  // Pasa lo escuchado desde la última medida a "pendiente", en el día de ahora
   function tick(t = now()) {
     if (since !== null) {
       const gap = (t - since) / 1000;
       since = t;
-      if (gap > 0 && gap <= MAX_GAP_S) st.s += gap;
+      if (gap > 0 && gap <= MAX_GAP_S) { const d = today(); st.p[d] = (st.p[d] || 0) + gap; }
     }
     save();
   }
 
-  // Manda lo pendiente (y avisa del día si aún no se ha hecho). beacon: al cerrar la página, que no espera respuesta
+  // Manda lo pendiente, un envío por día y del más antiguo al más nuevo (y avisa del día si aún no se ha hecho).
+  // beacon: al cerrar la página, que no espera respuesta
   async function flush(beacon = false) {
     if (busy) return;
     tick();
-    const day = today(), sec = Math.min(Math.floor(st.s), 86400);
-    if (sec < 1 && st.d === day) return;
+    const day = today();
+    for (const k of Object.keys(st.p)) if (k !== day && st.p[k] < 1) delete st.p[k];   // restos de menos de 1 s de otros días
+    const days = Object.keys(st.p).filter(k => st.p[k] >= 1).sort();
+    if (st.d !== day && !days.includes(day)) days.push(day);
+    if (!days.length) return;
     busy = true;
     try {
-      const body = { a: APP, id, s: sec };
-      const ok = beacon ? send(body, true) : await send(body, false);
-      if (ok) { st.s -= sec; st.d = day; }
+      for (const k of days) {
+        const sec = Math.min(Math.floor(st.p[k] || 0), 86400);
+        const body = { a: APP, id, s: sec, d: k, w: pwa() ? 1 : 0 };
+        const ok = beacon ? send(body, true) : await send(body, false);
+        if (!ok) break;
+        if (k in st.p) { st.p[k] -= sec; if (k !== day && st.p[k] < 1) delete st.p[k]; }
+        if (k === day) st.d = day;
+      }
     } finally { busy = false; save(); }
   }
 
