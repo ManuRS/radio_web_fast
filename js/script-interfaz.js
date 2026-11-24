@@ -298,12 +298,12 @@ function actualizarTituloFijo(forzar) {
   if (fijo === tituloFijo && !forzar) return;
   tituloFijo = fijo;
   document.documentElement.classList.toggle('titulo-fijo', fijo);
-  if (themeColorMeta) seguirBarraEstado(forzar);
+  if (themeColorMeta) seguirBarraEstado();
 }
 
-// La barra de estado copia en cada fotograma el color que se ve arriba: la barra (--barra-fondo)
-// con su opacidad de ese momento sobre el color normal (--theme-color). Así va al mismo ritmo que la
-// transición CSS. Como Radio Web Neo, sigue escribiendo un rato después de que acabe (750 ms)
+// La barra de estado copia el color que se ve arriba: la barra (--barra-fondo) con su opacidad sobre el
+// color normal (--theme-color). La barra aparece de golpe y el color se escribe en el mismo momento;
+// como Radio Web Neo, se sigue escribiendo en cada fotograma un rato después (750 ms)
 const SEGUIR_BARRA_MS = 750;
 let barraRaf = 0, barraFin = 0;
 const aRgb = hex => {
@@ -332,8 +332,8 @@ function pasoBarraEstado() {
   pintarBarraEstado();
   barraRaf = performance.now() < barraFin ? requestAnimationFrame(pasoBarraEstado) : 0;
 }
-function seguirBarraEstado(inmediato) {
-  if (inmediato) pintarBarraEstado();
+function seguirBarraEstado() {
+  pintarBarraEstado();
   barraFin = performance.now() + SEGUIR_BARRA_MS;
   if (!barraRaf) barraRaf = requestAnimationFrame(pasoBarraEstado);
 }

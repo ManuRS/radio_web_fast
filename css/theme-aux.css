@@ -40,7 +40,8 @@ html, body {
    barra superior pequeña de Material (título de 22 px en una barra de 64 px) y aparece la barra, del
    color de --barra-fondo. script-interfaz.js pone html.titulo-fijo y mide --titulo-top, --titulo-escala
    y --barra-alto. El tamaño se reduce con transform (no mueve el contenido de debajo) y el título no
-   recibe toques (los atraviesan). */
+   recibe toques (los atraviesan). La barra y el color del título cambian de golpe, sin fundido: la barra
+   de estado de Android aplica el color con algo de retraso y un fundido se veía desacompasado. */
 @media (max-width: 42em) {
   body > h1 {
     position: sticky;
@@ -48,7 +49,7 @@ html, body {
     z-index: 100;
     pointer-events: none;
     transform-origin: center top;
-    transition: color 0.25s ease, transform 0.25s ease;
+    transition: transform 0.25s ease;
   }
 
   body::before {
@@ -60,7 +61,6 @@ html, body {
     height: var(--barra-alto, 64px);
     background: var(--barra-fondo);
     opacity: 0;
-    transition: opacity 0.25s ease;
     z-index: 99;
     pointer-events: none;
   }
@@ -74,8 +74,7 @@ html, body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before { transition: none; }
-  body > h1 { transition: color 0.25s ease; }
+  body > h1 { transition: none; }
 }
 
 /******************************
