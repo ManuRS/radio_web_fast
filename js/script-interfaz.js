@@ -238,6 +238,64 @@ window.addEventListener('storage', event => {
 });
 
 /******************************
+  TÍTULO FIJO EN MÓVIL
+*******************************/
+// En móvil, al bajar, el título se fija arriba sobre una barra de color (reglas en theme-aux.css) y la
+// barra de estado del sistema (meta theme-color) toma ese mismo color para que se fundan. Al volver arriba
+// se recupera el color normal de la página. Colores: --barra-fondo y --theme-color (theme-colors.css).
+const tituloPagina = document.querySelector('body > h1');
+const pantallaMovil = window.matchMedia('(max-width: 42em)');
+let umbralTitulo = 0;
+let tituloFijo = false;
+
+// Cuánto hay que bajar para que el título llegue a su sitio fijo, y alto de la barra (con el texto
+// en las líneas que ocupe: los <br> sueltos del título no cuentan)
+function medirTituloFijo() {
+  if (!tituloPagina) return;
+  const arriba = parseFloat(getComputedStyle(tituloPagina).top);   // "auto" (NaN) si no es móvil
+  // Dónde está el título sin fijar (cada página lo coloca algo distinto: márgenes del body...)
+  const posicion = tituloPagina.style.position;
+  tituloPagina.style.position = 'static';
+  const natural = tituloPagina.getBoundingClientRect().top + window.scrollY;
+  tituloPagina.style.position = posicion;
+  umbralTitulo = natural - arriba;
+  const texto = [...tituloPagina.childNodes].find(nodo => nodo.nodeType === Node.TEXT_NODE && nodo.textContent.trim());
+  if (!texto || !Number.isFinite(arriba)) return;
+  const rango = document.createRange();
+  rango.selectNodeContents(texto);
+  const lineas = rango.getClientRects();
+  if (!lineas.length) return;
+  const alto = lineas[lineas.length - 1].bottom - lineas[0].top;
+  document.documentElement.style.setProperty('--barra-alto', `${Math.ceil(arriba + alto + 12)}px`);
+}
+
+function actualizarTituloFijo(forzar) {
+  if (!tituloPagina) return;
+  const fijo = pantallaMovil.matches && window.scrollY > umbralTitulo;
+  if (fijo === tituloFijo && !forzar) return;
+  tituloFijo = fijo;
+  document.documentElement.classList.toggle('titulo-fijo', fijo);
+  if (themeColorMeta) {
+    const raiz = getComputedStyle(document.documentElement);
+    const color = raiz.getPropertyValue(fijo ? '--barra-fondo' : '--theme-color').trim();
+    if (color) themeColorMeta.setAttribute('content', color);
+  }
+}
+
+function iniciarTituloFijo() {
+  medirTituloFijo();
+  actualizarTituloFijo(true);
+}
+
+if (tituloPagina) {
+  iniciarTituloFijo();
+  window.addEventListener('scroll', () => actualizarTituloFijo(false), { passive: true });
+  window.addEventListener('resize', iniciarTituloFijo);
+  window.addEventListener('load', iniciarTituloFijo);                    // con las fuentes ya cargadas
+  window.addEventListener('radio-theme-change', () => actualizarTituloFijo(true));  // applyTheme() repone el color normal
+}
+
+/******************************
   NOTIFICACION
 *******************************/
 // Notificación de Android (Media Session). Todas las páginas la manejan con la misma API:

@@ -76,6 +76,7 @@ h2 {
   --info-link: #3949ab;
 
   --theme-color: #f6f6f6;
+  --barra-fondo: #1a237e;  /* barra superior con el título fijo (móvil); la barra de estado toma el mismo color */
   --rss-link-color: #0077cc;
 
   /* ELEMENTOS DE LIVE CARDS  */
@@ -134,6 +135,7 @@ h2 {
   --info-link: #dbe1ff;
 
   --theme-color: #111827;
+  --barra-fondo: #283593;
   --rss-link-color: #7dbaff;
 
   /* ELEMENTOS DE LIVE CARDS  */

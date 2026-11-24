@@ -33,6 +33,43 @@ html, body {
 }
 
 /******************************
+  TÍTULO FIJO EN MÓVIL
+*******************************/
+
+/* En móvil el título baja con la página y se queda fijo arriba, sobre una barra del color de
+   --barra-fondo que aparece al fijarse (script-interfaz.js pone html.titulo-fijo y mide la barra);
+   la barra de estado del sistema toma ese mismo color. El título no recibe toques (los atraviesan). */
+@media (max-width: 42em) {
+  body > h1 {
+    position: sticky;
+    top: 12px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--barra-alto, 3.3rem);
+    background: var(--barra-fondo);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    z-index: 99;
+    pointer-events: none;
+  }
+
+  html.titulo-fijo body::before { opacity: 1; }
+  html.titulo-fijo body > h1 { color: #fff; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { transition: none; }
+}
+
+/******************************
   SLIDER SUPERIOR VOLUMEN
 *******************************/
  
