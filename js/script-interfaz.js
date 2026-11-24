@@ -291,8 +291,32 @@ function actualizarTituloFijo(forzar) {
   if (themeColorMeta) {
     const raiz = getComputedStyle(document.documentElement);
     const color = raiz.getPropertyValue(fijo ? '--barra-fondo' : '--theme-color').trim();
-    if (color) themeColorMeta.setAttribute('content', color);
+    if (color) fundirBarraEstado(color, forzar);
   }
+}
+
+// La barra de estado cambia de color poco a poco, escribiendo el meta en cada fotograma
+// (como Radio Web Neo), al ritmo de la transición de la barra (.25 s)
+const DURACION_BARRA_MS = 300;
+let fundidoRaf = 0;
+const aRgb = hex => {
+  const h = hex.replace('#', '');
+  const c = h.length === 3 ? [...h].map(x => x + x) : h.match(/../g);
+  return c.map(v => parseInt(v, 16));
+};
+function fundirBarraEstado(destino, inmediato) {
+  cancelAnimationFrame(fundidoRaf);
+  const desde = aRgb(themeColorMeta.getAttribute('content') || destino);
+  const hasta = aRgb(destino);
+  const pinta = rgb => themeColorMeta.setAttribute('content', '#' + rgb.map(v => Math.round(v).toString(16).padStart(2, '0')).join(''));
+  if (inmediato || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { pinta(hasta); return; }
+  const inicio = performance.now();
+  const paso = ahora => {
+    const t = Math.min(1, Math.max(0, (ahora - inicio) / DURACION_BARRA_MS));
+    pinta(desde.map((v, i) => v + (hasta[i] - v) * t));
+    fundidoRaf = t < 1 ? requestAnimationFrame(paso) : 0;
+  };
+  fundidoRaf = requestAnimationFrame(paso);
 }
 
 function iniciarTituloFijo() {
