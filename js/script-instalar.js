@@ -1,16 +1,16 @@
 /********************************
  * script-instalar.js
  *
- * Botón "Instalar app" (solo en los tres sitios que se instalan: raíz, live/ y live_ser/, cada uno con su manifest): Chrome y Edge (Android y PC) avisan con "beforeinstallprompt" cuando la web se puede
- * instalar; se guarda el aviso y la ventana de instalación se abre con el botón. Va junto al de modo oscuro
- * (y el de información en live): en PC encima de ellos, en el móvil debajo. Solo se ve mientras se puede
+ * Botón "Instalar" (solo en los tres sitios que se instalan: raíz, live/ y live_ser/, cada uno con su manifest): Chrome y Edge (Android y PC) avisan con "beforeinstallprompt" cuando la web se puede
+ * instalar; se guarda el aviso y la ventana de instalación se abre con el botón. Va antes del de modo oscuro
+ * (y del de información en live): arriba del todo, en PC y en el móvil. Solo se ve mientras se puede
  * instalar; en iPhone/iPad (sin ventana posible) sale igual y al pulsarlo dice cómo hacerlo durante unos segundos.
  * Instalada o en los navegadores que no lo avisan, no sale.
  * Es la misma idea que js/install.js de Radio Web Neo y Radio Proxy Web.
  ********************************/
 (() => {
   let deferred = null, btn = null, back = 0;
-  const LABEL = '<span>Instalar app</span><span aria-hidden="true">📲</span>';
+  const LABEL = '<span>Instalar</span><span aria-hidden="true">📲</span>';
   const HOW = '<span>Compartir › Añadir a pantalla de inicio</span>';
 
   const installed = () => matchMedia("(display-mode: standalone), (display-mode: minimal-ui)").matches || navigator.standalone === true;
@@ -20,14 +20,14 @@
     const ok = (!!deferred || ios) && !installed();
     if (!btn) {
       if (!ok) return;
-      const ref = document.getElementById("info-toggle") || document.getElementById("theme-toggle");
+      const ref = document.getElementById("theme-toggle");
       if (!ref) return;   // página sin botones de abajo: sin botón
       btn = document.createElement("button");
       btn.className = "theme-toggle install-toggle";
       btn.type = "button";
       btn.innerHTML = LABEL;
       btn.addEventListener("click", install);
-      ref.after(btn);
+      ref.before(btn);   // orden: Instalar, Modo oscuro, Sobre el proyecto
     }
     btn.hidden = !ok;
   }

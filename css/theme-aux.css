@@ -281,20 +281,20 @@ html, body {
 }
 
 /******************************
-  INSTALAR APP (script-instalar.js)
+  INSTALAR (script-instalar.js)
 *******************************/
 
-/* Va después del de modo oscuro (o del de información): en PC fijo encima de ellos, en móvil debajo */
+/* Orden de arriba abajo: Instalar, Modo oscuro y (en live) Sobre el proyecto. En PC fijos abajo a la derecha (48px de alto + 12px de hueco) */
 .install-toggle[hidden] { display: none; }
-.theme-toggle + .install-toggle { bottom: 78px; }
-.info-toggle + .install-toggle { bottom: 138px; }
+.install-toggle { bottom: 78px; }
+.install-toggle:has(~ .info-toggle) { bottom: 138px; }
 
 @media (max-width: 42em) {
   .install-toggle {
-    margin: 0 auto max(40px, env(safe-area-inset-bottom));
+    margin: 40px auto 24px;
   }
-  .theme-toggle:has(+ .install-toggle:not([hidden])) {
-    margin-bottom: 24px;
+  .install-toggle:not([hidden]) + .theme-toggle {
+    margin-top: 0;
   }
 }
 
@@ -302,8 +302,11 @@ html, body {
   INFORMACIÓN (solo live)
 *******************************/
 
-/* Botón: en PC fijo encima del de modo oscuro (18px + 48px de alto + 12px de hueco); en móvil va debajo de él */
+/* Botón: en PC fijo abajo del todo y el de modo oscuro encima (18px + 48px de alto + 12px de hueco); en móvil va debajo de él */
 .info-toggle {
+  bottom: 18px;
+}
+.theme-toggle:has(+ .info-toggle) {
   bottom: 78px;
 }
 
