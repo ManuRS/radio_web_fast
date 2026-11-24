@@ -281,6 +281,24 @@ html, body {
 }
 
 /******************************
+  INSTALAR APP (script-instalar.js)
+*******************************/
+
+/* Va después del de modo oscuro (o del de información): en PC fijo encima de ellos, en móvil debajo */
+.install-toggle[hidden] { display: none; }
+.theme-toggle + .install-toggle { bottom: 78px; }
+.info-toggle + .install-toggle { bottom: 138px; }
+
+@media (max-width: 42em) {
+  .install-toggle {
+    margin: 0 auto max(40px, env(safe-area-inset-bottom));
+  }
+  .theme-toggle:has(+ .install-toggle:not([hidden])) {
+    margin-bottom: 24px;
+  }
+}
+
+/******************************
   INFORMACIÓN (solo live)
 *******************************/
 
