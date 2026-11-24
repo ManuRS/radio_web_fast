@@ -156,6 +156,9 @@
     marco.remove();
     marco = null;
     document.documentElement.classList.remove("rwf-dentro");
+
+    // La barra de estado vuelve al color del index (la página del marco lo había cambiado)
+    if (window.rwfPintarBarraEstado) window.rwfPintarBarraEstado();
   }
 
   // --- Tarjetas del index ---

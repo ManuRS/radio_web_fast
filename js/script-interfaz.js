@@ -169,7 +169,17 @@ if (exitModal && stayBtn) {
 const toggle = document.getElementById('theme-toggle');
 const icon = document.getElementById('theme-icon');
 const label = document.getElementById('theme-label');
-const themeColorMeta = document.getElementById('theme-color-meta');
+// Las páginas se abren dentro de un marco sobre el index (script-app.js) y Chrome solo hace caso al
+// theme-color de la página de arriba: dentro del marco se escribe en el meta del index
+const themeColorMeta = (() => {
+  if (window.parent !== window) {
+    try {
+      const meta = window.parent.document.getElementById('theme-color-meta');
+      if (meta) return meta;
+    } catch (error) {}
+  }
+  return document.getElementById('theme-color-meta');
+})();
 
 /* Esto lo coloca al final en el movil */
 const lista = document.getElementById("lista");
@@ -288,35 +298,44 @@ function actualizarTituloFijo(forzar) {
   if (fijo === tituloFijo && !forzar) return;
   tituloFijo = fijo;
   document.documentElement.classList.toggle('titulo-fijo', fijo);
-  if (themeColorMeta) {
-    const raiz = getComputedStyle(document.documentElement);
-    const color = raiz.getPropertyValue(fijo ? '--barra-fondo' : '--theme-color').trim();
-    if (color) fundirBarraEstado(color, forzar);
-  }
+  if (themeColorMeta) seguirBarraEstado(forzar);
 }
 
-// La barra de estado cambia de color poco a poco, escribiendo el meta en cada fotograma
-// (como Radio Web Neo), al ritmo de la transición de la barra (.25 s)
-const DURACION_BARRA_MS = 300;
-let fundidoRaf = 0;
+// La barra de estado copia en cada fotograma el color que se ve arriba: la barra (--barra-fondo)
+// con su opacidad de ese momento sobre el color normal (--theme-color). Así va al mismo ritmo que la
+// transición CSS. Como Radio Web Neo, sigue escribiendo un rato después de que acabe (750 ms)
+const SEGUIR_BARRA_MS = 750;
+let barraRaf = 0, barraFin = 0;
 const aRgb = hex => {
-  const h = hex.replace('#', '');
+  const h = hex.trim().replace('#', '');
   const c = h.length === 3 ? [...h].map(x => x + x) : h.match(/../g);
-  return c.map(v => parseInt(v, 16));
+  return c && c.length === 3 ? c.map(v => parseInt(v, 16)) : null;
 };
-function fundirBarraEstado(destino, inmediato) {
-  cancelAnimationFrame(fundidoRaf);
-  const desde = aRgb(themeColorMeta.getAttribute('content') || destino);
-  const hasta = aRgb(destino);
-  const pinta = rgb => themeColorMeta.setAttribute('content', '#' + rgb.map(v => Math.round(v).toString(16).padStart(2, '0')).join(''));
-  if (inmediato || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { pinta(hasta); return; }
-  const inicio = performance.now();
-  const paso = ahora => {
-    const t = Math.min(1, Math.max(0, (ahora - inicio) / DURACION_BARRA_MS));
-    pinta(desde.map((v, i) => v + (hasta[i] - v) * t));
-    fundidoRaf = t < 1 ? requestAnimationFrame(paso) : 0;
-  };
-  fundidoRaf = requestAnimationFrame(paso);
+function pintarBarraEstado() {
+  if (!themeColorMeta) return;
+  // En el index con una página abierta, manda la de dentro
+  const marco = document.getElementById('rwf-pagina');
+  if (marco) {
+    try {
+      if (marco.contentWindow.rwfPintarBarraEstado) return marco.contentWindow.rwfPintarBarraEstado();
+    } catch (error) {}
+  }
+  const raiz = getComputedStyle(document.documentElement);
+  const normal = aRgb(raiz.getPropertyValue('--theme-color'));
+  const barra = aRgb(raiz.getPropertyValue('--barra-fondo'));
+  if (!normal || !barra) return;
+  const opacidad = pantallaMovil.matches ? parseFloat(getComputedStyle(document.body, '::before').opacity) || 0 : 0;
+  themeColorMeta.setAttribute('content', '#' + normal.map((v, i) =>
+    Math.round(v + (barra[i] - v) * opacidad).toString(16).padStart(2, '0')).join(''));
+}
+function pasoBarraEstado() {
+  pintarBarraEstado();
+  barraRaf = performance.now() < barraFin ? requestAnimationFrame(pasoBarraEstado) : 0;
+}
+function seguirBarraEstado(inmediato) {
+  if (inmediato) pintarBarraEstado();
+  barraFin = performance.now() + SEGUIR_BARRA_MS;
+  if (!barraRaf) barraRaf = requestAnimationFrame(pasoBarraEstado);
 }
 
 function iniciarTituloFijo() {
@@ -329,8 +348,15 @@ if (tituloPagina) {
   window.addEventListener('scroll', () => actualizarTituloFijo(false), { passive: true });
   window.addEventListener('resize', iniciarTituloFijo);
   window.addEventListener('load', iniciarTituloFijo);                    // con las fuentes ya cargadas
+  window.addEventListener('pageshow', iniciarTituloFijo);                // al volver atrás a una página guardada (bfcache)
   window.addEventListener('radio-theme-change', () => actualizarTituloFijo(true));  // applyTheme() repone el color normal
 }
+
+// Al abrir una página en el marco, su color pasa a la barra de estado (aunque no tenga título fijo);
+// al cerrarla, script-app.js llama a rwfPintarBarraEstado del index para recuperar el suyo
+window.rwfPintarBarraEstado = pintarBarraEstado;
+if (!tituloPagina) window.addEventListener('radio-theme-change', pintarBarraEstado);
+pintarBarraEstado();
 
 /******************************
   NOTIFICACION
