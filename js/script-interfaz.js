@@ -240,33 +240,46 @@ window.addEventListener('storage', event => {
 /******************************
   TÍTULO FIJO EN MÓVIL
 *******************************/
-// En móvil, al bajar, el título se fija arriba sobre una barra de color (reglas en theme-aux.css) y la
-// barra de estado del sistema (meta theme-color) toma ese mismo color para que se fundan. Al volver arriba
-// se recupera el color normal de la página. Colores: --barra-fondo y --theme-color (theme-colors.css).
+// En móvil, al bajar, el título se fija arriba y se reduce a una barra superior pequeña de Material
+// (título de 22 px en una barra de 64 px; reglas en theme-aux.css). La barra de estado del sistema
+// (meta theme-color) toma el color de la barra para que se fundan, y al volver arriba recupera el normal.
+// Colores: --barra-fondo y --theme-color (theme-colors.css).
 const tituloPagina = document.querySelector('body > h1');
 const pantallaMovil = window.matchMedia('(max-width: 42em)');
+const TITULO_PX = 22;       // tamaño del título en la barra
+const BARRA_MIN_PX = 64;    // alto mínimo de la barra
 let umbralTitulo = 0;
+let escalaTitulo = 1;
 let tituloFijo = false;
 
-// Cuánto hay que bajar para que el título llegue a su sitio fijo, y alto de la barra (con el texto
-// en las líneas que ocupe: los <br> sueltos del título no cuentan)
+// Mide el título para colocarlo en la barra: cuánto hay que bajar para fijarlo, a qué escala queda y
+// qué alto necesita la barra (sus líneas de texto; los <br> sueltos no cuentan). Si hay varias líneas, la barra crece
 function medirTituloFijo() {
   if (!tituloPagina) return;
-  const arriba = parseFloat(getComputedStyle(tituloPagina).top);   // "auto" (NaN) si no es móvil
+  const estilo = getComputedStyle(tituloPagina);
+  if (estilo.position !== 'sticky') return;   // no es móvil
   // Dónde está el título sin fijar (cada página lo coloca algo distinto: márgenes del body...)
   const posicion = tituloPagina.style.position;
   tituloPagina.style.position = 'static';
   const natural = tituloPagina.getBoundingClientRect().top + window.scrollY;
   tituloPagina.style.position = posicion;
-  umbralTitulo = natural - arriba;
+  escalaTitulo = Math.min(1, TITULO_PX / parseFloat(estilo.fontSize));
   const texto = [...tituloPagina.childNodes].find(nodo => nodo.nodeType === Node.TEXT_NODE && nodo.textContent.trim());
-  if (!texto || !Number.isFinite(arriba)) return;
+  if (!texto) return;
   const rango = document.createRange();
   rango.selectNodeContents(texto);
   const lineas = rango.getClientRects();
   if (!lineas.length) return;
-  const alto = lineas[lineas.length - 1].bottom - lineas[0].top;
-  document.documentElement.style.setProperty('--barra-alto', `${Math.ceil(arriba + alto + 12)}px`);
+  // Con el título ya reducido, lo medido va a escala
+  const medido = tituloFijo ? escalaTitulo : 1;
+  const alto = (lineas[lineas.length - 1].bottom - lineas[0].top) / medido * escalaTitulo;
+  const barra = Math.max(BARRA_MIN_PX, Math.ceil(alto + 32));
+  const arriba = (barra - alto) / 2;
+  const raiz = document.documentElement.style;
+  raiz.setProperty('--titulo-escala', escalaTitulo.toFixed(4));
+  raiz.setProperty('--titulo-top', `${arriba.toFixed(1)}px`);
+  raiz.setProperty('--barra-alto', `${barra}px`);
+  umbralTitulo = natural - arriba;
 }
 
 function actualizarTituloFijo(forzar) {
