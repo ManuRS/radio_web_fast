@@ -114,9 +114,26 @@ html, body {
   font-size: 1rem;
 }
 
-.modal-content .modal-aviso {
-  font-size: 0.875rem;
-  opacity: 0.8;
+/* Modal de salida: el mismo aire y colores que el de información */
+#exit-modal .modal-content {
+  width: min(88%, 400px);
+  padding: 22px 20px 20px;
+  text-align: left;
+}
+
+#exit-modal .modal-titulo {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--info-strong);
+}
+
+#exit-modal .modal-aviso {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--info-soft);
 }
 
 @keyframes fadeIn {
@@ -140,6 +157,10 @@ html, body {
 }
 
 #stay-btn {
+  padding: 12px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 1rem;
   background: var(--modal-button-background);
   color: var(--modal-button-text);
 }
