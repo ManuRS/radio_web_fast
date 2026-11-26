@@ -1769,3 +1769,8 @@ document.querySelectorAll(".card audio").forEach(__defaultLive.bindAudioEvents);
 
 // Único nombre que usa el HTML (onclick="playPause(this)")
 window.playPause = __defaultLive.playPause;
+
+// "Sí, salir" del modal de salida (script-interfaz.js): parada completa de todas las instancias, sin reconexiones
+window.rwfPararAudio = () => {
+  __liveInstances.forEach(item => item.stopCurrentPlayback());
+};

@@ -44,119 +44,143 @@ if (news_volume) {
 /******************************
   MODAL DE SALIDA
 *******************************/
-// Una vez que ha sonado algo, el primer gesto atrás no saca de la página: abre un modal, y
-// el segundo gesto sale. Antes de dar a play, el gesto atrás funciona con normalidad.
+// Como en Radio Web Neo (backguard.js). Una vez que ha sonado algo, el gesto atrás no saca de la
+// página: abre el modal "¿Salir y parar...?". Con el modal abierto, atrás lo cierra (como Cancelar);
+// solo "Sí, salir" saca de la página: para el audio, vuelve atrás y, si no hay página anterior,
+// intenta cerrar la ventana (una app instalada abierta desde su icono se cierra así). Si aun así
+// sigue ahí, avisa de que ya se puede salir. Antes de dar a play, atrás funciona con normalidad.
 //
-// Con CloseWatcher (Chrome y Edge 126, Firefox 149) el navegador avisa de la petición de
-// cierre sin tocar el historial: no se añaden entradas fantasma. Solo se vigila el primer
-// gesto: al abrir el modal se deja de vigilar, así el segundo gesto es un atrás normal del
-// navegador, con su vista previa de la página anterior. "Seguir aquí" vuelve a vigilar
-// (un vigilante nuevo por cada pregunta: Chrome solo deja cancelar un par de veces el mismo).
-// En los navegadores que no lo soportan se usa el truco clásico de añadir una entrada al historial.
+// En pantallas táctiles con CloseWatcher (Chrome) el navegador avisa del gesto atrás sin tocar el
+// historial: Android no anima la vista previa de la página anterior. Un vigilante nuevo por cada
+// pregunta (Chrome solo deja cancelar un par de veces el mismo) y otro propio para el modal (el del
+// <dialog> no se crea bien si se abre desde un gesto atrás). Sin CloseWatcher, o en PC (botón atrás
+// del ratón, Alt+←), se añade una entrada propia al historial al empezar a sonar.
 const exitModal = document.getElementById("exit-modal");
-const stayBtn = document.getElementById("stay-btn");
 
-if (exitModal && stayBtn) {
-  let modalAbierto = false;
+if (exitModal && typeof exitModal.showModal === "function") {
+  const MOVIL = matchMedia("(pointer: coarse)").matches;
+  const usarVigilante = MOVIL && "CloseWatcher" in window;
+  const nota = document.getElementById("exit-note");
+  if (nota && !MOVIL) nota.textContent = "Para seguir escuchando, no cierres la pestaña";
 
-  const mostrarModal = () => {
-    modalAbierto = true;
-    exitModal.style.display = "flex";
+  let audioIniciado = false;   // ha sonado algo: desde entonces se pregunta (hasta salir con "Sí, salir")
+  let conEntrada = false;      // sin CloseWatcher: la entrada propia está en el historial
+  let saliendo = false;
+  let vigilante = null;
+  let vigilanteModal = null;
+
+  const abrirModal = () => {
+    if (!exitModal.open) exitModal.showModal();
+    if (!usarVigilante || vigilanteModal) return;
+    const v = new CloseWatcher();
+    vigilanteModal = v;
+    v.addEventListener("close", () => { vigilanteModal = null; cancelar(); });
   };
 
-  const ocultarModal = () => {
-    modalAbierto = false;
-    exitModal.style.display = "none";
+  const cerrarModal = () => {
+    if (exitModal.open) exitModal.close();
   };
 
-  stayBtn.addEventListener("click", ocultarModal);
+  exitModal.addEventListener("close", () => {
+    if (vigilanteModal) { vigilanteModal.destroy(); vigilanteModal = null; }
+  });
 
-  /* --- Con CloseWatcher --- */
-  const vigilarAtrasConCloseWatcher = () => {
-    let vigilante = null;
-
-    const armar = () => {
-      // Con el modal abierto no se vigila: el siguiente gesto debe ser un atrás normal
-      if (vigilante || modalAbierto) return;
-      const watcher = new CloseWatcher();
-      vigilante = watcher;
-
-      // Primer gesto atrás: abrir el modal y dejar de vigilar. El navegador solo permite
-      // cancelarlo si el usuario ha tocado la página desde el último gesto; si no, salta
-      // directo a "close" para que nadie quede atrapado.
-      watcher.addEventListener("cancel", event => {
-        if (!event.cancelable) return;
-        event.preventDefault();
-        watcher.destroy();
-        vigilante = null;
-        mostrarModal();
-      });
-
-      // Cierre que no se ha podido preguntar: salir de la página
-      watcher.addEventListener("close", () => {
-        vigilante = null;
-        history.back();
-      });
-    };
-
-    // Armarlo con la primera reproducción, incluidos los audios creados dinámicamente
-    document.addEventListener("play", event => {
-      if (event.target instanceof HTMLAudioElement) armar();
-    }, true);
-
-    // Seguir aquí: volver a vigilar el gesto atrás
-    stayBtn.addEventListener("click", armar);
+  const armarVigilante = () => {
+    if (vigilante || saliendo || !audioIniciado || exitModal.open) return;
+    const v = new CloseWatcher();
+    vigilante = v;
+    // Primer gesto atrás: abrir el modal. Chrome solo deja cancelarlo si se ha tocado la página
+    // desde el último; si no, salta a "close" para que nadie quede atrapado.
+    v.addEventListener("cancel", event => {
+      if (!event.cancelable) return;
+      event.preventDefault();
+      v.destroy();
+      vigilante = null;
+      abrirModal();
+    });
+    v.addEventListener("close", () => {
+      vigilante = null;
+      if (!saliendo) history.back();
+    });
   };
 
-  /* --- Respaldo: navegadores sin CloseWatcher --- */
-  const vigilarAtrasConHistorial = () => {
-    let scrollPosition = 0;
-    let audioIniciado = false;
-
-    document.addEventListener("play", event => {
-      if (event.target instanceof HTMLAudioElement) {
-        audioIniciado = true;
-      }
-    }, true);
-
-    // Crear una entrada para interceptar el primer gesto atrás
+  // Vigilar el siguiente gesto atrás (sin CloseWatcher: una sola entrada propia en el historial)
+  const armar = () => {
+    if (usarVigilante) { armarVigilante(); return; }
+    if (conEntrada || saliendo || !audioIniciado) return;
     history.pushState({ exitModal: true }, "", location.href);
-
-    window.addEventListener("popstate", () => {
-      // Sin audio previo: no interceptar la navegación
-      if (!audioIniciado) {
-        history.back();
-        return;
-      }
-
-      // Si el modal está abierto, el siguiente gesto permite salir
-      if (modalAbierto) {
-        ocultarModal();
-        return;
-      }
-
-      // Mostrar el modal
-      scrollPosition = window.scrollY;
-      mostrarModal();
-
-      // Mantener una entrada para el siguiente gesto atrás
-      history.pushState({ exitModal: true }, "", location.href);
-
-      requestAnimationFrame(() => {
-        window.scrollTo(0, scrollPosition);
-      });
-    });
-
-    stayBtn.addEventListener("click", () => {
-      window.scrollTo(0, scrollPosition);
-    });
+    conEntrada = true;
   };
 
-  if ("CloseWatcher" in window) {
-    vigilarAtrasConCloseWatcher();
-  } else {
-    vigilarAtrasConHistorial();
-  }
+  const cancelar = () => {
+    cerrarModal();
+    armar();
+  };
+
+  // Armarlo con la primera reproducción, incluidos los audios creados dinámicamente
+  document.addEventListener("play", event => {
+    if (!(event.target instanceof HTMLAudioElement)) return;
+    audioIniciado = true;
+    armar();
+  }, true);
+
+  window.addEventListener("popstate", event => {
+    if (event.state && event.state.exitModal) { conEntrada = true; return; }   // se ha vuelto hacia delante a la entrada propia
+    if (!conEntrada) return;
+    conEntrada = false;
+    if (saliendo) return;
+    if (!audioIniciado) { history.back(); return; }   // ya se salió con "Sí, salir": el atrás sigue su camino
+    if (exitModal.open) cerrarModal(); else abrirModal();
+    armar();   // siempre queda una entrada propia detrás: con el modal abierto, atrás lo cierra
+  });
+
+  // Escape (o atrás con el vigilante propio del <dialog>)
+  exitModal.addEventListener("cancel", event => {
+    event.preventDefault();
+    cancelar();
+  });
+
+  document.getElementById("exit-cancel").addEventListener("click", cancelar);
+  document.getElementById("exit-close").addEventListener("click", cancelar);
+
+  document.getElementById("exit-go").addEventListener("click", () => {
+    if (saliendo) return;
+    saliendo = true;
+    cerrarModal();
+
+    // Parar el audio: el directo con su propia parada (sin reconexiones) y cualquier otro <audio>
+    if (typeof window.rwfPararAudio === "function") window.rwfPararAudio();
+    document.querySelectorAll("audio").forEach(audio => { if (!audio.paused) audio.pause(); });
+    audioIniciado = false;
+
+    history.go(conEntrada ? -2 : -1);   // con entrada propia hay que saltar también esa
+
+    // Si no había página anterior, la ventana no se va: se intenta cerrar y, si sigue ahí, se avisa
+    setTimeout(() => {
+      window.close();
+      setTimeout(() => {
+        saliendo = false;
+        if (document.visibilityState === "visible") {
+          mostrarAviso(MOVIL ? "Ya puedes salir de la app" : "Ya puedes cerrar la pestaña");
+        }
+      }, 200);
+    }, 300);
+  });
+
+  // Volver a la página desde la caché del navegador (atrás y adelante): nada a medias
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) saliendo = false;
+  });
+}
+
+// Aviso breve abajo de la pantalla
+function mostrarAviso(texto) {
+  const aviso = document.createElement("div");
+  aviso.className = "rwf-aviso";
+  aviso.setAttribute("role", "status");
+  aviso.textContent = texto;
+  document.body.appendChild(aviso);
+  aviso.addEventListener("animationend", () => aviso.remove());
 }
   
 /******************************

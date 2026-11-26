@@ -181,16 +181,22 @@
   </div>
 </dialog>
 
-<!-- Modal salir, la posición no se define aquí -->
-<div id="exit-modal" class="modal">
-  <div class="modal-content">
-    <p class="modal-titulo">Pulsa atrás / desliza de nuevo para salir</p>
-    <p class="modal-aviso">Para seguir escuchando debes minimizar la app, no cerrarla por completo</p>
-    <div class="buttons">
-      <button id="stay-btn">No salir</button>
+<!-- Modal de salida: botón atrás tras dar al play (ver script-interfaz.js) -->
+<dialog id="exit-modal" class="info-dialog" aria-labelledby="exit-title">
+  <div class="modal-content info-content">
+    <button type="button" class="info-close" id="exit-close" aria-label="Cerrar">✕</button>
+    <div class="info-head">
+      <img src="../resources/icon2-192.png" alt="" width="28" height="28">
+      <h2>Radio Web Fast</h2>
+    </div>
+    <p class="exit-q" id="exit-title">¿Salir y parar la radio?</p>
+    <p class="exit-note" id="exit-note">Para seguir escuchando, minimiza la app con el botón de inicio</p>
+    <div class="exit-actions">
+      <button type="button" id="exit-cancel" autofocus>Cancelar</button>
+      <button type="button" id="exit-go" class="primario">Sí, salir</button>
     </div>
   </div>
-</div>
+</dialog>
 
 <!-- data-eq="true": la emisora pasa por el ecualizador; "false": sale directa (HitFM y KissFM no envían CORS). Ver script-ecualizador.js -->
 <div class="links" id="lista">
